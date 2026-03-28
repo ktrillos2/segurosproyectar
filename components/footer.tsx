@@ -11,7 +11,7 @@ export function Footer() {
         <div className="grid gap-16 lg:grid-cols-2 lg:gap-8 mb-16 items-center">
           
           {/* Bloque izquierdo — llamado a la acción de cierre */}
-          <div className="space-y-6">
+          <div className="flex flex-col items-center lg:items-start text-center lg:text-left space-y-6">
             <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight text-balance">
               ¿Listo para asegurar tu carro <span className="text-primary">sin enredos?</span>
             </h2>
@@ -29,7 +29,7 @@ export function Footer() {
           </div>
 
           {/* Bloque derecho — redes sociales */}
-          <div className="flex flex-col lg:items-end lg:text-right space-y-6">
+          <div className="flex flex-col items-center lg:items-end lg:text-right space-y-6">
             <h3 className="text-xl font-bold text-white mb-2">Síguenos y aprende sobre seguros</h3>
             <div className="flex items-center gap-4">
               <a 
@@ -75,6 +75,10 @@ export function Footer() {
           </div>
           
           <div className="flex flex-col sm:flex-row items-center gap-6 text-sm font-medium text-slate-400">
+            <Link href="/pqrs" className="hover:text-white transition-colors">
+              PQRS
+            </Link>
+            <div className="hidden sm:block w-1 h-1 rounded-full bg-slate-700" />
             <Link href="/terminos-y-condiciones" className="hover:text-white transition-colors">
               Términos & Condiciones
             </Link>

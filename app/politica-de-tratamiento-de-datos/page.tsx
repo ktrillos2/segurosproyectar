@@ -11,7 +11,7 @@ export default function PoliticaDatosPage() {
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
       <Header />
-      <main className="flex-grow pt-32 pb-24">
+      <main className="flex-grow pt-8 pb-24">
         <article className="max-w-4xl mx-auto px-4 md:px-12 py-12 bg-white rounded-2xl shadow-sm border border-slate-200">
           <div className="mb-12 text-center border-b border-slate-100 pb-8">
             <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight mb-4 text-balance">

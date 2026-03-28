@@ -5,12 +5,12 @@ import { Icon } from "@iconify/react"
 import Link from "next/link"
 
 const insurers = [
-  { name: "AXA Colpatria", src: "/Imagenes/logo-axa.png" },
-  { name: "Zurich", src: "/Imagenes/logo-zurich.png" },
-  { name: "Quálitas", src: "/Imagenes/logo-qualitas.png" },
-  { name: "Equidad Seguros", src: "/Imagenes/logo-equidad.png" },
-  { name: "Seguros Mundial", src: "/Imagenes/logo-mundial.png" },
-  { name: "Seguros del Estado", src: "/Imagenes/logo-estado.png" },
+  { name: "AXA Colpatria", src: "/logos/axa-colpatria.png" },
+  { name: "Zurich", src: "/logos/zurich.png" },
+  { name: "Quálitas", src: "/logos/qualitas.svg" },
+  { name: "Equidad Seguros", src: "/logos/equidad.jpg" },
+  { name: "Seguros Mundial", src: "/logos/seguros-mudial.png" },
+  { name: "Seguros del Estado", src: "/logos/seguros-del-estado.png" },
 ]
 
 export function Hero() {

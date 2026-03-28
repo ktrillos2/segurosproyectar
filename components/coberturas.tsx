@@ -68,7 +68,7 @@ export function Coberturas() {
         <div className="grid md:grid-cols-3 gap-8 mb-8">
           {fila1.map((item, idx) => (
             <div key={idx} className="bg-slate-50 border border-slate-100 rounded-xl p-8 hover:shadow-lg transition-shadow duration-300 text-center flex flex-col items-center">
-              <img src={item.icon} alt={item.title} className="w-20 h-20 object-contain mb-6" />
+              <img src={item.icon} alt={item.title} className="w-28 h-28 object-contain mb-6" />
               <h3 className="font-extrabold text-slate-900 tracking-tight text-xl mb-3">{item.title}</h3>
               <p className="text-slate-500 font-medium text-sm leading-relaxed">{item.desc}</p>
             </div>
@@ -79,7 +79,7 @@ export function Coberturas() {
         <div className="grid md:grid-cols-3 gap-6 mb-8">
           {fila2.map((item, idx) => (
             <div key={idx} className="bg-white border border-slate-200 rounded-lg p-6 hover:shadow-md transition-shadow duration-300 text-center flex flex-col items-center">
-              <img src={item.icon} alt={item.title} className="w-16 h-16 object-contain mb-4" />
+              <img src={item.icon} alt={item.title} className="w-24 h-24 object-contain mb-4" />
               <h3 className="font-bold text-slate-900 tracking-tight text-lg mb-2">{item.title}</h3>
               <p className="text-slate-500 font-medium text-sm leading-relaxed">{item.desc}</p>
             </div>
@@ -90,7 +90,7 @@ export function Coberturas() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6 mb-16">
           {fila3.map((item, idx) => (
             <div key={idx} className="bg-slate-50 border border-slate-100 rounded-xl p-5 sm:p-6 hover:shadow-md hover:border-primary/20 transition-all duration-300 transform hover:-translate-y-1 text-center flex flex-col items-center">
-              <img src={item.icon} alt={item.title} className="w-14 h-14 object-contain mb-4" />
+              <img src={item.icon} alt={item.title} className="w-20 h-20 object-contain mb-4" />
               <h3 className="font-extrabold text-slate-900 tracking-tight text-sm mb-1">{item.title}</h3>
               <p className="text-slate-500 font-medium text-xs leading-tight">{item.desc}</p>
             </div>
