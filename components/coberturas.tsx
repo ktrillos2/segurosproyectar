@@ -11,7 +11,7 @@ const fila1 = [
   {
     title: "DAÑOS Y COLISIÓN",
     desc: "Protege tu carro contra golpes, choques y volcamientos, sin importar quién tenga la culpa.",
-    icon: "/Imagenes/daños.png"
+    icon: "/Imagenes/danos.png"
   },
   {
     title: "HURTO",
@@ -29,7 +29,7 @@ const fila2 = [
   {
     title: "VEHÍCULO DE REEMPLAZO",
     desc: "Mientras tu carro está en el taller, sigues moviéndote. Sin traumatismos.",
-    icon: "/Imagenes/Vehículo de reemplazo.png"
+    icon: "/Imagenes/vehiculo-de-reemplazo.png"
   },
   {
     title: "DEDUCIBLES",
@@ -42,7 +42,7 @@ const fila3 = [
   { title: "Gastos de Transporte", desc: "Apoyo para movilidad", icon: "/Imagenes/Gastos de transporte.png" },
   { title: "Vidrios", desc: "Reposición sin costo", icon: "/Imagenes/vidrios 1.png" },
   { title: "Llantas", desc: "Cobertura por estallido", icon: "/Imagenes/llantas 1.png" },
-  { title: "Asistencia Jurídica", desc: "Abogados 24/7", icon: "/Imagenes/Asistencia jurídica 1.png" },
+  { title: "Asistencia Jurídica", desc: "Abogados 24/7", icon: "/Imagenes/asistencia-juridica-1.png" },
   { title: "Amparo Patrimonial", desc: "Protección a tu dinero", icon: "/Imagenes/Amparo patrimonial 1.png" },
   { title: "Accidentes Personales", desc: "Gastos médicos", icon: "/Imagenes/Accidentes personales 1.png" }
 ]
