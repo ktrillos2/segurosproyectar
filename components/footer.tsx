@@ -13,7 +13,7 @@ export function Footer() {
           {/* Bloque izquierdo — llamado a la acción de cierre */}
           <div className="flex flex-col items-center lg:items-start text-center lg:text-left space-y-6">
             <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight text-balance">
-              ¿Listo para asegurar tu carro <span className="text-primary">sin enredos?</span>
+              ¿Listo para asegurar tu vehículo <span className="text-primary">sin enredos?</span>
             </h2>
             
             <p className="text-slate-400 leading-relaxed text-lg font-medium max-w-md">
@@ -33,7 +33,7 @@ export function Footer() {
             <h3 className="text-xl font-bold text-white mb-2">Síguenos y aprende sobre seguros</h3>
             <div className="flex items-center gap-4">
               <a 
-                href="#" 
+                href="https://instagram.com" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center hover:bg-primary transition-colors hover:text-white"
@@ -42,7 +42,7 @@ export function Footer() {
                 <Icon icon="ph:instagram-logo-light" className="w-5 h-5" />
               </a>
               <a 
-                href="#" 
+                href="https://tiktok.com" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center hover:bg-primary transition-colors hover:text-white font-bold"
@@ -51,7 +51,7 @@ export function Footer() {
                 <Icon icon="ph:tiktok-logo-light" className="w-5 h-5" />
               </a>
               <a 
-                href="#" 
+                href="https://facebook.com" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center hover:bg-primary transition-colors hover:text-white"

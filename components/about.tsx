@@ -1,89 +1,104 @@
 import { Icon } from "@iconify/react"
+import { Testimonials } from "@/components/testimonials"
+import { Star, Zap } from "lucide-react"
 
-
+const stats = [
+  { value: "+20", label: "Años de trayectoria" },
+  { value: "6", label: "Aseguradoras aliadas" },
+  { value: "100%", label: "Digital y seguro" },
+  { value: "SFC", label: "Vigilado" },
+]
 
 export function About() {
   return (
-    <section id="nosotros" className="bg-slate-50 py-20 lg:py-28 overflow-hidden">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-          
-          {/* Content */}
-          <div>
-            <span className="inline-block px-3 py-1 rounded-sm bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-[0.2em] mb-6 border border-primary/20">
-              Nosotros
+    <section id="nosotros" className="flex flex-col">
+      {/* Bloque 1: Fondo azul oscuro, estadísticas clave */}
+      <div className="bg-slate-900 py-20 lg:py-28 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-1/3 h-full bg-primary/10 blur-[120px] rounded-full translate-x-1/2" />
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center max-w-4xl mx-auto mb-20">
+            <span className="inline-block px-3 py-1 rounded-sm bg-primary/20 text-primary text-[11px] font-bold uppercase tracking-[0.2em] mb-8 border border-primary/30">
+              Quiénes Somos
             </span>
-            
-            <h2 className="text-3xl sm:text-4xl lg:text-[2.75rem] font-extrabold text-slate-900 leading-[1.15] text-balance mb-8">
-              Más de 20 años conectando colombianos con el seguro que necesitan.
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-[1.1] tracking-tight mb-8">
+              Protegemos lo que más <span className="text-primary">valoras.</span>
             </h2>
-            
-            <p className="text-lg text-slate-600 leading-relaxed font-medium mb-12">
-              Proyectar Seguros nació en 2004 con una misión clara: hacer que los seguros sean simples, 
-              accesibles y transparentes para todos los colombianos. Hoy, dos décadas después, damos un 
-              paso adelante y llevamos esa misión al mundo digital con tecnología de punta que te permite 
-              cotizar, comparar y activar tu póliza en minutos, desde cualquier dispositivo, sin papelería y sin 
-              intermediarios innecesarios.
+            <p className="text-xl text-slate-400 font-medium leading-relaxed max-w-2xl mx-auto">
+              Somos una agencia de seguros autorizada con más de 20 años de experiencia, 
+              liderando la transformación digital del sector asegurador en Colombia.
             </p>
-
-            <div className="space-y-8">
-              <div className="flex gap-5">
-                <div className="flex-shrink-0 w-12 h-12 bg-white rounded-md shadow-sm border border-slate-200 flex items-center justify-center text-primary">
-                  <Icon icon="ph:target-light" className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-slate-900 text-lg mb-2 tracking-tight">Misión</h3>
-                  <p className="text-slate-600 font-medium leading-relaxed">
-                    Proteger los vehículos de los colombianos con seguros claros, rápidos y sin enredos respaldados por las mejores aseguradoras del país.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-5">
-                <div className="flex-shrink-0 w-12 h-12 bg-white rounded-md shadow-sm border border-slate-200 flex items-center justify-center text-primary">
-                  <Icon icon="ph:eye-light" className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-slate-900 text-lg mb-2 tracking-tight">Visión</h3>
-                  <p className="text-slate-600 font-medium leading-relaxed">
-                    Ser la plataforma digital de seguros de vehículos más confiable de Colombia, donde cada conductor encuentre la mejor cobertura al mejor precio en minutos.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-5">
-                <div className="flex-shrink-0 w-12 h-12 bg-primary rounded-md shadow-md flex items-center justify-center text-white">
-                  <Icon icon="ph:cpu-light" className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-slate-900 text-lg mb-2 tracking-tight">¿Cómo lo hacemos?</h3>
-                  <p className="text-slate-600 font-medium leading-relaxed">
-                    Nuestra plataforma conecta en tiempo real con las principales aseguradoras del país, compara 
-                    precios y coberturas automáticamente y te presenta las mejores opciones en segundos. Sin 
-                    llamadas. Sin visitas. Sin esperas.
-                  </p>
-                </div>
-              </div>
-            </div>
           </div>
 
-          {/* Visual Element */}
-          <div className="relative pt-10 lg:pt-0">
-            <div className="relative rounded-2xl bg-white border border-slate-100 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] p-4 sm:p-8">
-              <img
-                src="/Gif/nosotros.gif"
-                alt="Proyectar Seguros - Trayectoria y tecnología"
-                className="w-full h-auto object-contain rounded-lg"
-              />
-            </div>
-
-            {/* Decorative blurs */}
-            <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-blue-400/5 rounded-full blur-3xl pointer-events-none" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12">
+            {stats.map((stat, index) => (
+              <div key={index} className="text-center group">
+                <div className="text-4xl md:text-6xl font-black text-white mb-3 group-hover:text-primary transition-colors duration-300">
+                  {stat.value}
+                </div>
+                <div className="text-slate-500 text-xs font-bold uppercase tracking-[0.2em]">
+                  {stat.label}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
+      </div>
 
+      {/* Bloque 2: Fondo claro, Misión y Visión + GIF */}
+      <div className="bg-white py-20 lg:py-28 border-y border-slate-200">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center font-bold">
+            <div className="space-y-10">
+              <div className="bg-slate-50 rounded-2xl p-10 border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-6">
+                  <Zap className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="text-2xl font-black text-slate-900 mb-4 uppercase tracking-tight">Misión</h3>
+                <p className="text-slate-600 leading-relaxed font-medium">
+                  Brindar asesoría integral en seguros, ofreciendo soluciones tecnológicas personalizadas 
+                  que protejan el patrimonio y bienestar de las <span className="text-primary font-bold">personas</span>.
+                </p>
+              </div>
 
+              <div className="bg-slate-50 rounded-2xl p-10 border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-6">
+                  <Star className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="text-2xl font-black text-slate-900 mb-4 uppercase tracking-tight">Visión</h3>
+                <p className="text-slate-600 leading-relaxed font-medium">
+                  Ser la corredora de seguros líder en innovación digital en Colombia, 
+                  siendo la primera opción para quienes buscan rapidez, claridad y total confianza.
+                </p>
+              </div>
+            </div>
+
+            <div className="relative">
+              <div className="aspect-square rounded-3xl bg-slate-50 border border-slate-100 flex items-center justify-center overflow-hidden shadow-2xl">
+                <img 
+                  src="/Gif/nosotros.gif" 
+                  alt="Proyectar Seguros Experience" 
+                  className="w-full h-full object-contain scale-[1.2] md:scale-[1.4] mix-blend-multiply"
+                />
+              </div>
+              <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-primary/10 rounded-full blur-3xl -z-10" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bloque 3: Fondo gris suave + Testimonios */}
+      <div className="bg-slate-50 py-20 lg:py-28">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-20">
+            <span className="inline-block px-3 py-1 rounded-sm bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-[0.2em] mb-6 border border-primary/20">
+              Confianza
+            </span>
+            <h2 className="text-4xl lg:text-5xl font-black text-slate-900 tracking-tight">
+              Lo que dicen nuestros <span className="text-primary">clientes.</span>
+            </h2>
+          </div>
+          <Testimonials />
+        </div>
       </div>
     </section>
   )

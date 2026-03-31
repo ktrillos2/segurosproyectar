@@ -23,23 +23,7 @@ const testimonials = [
 
 export function Testimonials() {
   return (
-    <section className="bg-background py-20 md:py-28">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <span className="inline-block px-3 py-1 rounded-sm bg-primary/5 text-primary text-[10px] font-bold uppercase tracking-[0.2em] mb-6">
-            Testimonios
-          </span>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground leading-tight text-balance">
-            Lo que dicen de nosotros
-          </h2>
-          <p className="mt-6 text-lg text-muted-foreground leading-relaxed">
-            Porque la mejor carta de presentación son nuestros clientes, conoce aquí sus opiniones y experiencias.
-          </p>
-        </div>
-
-        {/* Testimonials Grid */}
-        <div className="grid gap-8 md:grid-cols-3">
+    <div className="grid gap-8 lg:gap-12 md:grid-cols-3">
           {testimonials.map((testimonial, index) => (
             <div
               key={index}
@@ -75,8 +59,6 @@ export function Testimonials() {
               </div>
             </div>
           ))}
-        </div>
-      </div>
-    </section>
+    </div>
   )
 }

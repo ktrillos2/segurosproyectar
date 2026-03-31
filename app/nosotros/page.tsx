@@ -1,31 +1,13 @@
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
-import { WhyUs } from "@/components/why-us"
-import { Check, Star, Heart, CheckCircle, Award, Users, Clock, Target, Handshake } from "lucide-react"
-
-const values = [
-  {
-    icon: Check,
-    title: "Mision",
-    description: "Brindar asesoria integral en seguros, ofreciendo soluciones personalizadas que protejan el patrimonio y bienestar de nuestros clientes."
-  },
-  {
-    icon: Star,
-    title: "Vision",
-    description: "Ser la corredora de seguros lider en Colombia, reconocida por nuestra excelencia en servicio y compromiso con la proteccion de familias y empresas."
-  },
-  {
-    icon: Heart,
-    title: "Valores",
-    description: "Integridad, compromiso, profesionalismo y servicio al cliente son los pilares que guian cada una de nuestras acciones."
-  }
-]
+import { Testimonials } from "@/components/testimonials"
+import { Check, Star, Users, ShieldCheck, Zap, Heart } from "lucide-react"
 
 const stats = [
-  { value: "30+", label: "Anos de experiencia" },
-  { value: "15K+", label: "Clientes satisfechos" },
-  { value: "98%", label: "Tasa de renovacion" },
-  { value: "24/7", label: "Soporte disponible" },
+  { value: "+20", label: "Años de trayectoria" },
+  { value: "6", label: "Aseguradoras aliadas" },
+  { value: "100%", label: "Digital y seguro" },
+  { value: "SFC", label: "Vigilado" },
 ]
 
 export default function NosotrosPage() {
@@ -33,99 +15,99 @@ export default function NosotrosPage() {
     <main className="min-h-screen">
       <Header />
 
-      {/* Hero Section */}
-      <section className="bg-white py-20 md:py-28">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
-            <div>
-              <span className="inline-block px-3 py-1 rounded-sm bg-primary/5 text-primary text-[11px] font-bold uppercase tracking-wider mb-6">
-                Sobre Nosotros
-              </span>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 leading-[1.1] tracking-tight">
-                Somos: Proyectar Seguros.{" "}
-                <span className="text-primary">Te hacemos las cosas faciles!</span>
-              </h1>
-              <p className="mt-8 text-lg text-slate-600 leading-relaxed font-medium max-w-2xl">
-                Somos una compania con mas de 30 anos de experiencia en el sector asegurador, 
-                tenemos amplia experiencia en el manejo de programas de seguros personales y empresariales. 
-                Nuestro equipo humano, altamente calificado y comprometido, nos permite ofrecer soluciones 
-                personalizadas y eficaces, adaptadas a las necesidades especificas de cada cliente.
-              </p>
-              <p className="mt-4 text-lg text-slate-600 leading-relaxed font-medium max-w-2xl">
-                A traves de un acompanamiento profesional, te asesoramos en la toma de decisiones 
-                estrategicas que garantizan la proteccion integral de tu patrimonio.
-              </p>
- 
-              <div className="mt-10 flex flex-col sm:flex-row gap-8">
-                <div className="flex items-center gap-3 text-slate-700">
-                  <Check className="w-5 h-5 text-primary" strokeWidth={3} />
-                  <span className="font-extrabold text-sm tracking-tight">+30 anos de experiencia</span>
-                </div>
-                <div className="flex items-center gap-3 text-slate-700">
-                  <Check className="w-5 h-5 text-primary" strokeWidth={3} />
-                  <span className="font-extrabold text-sm tracking-tight">Equipo calificado</span>
-                </div>
-              </div>
-            </div>
- 
-            <div className="relative">
-              <div className="aspect-square rounded-md bg-white border border-slate-100 flex items-center justify-center shadow-[0_20px_50px_-20px_rgba(0,0,0,0.05)]">
-                <div className="text-center p-8">
-                  <div className="text-8xl md:text-9xl font-black text-primary tracking-tighter">30+</div>
-                  <div className="text-xl md:text-2xl font-black text-slate-900 mt-6 uppercase tracking-tight">
-                    Anos de experiencia
-                  </div>
-                  <p className="text-slate-500 font-semibold mt-4 text-balance max-w-xs mx-auto leading-relaxed">
-                    Protegiendo familias y empresas en Colombia
-                  </p>
-                </div>
-              </div>
-            </div>
+      {/* Bloque 1: Fondo azul oscuro, estadísticas clave */}
+      <section className="bg-slate-900 py-24 md:py-32 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-1/3 h-full bg-primary/10 blur-[120px] rounded-full translate-x-1/2" />
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center max-w-4xl mx-auto mb-20">
+            <span className="inline-block px-3 py-1 rounded-sm bg-primary/20 text-primary text-[11px] font-bold uppercase tracking-[0.2em] mb-8 border border-primary/30">
+              Quiénes Somos
+            </span>
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-white leading-[1.1] tracking-tight mb-8">
+              Protegemos lo que más <span className="text-primary">valoras.</span>
+            </h1>
+            <p className="text-xl text-slate-400 font-medium leading-relaxed max-w-2xl mx-auto">
+              Somos una agencia de seguros autorizada con más de 20 años de experiencia, 
+              liderando la transformación digital del sector asegurador en Colombia.
+            </p>
           </div>
-        </div>
-      </section>
 
-      {/* Stats */}
-      <section className="bg-slate-900 py-16">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12">
             {stats.map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="text-3xl md:text-4xl font-black text-white mb-2">{stat.value}</div>
-                <div className="text-slate-400 text-[11px] font-bold uppercase tracking-widest">{stat.label}</div>
+              <div key={index} className="text-center group">
+                <div className="text-4xl md:text-6xl font-black text-white mb-3 group-hover:text-primary transition-colors duration-300">
+                  {stat.value}
+                </div>
+                <div className="text-slate-500 text-xs font-bold uppercase tracking-[0.2em]">
+                  {stat.label}
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Mission, Vision, Values */}
-      <section className="bg-white py-24">
+      {/* Bloque 2: Fondo claro, Misión y Visión + GIF */}
+      <section className="bg-white py-24 lg:py-32">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center font-bold">
+            
+            <div className="space-y-10">
+              <div className="bg-slate-50 rounded-2xl p-10 border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-6">
+                  <Zap className="w-6 h-6 text-primary" />
+                </div>
+                <h2 className="text-2xl font-black text-slate-900 mb-4 uppercase tracking-tight">Misión</h2>
+                <p className="text-slate-600 leading-relaxed font-medium">
+                  Brindar asesoría integral en seguros, ofreciendo soluciones tecnológicas personalizadas 
+                  que protejan el patrimonio y bienestar de las <span className="text-primary font-bold">personas</span>.
+                </p>
+              </div>
+
+              <div className="bg-slate-50 rounded-2xl p-10 border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-6">
+                  <Star className="w-6 h-6 text-primary" />
+                </div>
+                <h2 className="text-2xl font-black text-slate-900 mb-4 uppercase tracking-tight">Visión</h2>
+                <p className="text-slate-600 leading-relaxed font-medium">
+                  Ser la corredora de seguros líder en innovación digital en Colombia, 
+                  siendo la primera opción para quienes buscan rapidez, claridad y total confianza.
+                </p>
+              </div>
+            </div>
+
+            <div className="relative">
+              <div className="aspect-square rounded-3xl bg-slate-50 border border-slate-100 flex items-center justify-center overflow-hidden shadow-2xl">
+                <img 
+                  src="/Gif/nosotros.gif" 
+                  alt="Proyectar Seguros Experience" 
+                  className="w-full h-full object-contain scale-110 md:scale-[1.3] mix-blend-multiply"
+                />
+              </div>
+              {/* Decorative elements */}
+              <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-primary/10 rounded-full blur-3xl -z-10" />
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* Bloque 3: Fondo gris suave + Testimonios */}
+      <section className="bg-slate-50 py-24 lg:py-32">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-20">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-primary/5 text-primary text-[10px] font-bold uppercase tracking-[0.2em] mb-4">
-              Nuestro Proposito
-            </div>
-            <h2 className="text-4xl font-black text-slate-900 tracking-tight">
-              Nuestros Pilares
+            <span className="inline-block px-3 py-1 rounded-sm bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-[0.2em] mb-6 border border-primary/20">
+              Confianza
+            </span>
+            <h2 className="text-4xl lg:text-5xl font-black text-slate-900 tracking-tight">
+              Lo que dicen nuestros <span className="text-primary">clientes.</span>
             </h2>
           </div>
- 
-          <div className="grid gap-10 md:grid-cols-3">
-            {values.map((item, index) => (
-              <div key={index} className="bg-white rounded-md p-10 border border-slate-100 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.05)] transition-all hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] hover:-translate-y-1">
-                <div className="w-12 h-12 rounded-sm bg-primary/5 flex items-center justify-center mb-8">
-                  <item.icon strokeWidth={1.5} className="w-6 h-6 text-primary" />
-                </div>
-                <h3 className="text-lg font-black text-slate-900 mb-4 uppercase tracking-tight">{item.title}</h3>
-                <p className="text-slate-500 text-[15px] font-medium leading-relaxed">{item.description}</p>
-              </div>
-            ))}
-          </div>
+
+          <Testimonials />
         </div>
       </section>
 
-      <WhyUs />
       <Footer />
     </main>
   )

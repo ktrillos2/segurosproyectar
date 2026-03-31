@@ -28,7 +28,7 @@ export function Hero() {
               </h1>
               
               <p className="text-lg text-slate-500 font-medium leading-relaxed mb-8 max-w-xl">
-                Cotiza, compara y activa tu seguro de carro en minutos. 
+                Cotiza, compara y activa tu seguro de vehículo en minutos. 
                 Sin papelería. Sin filas. Sin llamadas
               </p>
 
@@ -70,18 +70,18 @@ export function Hero() {
       </section>
 
       {/* Insurers Bar */}
-      <section className="bg-slate-50 border-y border-slate-200 py-10">
+      <section className="bg-slate-200 border-y border-slate-300 py-12 lg:py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <p className="text-center text-sm font-bold text-slate-500 uppercase tracking-widest mb-8">
+          <p className="text-center text-sm font-bold text-slate-500 uppercase tracking-widest mb-10">
             Respaldados por las mejores aseguradoras de Colombia
           </p>
-          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12 lg:gap-16">
+          <div className="flex flex-wrap justify-center items-center gap-10 md:gap-14 lg:gap-20">
             {insurers.map((insurer, idx) => (
               <img 
                 key={idx}
                 src={insurer.src} 
                 alt={`Logo ${insurer.name}`} 
-                className="h-10 md:h-12 w-auto object-contain"
+                className="h-16 md:h-20 lg:h-24 w-auto object-contain grayscale hover:grayscale-0 transition-all duration-300 transform hover:scale-110"
               />
             ))}
           </div>

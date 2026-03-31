@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Icon } from "@iconify/react"
-
 const fila1 = [
   {
     title: "RESPONSABILIDAD CIVIL",
@@ -10,12 +9,12 @@ const fila1 = [
   },
   {
     title: "DAÑOS Y COLISIÓN",
-    desc: "Protege tu carro contra golpes, choques y volcamientos, sin importar quién tenga la culpa.",
+    desc: "Protege tu vehículo contra golpes, choques y volcamientos, sin importar quién tenga la culpa.",
     icon: "/Imagenes/danos.png"
   },
   {
     title: "HURTO",
-    desc: "Si te roban el carro o partes de él, tu seguro responde. Tranquilidad total.",
+    desc: "Si te roban el vehículo o partes de él, tu seguro responde. Tranquilidad total.",
     icon: "/Imagenes/hurto 1.png"
   }
 ]
@@ -28,7 +27,7 @@ const fila2 = [
   },
   {
     title: "VEHÍCULO DE REEMPLAZO",
-    desc: "Mientras tu carro está en el taller, sigues moviéndote. Sin traumatismos.",
+    desc: "Mientras tu vehículo está en el taller, sigues moviéndote. Sin traumatismos.",
     icon: "/Imagenes/vehiculo-de-reemplazo.png"
   },
   {
@@ -49,7 +48,7 @@ const fila3 = [
 
 export function Coberturas() {
   return (
-    <section id="coberturas" className="bg-white py-20 lg:py-28">
+    <section id="coberturas" className="bg-slate-100 py-20 lg:py-28 border-y border-slate-200">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Encabezado */}
         <div className="text-center max-w-3xl mx-auto mb-16">
@@ -67,59 +66,51 @@ export function Coberturas() {
         {/* Fila 1 - Coberturas principales */}
         <div className="grid md:grid-cols-3 gap-8 mb-8">
           {fila1.map((item, idx) => (
-            <div key={idx} className="bg-slate-50 border border-slate-100 rounded-xl p-8 hover:shadow-lg transition-shadow duration-300 text-center flex flex-col items-center">
-              <img src={item.icon} alt={item.title} className="w-28 h-28 object-contain mb-6" />
-              <h3 className="font-extrabold text-slate-900 tracking-tight text-xl mb-3">{item.title}</h3>
+            <div key={idx} className="bg-white border border-slate-200 rounded-xl p-8 hover:shadow-xl transition-all duration-300 text-center flex flex-col items-center group">
+              <img src={item.icon} alt={item.title} className="w-32 h-32 object-contain mb-6 transition-transform group-hover:scale-110" />
+              <h3 className="font-extrabold text-slate-900 tracking-tight text-xl mb-3 uppercase">{item.title}</h3>
               <p className="text-slate-500 font-medium text-sm leading-relaxed">{item.desc}</p>
             </div>
           ))}
         </div>
 
         {/* Fila 2 - Coberturas complementarias */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <div className="grid md:grid-cols-3 gap-8 mb-8">
           {fila2.map((item, idx) => (
-            <div key={idx} className="bg-white border border-slate-200 rounded-lg p-6 hover:shadow-md transition-shadow duration-300 text-center flex flex-col items-center">
-              <img src={item.icon} alt={item.title} className="w-24 h-24 object-contain mb-4" />
-              <h3 className="font-bold text-slate-900 tracking-tight text-lg mb-2">{item.title}</h3>
+            <div key={idx} className="bg-white border border-slate-200 rounded-xl p-8 hover:shadow-xl transition-all duration-300 text-center flex flex-col items-center group">
+              <img src={item.icon} alt={item.title} className="w-32 h-32 object-contain mb-6 transition-transform group-hover:scale-110" />
+              <h3 className="font-extrabold text-slate-900 tracking-tight text-xl mb-3 uppercase">{item.title}</h3>
               <p className="text-slate-500 font-medium text-sm leading-relaxed">{item.desc}</p>
             </div>
           ))}
         </div>
 
         {/* Fila 3 - Coberturas adicionales */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6 mb-16">
+        <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 sm:gap-6 mb-16">
           {fila3.map((item, idx) => (
-            <div key={idx} className="bg-slate-50 border border-slate-100 rounded-xl p-5 sm:p-6 hover:shadow-md hover:border-primary/20 transition-all duration-300 transform hover:-translate-y-1 text-center flex flex-col items-center">
-              <img src={item.icon} alt={item.title} className="w-20 h-20 object-contain mb-4" />
-              <h3 className="font-extrabold text-slate-900 tracking-tight text-sm mb-1">{item.title}</h3>
-              <p className="text-slate-500 font-medium text-xs leading-tight">{item.desc}</p>
+            <div key={idx} className="bg-white border border-slate-200 rounded-xl p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 text-center flex flex-col items-center group">
+              <img src={item.icon} alt={item.title} className="w-28 h-28 object-contain mb-4 transition-transform group-hover:scale-110" />
+              <h3 className="font-extrabold text-slate-900 tracking-tight text-xs mb-1 uppercase">{item.title}</h3>
+              <p className="text-slate-500 font-medium text-[10px] leading-tight">{item.desc}</p>
             </div>
           ))}
         </div>
 
-        {/* CTA y Notas */}
-        <div className="text-center max-w-2xl mx-auto flex flex-col items-center">
+        {/* CTA */}
+        <div className="mt-16 mb-24 text-center">
           <Button 
             asChild
             size="lg" 
-            className="h-14 px-8 text-base font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-md shadow-md flex items-center gap-3 transition-colors mb-8"
+            className="h-14 px-10 text-lg font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-md shadow-lg flex items-center gap-3 transition-colors mb-8 inline-flex"
           >
             <Link href="/cotizar">
-              Ver mis opciones de seguro
+              Ver mis opciones de vehículo
               <Icon icon="ph:arrow-right-light" className="w-5 h-5" />
             </Link>
           </Button>
-
-          <p className="text-sm font-medium text-slate-500 mb-2">
-            Las coberturas disponibles dependen de cada aseguradora y del plan que elijas.<br className="hidden sm:block"/>
-            Al cotizar verás exactamente qué incluye cada opción.
+          <p className="text-sm font-medium text-slate-400">
+            Seguros Proyectar S.A.S. - Agencia de Seguros Vinculada
           </p>
-          <div className="inline-flex items-center gap-2 mt-4 px-3 py-1 bg-slate-100 rounded-md">
-            <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-pulse" />
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-              Próximamente más coberturas
-            </span>
-          </div>
         </div>
       </div>
     </section>

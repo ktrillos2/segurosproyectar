@@ -39,6 +39,9 @@ export function Differentiators() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         
         <div className="text-center max-w-3xl mx-auto mb-16">
+          <span className="inline-block px-3 py-1 rounded-sm bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-[0.2em] mb-6 border border-primary/20">
+            Diferenciadores
+          </span>
           <h2 className="text-3xl sm:text-4xl lg:text-[2.75rem] font-extrabold text-slate-900 leading-[1.15] text-balance">
             ¿Por qué asegurarte con <span className="text-primary">Proyectar?</span>
           </h2>

@@ -53,10 +53,10 @@ export function HowItWorks() {
           <div className="hidden lg:block absolute top-[4.5rem] left-12 right-12 h-0.5 bg-slate-200 -z-0" />
 
           {steps.map((step, index) => (
-            <div key={index} className="group relative z-10 flex flex-col items-center bg-white border border-slate-100 rounded-2xl p-6 shadow-sm hover:shadow-[0_15px_30px_-15px_rgba(0,0,0,0.05)] transition-all duration-300">
+            <div key={index} className="group relative z-10 flex flex-col items-center bg-white border-2 border-slate-200 rounded-2xl p-8 shadow-md hover:shadow-xl hover:-translate-y-3 transition-all duration-500">
               
               {/* Step Number Badge */}
-              <div className="absolute -top-4 bg-slate-900 text-white w-8 h-8 rounded-full flex items-center justify-center font-black text-sm border-4 border-white shadow-sm">
+              <div className="absolute -top-4 bg-slate-900 text-white w-8 h-8 rounded-full flex items-center justify-center font-black text-sm border-4 border-white shadow-md group-hover:bg-primary transition-colors">
                 {index + 1}
               </div>
 
@@ -74,11 +74,11 @@ export function HowItWorks() {
               </p>
 
               {/* Visual Container */}
-              <div className={`mt-auto w-full aspect-square rounded-xl bg-slate-50 flex items-center justify-center border border-slate-100 overflow-hidden ${step.isIconOnly ? 'p-10' : 'p-2'}`}>
+              <div className={`mt-auto w-full aspect-square rounded-xl bg-slate-50 flex items-center justify-center border border-slate-100 overflow-hidden ${step.isIconOnly ? 'p-4' : 'p-0'}`}>
                 <img 
                   src={step.visual} 
                   alt={`Visual ${step.title}`} 
-                  className={`w-full h-full object-contain ${step.isIconOnly ? 'opacity-80' : 'mix-blend-multiply'}`} 
+                  className={`w-full h-full object-contain transition-transform duration-500 transform ${step.isIconOnly ? 'opacity-80' : 'mix-blend-multiply scale-110'} group-hover:scale-[1.2]`} 
                 />
               </div>
 

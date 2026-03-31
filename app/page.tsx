@@ -5,6 +5,7 @@ import { Coberturas } from "@/components/coberturas"
 import { HowItWorks } from "@/components/how-it-works"
 import { Differentiators } from "@/components/differentiators"
 import { ContactSection } from "@/components/contact-section"
+import { Faq } from "@/components/faq"
 import { Footer } from "@/components/footer"
 
 export default function HomePage() {
@@ -17,6 +18,7 @@ export default function HomePage() {
       <HowItWorks />
       <Differentiators />
       <ContactSection />
+      <Faq />
       <Footer />
     </main>
   )

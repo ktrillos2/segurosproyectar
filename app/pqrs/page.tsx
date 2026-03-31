@@ -82,40 +82,48 @@ export default function PQRSSPage() {
             <section>
               <h2 className="text-xl font-bold text-slate-900 mt-10 mb-4">3. Formulario de radicación</h2>
               <p className="mb-6">
-                Diligencie el siguiente formulario con información completa y veraz. Al enviar su solicitud recibirá un correo electrónico de confirmación con su número de radicado, el cual le permitirá hacer seguimiento a su caso en cualquier momento.
+                Diligencie el siguiente formulario con información completa y veraz. También puede radicar su solicitud enviando un correo electrónico a: <a href="mailto:contactenos@seguros-proyectar.com" className="text-primary font-bold hover:underline">contactenos@seguros-proyectar.com</a>. Al enviar su solicitud recibirá un correo electrónico de confirmación con su número de radicado.
               </p>
               
-              <form className="bg-slate-50 p-6 rounded-xl border border-slate-200">
+              <form 
+                action={`https://formsubmit.co/${process.env.NEXT_PUBLIC_PQRS_EMAIL || 'contactenos@seguros-proyectar.com'}`} 
+                method="POST" 
+                className="bg-slate-50 p-6 rounded-xl border border-slate-200"
+              >
+                <input type="hidden" name="_subject" value="Nueva Radicación PQRS Web" />
+                <input type="hidden" name="_captcha" value="false" />
+                <input type="hidden" name="_template" value="table" />
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                   <div>
                     <label htmlFor="nombre" className="block text-sm font-semibold text-slate-700 mb-2">Nombre completo</label>
-                    <input type="text" id="nombre" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors" placeholder="Tu nombre" />
+                    <input type="text" id="nombre" name="nombre" required className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors" placeholder="Tu nombre" />
                   </div>
                   <div>
                     <label htmlFor="cedula" className="block text-sm font-semibold text-slate-700 mb-2">Número de cédula</label>
-                    <input type="text" id="cedula" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors" placeholder="Tu número de documento" />
+                    <input type="text" id="cedula" name="cedula" required className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors" placeholder="Tu número de documento" />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                   <div>
                     <label htmlFor="email" className="block text-sm font-semibold text-slate-700 mb-2">Correo electrónico</label>
-                    <input type="email" id="email" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors" placeholder="tu@correo.com" />
+                    <input type="email" id="email" name="email" required className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors" placeholder="tu@correo.com" />
                   </div>
                   <div>
                     <label htmlFor="telefono" className="block text-sm font-semibold text-slate-700 mb-2">Teléfono de contacto</label>
-                    <input type="tel" id="telefono" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors" placeholder="Tu número de teléfono" />
+                    <input type="tel" id="telefono" name="telefono" required className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors" placeholder="Tu número de teléfono" />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                   <div>
                     <label htmlFor="poliza" className="block text-sm font-semibold text-slate-700 mb-2">Número de póliza (si aplica)</label>
-                    <input type="text" id="poliza" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors" placeholder="Número de póliza" />
+                    <input type="text" id="poliza" name="poliza" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors" placeholder="Número de póliza" />
                   </div>
                   <div>
                     <label htmlFor="tipo" className="block text-sm font-semibold text-slate-700 mb-2">Tipo de solicitud</label>
-                    <select id="tipo" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors bg-white">
+                    <select id="tipo" name="tipo_incidencia" required className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors bg-white">
                       <option value="">Selecciona una opción</option>
                       <option value="peticion">Petición</option>
                       <option value="queja">Queja</option>
@@ -127,10 +135,10 @@ export default function PQRSSPage() {
 
                 <div className="mb-6">
                   <label htmlFor="descripcion" className="block text-sm font-semibold text-slate-700 mb-2">Descripción de la solicitud</label>
-                  <textarea id="descripcion" rows={4} className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors resize-y" placeholder="Describe tu solicitud en detalle..."></textarea>
+                  <textarea id="descripcion" name="descripcion" required rows={4} className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors resize-y" placeholder="Describe tu solicitud en detalle..."></textarea>
                 </div>
 
-                <button type="button" className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 px-6 rounded-lg transition-colors shadow-sm">
+                <button type="submit" className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 px-6 rounded-lg transition-colors shadow-sm">
                   ENVIAR SOLICITUD
                 </button>
                 <div className="mt-4 text-sm text-slate-500 text-center">

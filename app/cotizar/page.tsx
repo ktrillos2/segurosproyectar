@@ -19,7 +19,7 @@ type Message = {
 const initialMessages: Message[] = [
   {
     role: "bot",
-    content: "¡Hola! Soy Sofía, tu asesora de Proyectar Seguros. ¿Listo para encontrar el mejor seguro para tu carro?",
+    content: "¡Hola! Soy Sofía, tu asesora de Proyectar Seguros. ¿Listo para encontrar el mejor seguro para tu vehículo?",
     options: ["Vehículo usado", "Vehículo 0 kilómetros"]
   }
 ]
@@ -34,7 +34,7 @@ const botResponses: Record<string, Message> = {
   },
   "Vehículo 0 kilómetros": {
     role: "bot", 
-    content: "¡Qué emoción que estrenas carro! ¿El seguro será emitido a nombre de una persona natural o jurídica?",
+    content: "¡Qué emoción que estrenas vehículo! ¿El seguro será emitido a nombre de una persona natural o jurídica?",
     options: ["Persona natural", "Persona jurídica"]
   },
   "default": {

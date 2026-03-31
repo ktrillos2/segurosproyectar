@@ -8,15 +8,7 @@ import { useState } from "react"
 export function ContactSection() {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-    // Simulamos un envío de 3 segundos
-    setTimeout(() => {
-      setIsSubmitting(false)
-      // Aquí en el futuro puedes agregar una notificación de éxito o vaciar el formulario
-    }, 3000)
-  }
+  // Utilizaremos FormSubmit para el envío de correos sin backend
 
   return (
     <section id="contacto" className="bg-slate-50 py-20 lg:py-28 border-y border-slate-200 overflow-hidden">
@@ -37,12 +29,17 @@ export function ContactSection() {
           {/* Columna Izquierda — Formulario y Visual */}
           <div className="flex flex-col">
             <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] p-8 md:p-10">
-              <form className="space-y-6" onSubmit={handleSubmit}>
+              <form 
+                action={`https://formsubmit.co/${process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'autos@seguros-proyectar.com'}`} 
+                method="POST" 
+                className="space-y-6"
+              >
                 <div className="grid gap-6 sm:grid-cols-2">
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700">Nombre completo</label>
                     <input 
                       type="text" 
+                      name="nombre"
                       placeholder="Juan Pérez"
                       required
                       className="w-full h-12 px-4 rounded-md border border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none text-sm transition-all bg-slate-50 focus:bg-white"
@@ -52,6 +49,7 @@ export function ContactSection() {
                     <label className="text-sm font-bold text-slate-700">Correo electrónico</label>
                     <input 
                       type="email" 
+                      name="email"
                       placeholder="juan@correo.com"
                       required
                       className="w-full h-12 px-4 rounded-md border border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none text-sm transition-all bg-slate-50 focus:bg-white"
@@ -63,6 +61,7 @@ export function ContactSection() {
                   <label className="text-sm font-bold text-slate-700">Asunto</label>
                   <input 
                     type="text" 
+                    name="_subject"
                     placeholder="Quiero saber más sobre coberturas"
                     required
                     className="w-full h-12 px-4 rounded-md border border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none text-sm transition-all bg-slate-50 focus:bg-white"
@@ -72,11 +71,15 @@ export function ContactSection() {
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-slate-700">Mensaje</label>
                   <textarea 
+                    name="mensaje"
                     rows={4}
                     required
                     placeholder="Escribe tu duda aquí..."
                     className="w-full p-4 rounded-md border border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none text-sm transition-all bg-slate-50 focus:bg-white resize-none"
                   />
+                  {/* Honeypot & next page configurations for FormSubmit */}
+                  <input type="hidden" name="_captcha" value="false" />
+                  <input type="hidden" name="_template" value="table" />
                 </div>
 
                 {isSubmitting ? (

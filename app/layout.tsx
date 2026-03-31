@@ -10,13 +10,13 @@ const lato = Lato({
 });
 
 export const metadata: Metadata = {
-  title: 'Proyectar Seguros | Seguro de carro 100% digital',
+  title: 'Proyectar Seguros | Seguro de vehículo 100% digital',
   description: 'Cotiza, compara y emite tu seguro de vehículo 100% en línea. Somos una compañía con más de 30 años de experiencia en el sector asegurador en Colombia.',
   keywords: 'seguros, seguro de vehículo, seguro todo riesgo, proyectar seguros, cotizar seguro, seguro de auto, Colombia, seguro digital',
   authors: [{ name: 'Proyectar Seguros S.A.S.' }],
   creator: 'Proyectar Seguros S.A.S.',
   openGraph: {
-    title: 'Proyectar Seguros | Seguro de carro 100% en línea',
+    title: 'Proyectar Seguros | Seguro de vehículo 100% en línea',
     description: 'Cotiza, compara y emite tu seguro de vehículo rápida y fácilmente. Proyectar Seguros, tu aliado en protección.',
     siteName: 'Proyectar Seguros',
     images: [
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Proyectar Seguros | Seguro de carro 100% digital',
+    title: 'Proyectar Seguros | Seguro de vehículo 100% digital',
     description: 'Cotiza y emite tu seguro de vehículo en línea al instante.',
     images: ['/logo.png'],
   },
