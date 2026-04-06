@@ -51,17 +51,20 @@ export function Differentiators() {
           {differentiators.map((item, idx) => (
             <div 
               key={idx} 
-              className="group flex flex-col p-8 rounded-2xl bg-slate-50 hover:bg-white border border-transparent hover:border-slate-200 transition-all duration-300 hover:shadow-[0_15px_30px_-15px_rgba(0,0,0,0.05)]"
+              className="relative group bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden"
             >
-              <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center mb-6 shadow-sm group-hover:scale-110 transition-transform duration-300 group-hover:bg-primary group-hover:border-primary/50 group-hover:shadow-[0_0_20px_rgba(var(--primary),0.3)]">
-                <Icon icon={item.icon} className="w-6 h-6 text-slate-700 group-hover:text-white transition-colors" />
+              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-[100%] -mr-4 -mt-4 transition-transform duration-500 group-hover:scale-110" />
+              <div className="relative z-10 flex flex-col items-start text-left">
+                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary transition-colors duration-300">
+                  <Icon icon={item.icon} className="w-7 h-7 text-primary group-hover:text-white transition-colors duration-300" />
+                </div>
+                <h3 className="font-extrabold text-slate-900 text-xl tracking-tight mb-3">
+                  {item.title}
+                </h3>
+                <p className="text-slate-600 font-medium text-[15px] leading-relaxed">
+                  {item.description}
+                </p>
               </div>
-              <h3 className="font-extrabold text-slate-900 text-xl tracking-tight mb-2">
-                {item.title}
-              </h3>
-              <p className="text-slate-500 font-medium text-[15px] leading-relaxed">
-                {item.description}
-              </p>
             </div>
           ))}
         </div>
