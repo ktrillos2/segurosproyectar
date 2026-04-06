@@ -38,27 +38,28 @@ const fila2 = [
 ]
 
 const fila3 = [
-  { title: "Gastos de Transporte", desc: "Apoyo para movilidad", icon: "/Imagenes/Gastos de transporte.png" },
-  { title: "Vidrios", desc: "Reposición sin costo", icon: "/Imagenes/vidrios 1.png" },
-  { title: "Llantas", desc: "Cobertura por estallido", icon: "/Imagenes/llantas 1.png" },
-  { title: "Asistencia Jurídica", desc: "Abogados 24/7", icon: "/Imagenes/asistencia-juridica-1.png" },
-  { title: "Amparo Patrimonial", desc: "Protección a tu dinero", icon: "/Imagenes/Amparo patrimonial 1.png" },
-  { title: "Accidentes Personales", desc: "Gastos médicos", icon: "/Imagenes/Accidentes personales 1.png" }
+  { title: "Gastos de Transporte", desc: "Apoyo económico para cubrir tus gastos de movilidad mientras tu vehículo está en reparación.", icon: "/Imagenes/Gastos de transporte.png" },
+  { title: "Vidrios", desc: "Reposición de parabrisas y ventanas dañadas sin costo adicional según las condiciones de tu póliza.", icon: "/Imagenes/vidrios 1.png" },
+  { title: "Llantas", desc: "Cobertura ante daños por estallido o pinchadura en vía.", icon: "/Imagenes/llantas 1.png" },
+  { title: "Asistencia Jurídica", desc: "Asesoría y acompañamiento legal ante conflictos derivados de un accidente de tránsito.", icon: "/Imagenes/asistencia-juridica-1.png" },
+  { title: "Amparo Patrimonial", desc: "Protección de tu patrimonio frente a reclamaciones económicas por daños causados a terceros.", icon: "/Imagenes/Amparo patrimonial 1.png" },
+  { title: "Accidentes Personales", desc: "Cobertura de gastos médicos para el conductor y los ocupantes del vehículo en caso de accidente.", icon: "/Imagenes/Accidentes personales 1.png" }
 ]
 
 export function Coberturas() {
   return (
-    <section id="coberturas" className="bg-slate-100 py-20 lg:py-28 border-y border-slate-200">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <section id="coberturas" className="bg-primary relative py-20 lg:py-28 border-y border-primary">
+      <div className="absolute top-0 right-0 w-1/2 h-full bg-white/5 blur-[100px] rounded-full pointer-events-none" />
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Encabezado */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <span className="inline-block px-3 py-1 rounded-sm bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-[0.2em] mb-6 border border-primary/20">
+          <span className="inline-block px-3 py-1 rounded-sm bg-white/10 text-white text-[10px] font-bold uppercase tracking-[0.2em] mb-6 border border-white/20">
             Coberturas
           </span>
-          <h2 className="text-3xl sm:text-4xl lg:text-[2.75rem] font-extrabold text-slate-900 leading-[1.15] text-balance mb-6">
-            Todo lo que necesitas para manejar <span className="text-primary">tranquilo.</span>
+          <h2 className="text-3xl sm:text-4xl lg:text-[2.75rem] font-extrabold text-white leading-[1.15] text-balance mb-6">
+            Todo lo que necesitas para manejar <span className="text-blue-200">tranquilo.</span>
           </h2>
-          <p className="text-lg text-slate-500 font-medium leading-relaxed">
+          <p className="text-lg text-blue-100 font-medium leading-relaxed">
             Elige las coberturas que se adaptan a ti. Nosotros comparamos las mejores opciones entre 6 aseguradoras.
           </p>
         </div>
@@ -66,7 +67,7 @@ export function Coberturas() {
         {/* Fila 1 - Coberturas principales */}
         <div className="grid md:grid-cols-3 gap-8 mb-8">
           {fila1.map((item, idx) => (
-            <div key={idx} className="bg-white border border-slate-200 rounded-xl p-8 hover:shadow-xl transition-all duration-300 text-center flex flex-col items-center group">
+            <div key={idx} className="bg-white border-none rounded-xl p-8 hover:shadow-2xl transition-all duration-300 text-center flex flex-col items-center group shadow-lg">
               <img src={item.icon} alt={item.title} className="w-32 h-32 object-contain mb-6 transition-transform group-hover:scale-110" />
               <h3 className="font-extrabold text-slate-900 tracking-tight text-xl mb-3 uppercase">{item.title}</h3>
               <p className="text-slate-500 font-medium text-sm leading-relaxed">{item.desc}</p>
@@ -77,7 +78,7 @@ export function Coberturas() {
         {/* Fila 2 - Coberturas complementarias */}
         <div className="grid md:grid-cols-3 gap-8 mb-8">
           {fila2.map((item, idx) => (
-            <div key={idx} className="bg-white border border-slate-200 rounded-xl p-8 hover:shadow-xl transition-all duration-300 text-center flex flex-col items-center group">
+            <div key={idx} className="bg-white border-none rounded-xl p-8 hover:shadow-2xl transition-all duration-300 text-center flex flex-col items-center group shadow-lg">
               <img src={item.icon} alt={item.title} className="w-32 h-32 object-contain mb-6 transition-transform group-hover:scale-110" />
               <h3 className="font-extrabold text-slate-900 tracking-tight text-xl mb-3 uppercase">{item.title}</h3>
               <p className="text-slate-500 font-medium text-sm leading-relaxed">{item.desc}</p>
@@ -86,29 +87,29 @@ export function Coberturas() {
         </div>
 
         {/* Fila 3 - Coberturas adicionales */}
-        <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 sm:gap-6 mb-16">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
           {fila3.map((item, idx) => (
-            <div key={idx} className="bg-white border border-slate-200 rounded-xl p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 text-center flex flex-col items-center group">
-              <img src={item.icon} alt={item.title} className="w-28 h-28 object-contain mb-4 transition-transform group-hover:scale-110" />
-              <h3 className="font-extrabold text-slate-900 tracking-tight text-xs mb-1 uppercase">{item.title}</h3>
-              <p className="text-slate-500 font-medium text-[10px] leading-tight">{item.desc}</p>
+            <div key={idx} className="bg-white border-none rounded-xl p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 text-center flex flex-col items-center group shadow-lg">
+              <img src={item.icon} alt={item.title} className="w-24 h-24 object-contain mb-5 transition-transform group-hover:scale-110" />
+              <h3 className="font-extrabold text-slate-900 tracking-tight text-lg mb-2 uppercase">{item.title}</h3>
+              <p className="text-slate-500 font-medium text-sm leading-relaxed">{item.desc}</p>
             </div>
           ))}
         </div>
 
         {/* CTA */}
-        <div className="mt-16 mb-24 text-center">
+        <div className="mt-16 sm:mb-8 text-center">
           <Button 
             asChild
             size="lg" 
-            className="h-14 px-10 text-lg font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-md shadow-lg flex items-center gap-3 transition-colors mb-8 inline-flex"
+            className="h-16 px-12 text-lg font-bold text-primary bg-white hover:bg-slate-50 rounded-md shadow-xl flex items-center gap-3 transition-colors mb-6 mx-auto w-full sm:w-auto"
           >
             <Link href="/cotizar">
-              Ver mis opciones de vehículo
-              <Icon icon="ph:arrow-right-light" className="w-5 h-5" />
+              Conseguir mi seguro
+              <Icon icon="ph:arrow-right-bold" className="w-6 h-6" />
             </Link>
           </Button>
-          <p className="text-sm font-medium text-slate-400">
+          <p className="text-sm font-medium text-blue-200">
             Seguros Proyectar S.A.S. - Agencia de Seguros Vinculada
           </p>
         </div>

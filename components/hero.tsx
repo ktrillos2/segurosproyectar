@@ -8,7 +8,7 @@ const insurers = [
   { name: "AXA Colpatria", src: "/logos/axa-colpatria.png" },
   { name: "Zurich", src: "/logos/zurich.png" },
   { name: "Quálitas", src: "/logos/qualitas.svg" },
-  { name: "Equidad Seguros", src: "/logos/equidad.jpg" },
+  { name: "Equidad Seguros", src: "/logos/equidad.png" },
   { name: "Seguros Mundial", src: "/logos/seguros-mudial.png" },
   { name: "Seguros del Estado", src: "/logos/seguros-del-estado.png" },
 ]
@@ -16,7 +16,7 @@ const insurers = [
 export function Hero() {
   return (
     <>
-      <section id="hero" className="relative bg-white pt-12 lg:pt-20 pb-12 lg:pb-16 overflow-hidden">
+      <section id="hero" className="relative bg-gradient-to-b from-slate-50 to-white pt-12 lg:pt-20 pb-12 lg:pb-16 overflow-hidden">
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             
@@ -70,7 +70,7 @@ export function Hero() {
       </section>
 
       {/* Insurers Bar */}
-      <section className="bg-slate-200 border-y border-slate-300 py-12 lg:py-16">
+      <section className="bg-white border-y border-slate-100 py-12 lg:py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <p className="text-center text-sm font-bold text-slate-500 uppercase tracking-widest mb-10">
             Respaldados por las mejores aseguradoras de Colombia
@@ -81,7 +81,7 @@ export function Hero() {
                 key={idx}
                 src={insurer.src} 
                 alt={`Logo ${insurer.name}`} 
-                className="h-16 md:h-20 lg:h-24 w-auto object-contain grayscale hover:grayscale-0 transition-all duration-300 transform hover:scale-110"
+                className="h-16 md:h-20 lg:h-24 w-auto object-contain transition-all duration-300 transform hover:scale-110"
               />
             ))}
           </div>
