@@ -70,18 +70,18 @@ export function Hero() {
       </section>
 
       {/* Insurers Bar */}
-      <section className="bg-white border-y border-slate-100 py-12 lg:py-16">
+      <section className="bg-slate-50 border-y border-slate-200 py-12 lg:py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <p className="text-center text-sm font-bold text-slate-500 uppercase tracking-widest mb-10">
             Respaldados por las mejores aseguradoras de Colombia
           </p>
-          <div className="flex flex-wrap justify-center items-center gap-10 md:gap-14 lg:gap-20">
+          <div className="flex overflow-x-auto pb-6 lg:pb-0 justify-start lg:justify-center items-center gap-12 md:gap-16 lg:gap-20 snap-x snap-mandatory px-4 lg:px-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {insurers.map((insurer, idx) => (
               <img 
                 key={idx}
                 src={insurer.src} 
                 alt={`Logo ${insurer.name}`} 
-                className="h-16 md:h-20 lg:h-24 w-auto object-contain transition-all duration-300 transform hover:scale-110"
+                className="h-20 md:h-24 lg:h-28 w-auto object-contain flex-shrink-0 snap-center transition-all duration-300 transform hover:scale-110"
               />
             ))}
           </div>

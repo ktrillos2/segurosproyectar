@@ -7,10 +7,9 @@ import { Icon } from "@iconify/react"
 
 const navItems = [
   { label: "Inicio", href: "/" },
-  { label: "Nosotros", href: "/#nosotros" },
-  { label: "Coberturas", href: "/#coberturas" },
-  { label: "Cómo funciona", href: "/#como-funciona" },
-  { label: "Contacto", href: "/#contacto" },
+  { label: "Nosotros", href: "/nosotros" },
+  { label: "Coberturas", href: "/coberturas" },
+  { label: "Contacto", href: "/contacto" },
 ]
 
 export function Header() {

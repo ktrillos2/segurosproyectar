@@ -17,13 +17,13 @@ export function About() {
         <div className="absolute top-0 right-0 w-1/3 h-full bg-primary/10 blur-[120px] rounded-full translate-x-1/2" />
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center max-w-4xl mx-auto mb-20">
-            <span className="inline-block px-3 py-1 rounded-sm bg-primary/20 text-primary text-[11px] font-bold uppercase tracking-[0.2em] mb-8 border border-primary/30">
+            <span className="inline-block px-3 py-1 rounded-sm bg-white/10 text-white text-[11px] font-bold uppercase tracking-[0.2em] mb-8 border border-white/20">
               Quiénes Somos
             </span>
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-[1.1] tracking-tight mb-8">
-              Protegemos lo que más <span className="text-primary">valoras.</span>
+              Protegemos lo que más <span className="text-white">valoras.</span>
             </h2>
-            <p className="text-xl text-slate-400 font-medium leading-relaxed max-w-2xl mx-auto">
+            <p className="text-xl text-slate-200 font-medium leading-relaxed max-w-2xl mx-auto">
               Somos una agencia de seguros autorizada con más de 20 años de experiencia, 
               liderando la transformación digital del sector asegurador en Colombia.
             </p>
@@ -35,7 +35,7 @@ export function About() {
                 <div className="text-4xl md:text-6xl font-black text-white mb-3 group-hover:text-primary transition-colors duration-300">
                   {stat.value}
                 </div>
-                <div className="text-slate-500 text-xs font-bold uppercase tracking-[0.2em]">
+                <div className="text-slate-300 text-xs font-bold uppercase tracking-[0.2em]">
                   {stat.label}
                 </div>
               </div>

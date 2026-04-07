@@ -78,7 +78,7 @@ export function HowItWorks() {
                 <img 
                   src={step.visual} 
                   alt={`Visual ${step.title}`} 
-                  className={`w-full h-full object-contain transition-transform duration-500 transform ${step.isIconOnly ? 'opacity-80' : 'mix-blend-multiply scale-110'} group-hover:scale-[1.2]`} 
+                  className={`w-full h-full object-contain transition-transform duration-500 transform ${step.isIconOnly ? 'opacity-80 scale-110' : 'mix-blend-multiply scale-125'} group-hover:scale-[1.35]`} 
                 />
               </div>
 
