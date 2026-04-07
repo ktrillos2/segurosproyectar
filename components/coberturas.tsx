@@ -67,7 +67,7 @@ export function Coberturas() {
         {/* Fila 1 - Coberturas principales */}
         <div className="grid md:grid-cols-3 gap-8 mb-8">
           {fila1.map((item, idx) => (
-            <div key={idx} className="bg-white border-2 border-slate-100 rounded-2xl p-8 hover:border-primary/20 hover:shadow-2xl transition-all duration-300 text-center flex flex-col items-center group shadow-md">
+            <div key={idx} className="bg-white border-2 border-slate-100 rounded-2xl p-8 hover:border-primary/20 hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 text-center flex flex-col items-center group shadow-md">
               <img src={item.icon} alt={item.title} className="w-40 h-40 object-contain mb-6 transition-transform duration-500 group-hover:scale-110" />
               <h3 className="font-extrabold text-slate-900 tracking-tight text-xl mb-3 uppercase">{item.title}</h3>
               <p className="text-slate-500 font-medium text-sm leading-relaxed">{item.desc}</p>
@@ -78,7 +78,7 @@ export function Coberturas() {
         {/* Fila 2 - Coberturas complementarias */}
         <div className="grid md:grid-cols-3 gap-8 mb-8">
           {fila2.map((item, idx) => (
-            <div key={idx} className="bg-white border-2 border-slate-100 rounded-2xl p-8 hover:border-primary/20 hover:shadow-2xl transition-all duration-300 text-center flex flex-col items-center group shadow-md">
+            <div key={idx} className="bg-white border-2 border-slate-100 rounded-2xl p-8 hover:border-primary/20 hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 text-center flex flex-col items-center group shadow-md">
               <img src={item.icon} alt={item.title} className="w-40 h-40 object-contain mb-6 transition-transform duration-500 group-hover:scale-110" />
               <h3 className="font-extrabold text-slate-900 tracking-tight text-xl mb-3 uppercase">{item.title}</h3>
               <p className="text-slate-500 font-medium text-sm leading-relaxed">{item.desc}</p>
@@ -89,7 +89,7 @@ export function Coberturas() {
         {/* Fila 3 - Coberturas adicionales */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
           {fila3.map((item, idx) => (
-            <div key={idx} className="bg-white border-2 border-slate-100 rounded-2xl p-8 hover:border-primary/20 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 text-center flex flex-col items-center group shadow-md">
+            <div key={idx} className="bg-white border-2 border-slate-100 rounded-2xl p-8 hover:border-primary/20 hover:shadow-xl transition-all duration-300 ease-in-out hover:-translate-y-1 text-center flex flex-col items-center group shadow-md">
               <img src={item.icon} alt={item.title} className="w-32 h-32 object-contain mb-6 transition-transform duration-500 group-hover:scale-110" />
               <h3 className="font-extrabold text-slate-900 tracking-tight text-lg mb-2 uppercase">{item.title}</h3>
               <p className="text-slate-500 font-medium text-sm leading-relaxed">{item.desc}</p>

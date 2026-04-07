@@ -10,7 +10,7 @@ const testimonials = [
   {
     name: "Maria Camila Rozo",
     location: "Cali",
-    service: "Seguro Hogar",
+    service: "Seguro de vehículos",
     quote: "Fue un gran susto, pero me sentí siempre respaldada tanto por la aseguradora como por Proyectar, al final todo salió bien.",
   },
   {

@@ -72,15 +72,13 @@ export function About() {
               </div>
             </div>
 
-            <div className="relative">
-              <div className="aspect-square rounded-3xl bg-slate-50 border border-slate-100 flex items-center justify-center overflow-hidden shadow-2xl">
-                <img 
-                  src="/Gif/nosotros.gif" 
-                  alt="Proyectar Seguros Experience" 
-                  className="w-full h-full object-contain scale-[1.2] md:scale-[1.4] mix-blend-multiply"
-                />
-              </div>
-              <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-primary/10 rounded-full blur-3xl -z-10" />
+            <div className="relative flex items-center justify-center">
+              <img 
+                src="/Gif/nosotros.gif" 
+                alt="Proyectar Seguros Experience" 
+                className="w-full h-auto object-contain mix-blend-multiply scale-[1.2] md:scale-[1.4] lg:scale-[1.5] transition-transform duration-700 hover:scale-[1.3] md:hover:scale-[1.5] lg:hover:scale-[1.6]"
+              />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/10 rounded-full blur-3xl -z-10" />
             </div>
           </div>
         </div>
