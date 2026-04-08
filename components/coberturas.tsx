@@ -4,7 +4,7 @@ import { Icon } from "@iconify/react"
 const fila1 = [
   {
     title: "RESPONSABILIDAD CIVIL",
-    desc: "Cubre los daños que causes a terceros en un accidente. Obligatoria para circular en Colombia.",
+    desc: "Cubre los daños que causes a terceros en un accidente.",
     icon: "/Imagenes/Responsabilidad civil 1.png"
   },
   {
