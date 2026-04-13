@@ -75,9 +75,9 @@ export function Footer() {
           </div>
           
           <div className="flex flex-col sm:flex-row items-center gap-6 text-sm font-medium text-slate-400">
-            <a href="mailto:contactenos@seguros-proyectar.com" className="hover:text-white transition-colors">
+            <Link href="/pqrs" className="hover:text-white transition-colors">
               PQRS
-            </a>
+            </Link>
             <div className="hidden sm:block w-1 h-1 rounded-full bg-slate-700" />
             <Link href="/terminos-y-condiciones" className="hover:text-white transition-colors">
               Términos & Condiciones

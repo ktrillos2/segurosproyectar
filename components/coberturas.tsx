@@ -22,7 +22,7 @@ const fila1 = [
 const fila2 = [
   {
     title: "ASISTENCIA 24/7",
-    desc: "Grúa, cerrajero o mecánico a cualquier hora, en cualquier lugar del país.",
+    desc: "Incluye servicios de conductor elegido, grúa, mecánico y otros a cualquier hora, en cualquier lugar del país.",
     icon: "/Imagenes/Asistencia 1.png"
   },
   {
@@ -42,8 +42,7 @@ const fila3 = [
   { title: "Vidrios", desc: "Reposición de parabrisas y ventanas dañadas sin costo adicional según las condiciones de tu póliza.", icon: "/Imagenes/vidrios 1.png" },
   { title: "Llantas", desc: "Cobertura ante daños por estallido o pinchadura en vía.", icon: "/Imagenes/llantas 1.png" },
   { title: "Asistencia Jurídica", desc: "Asesoría y acompañamiento legal ante conflictos derivados de un accidente de tránsito.", icon: "/Imagenes/asistencia-juridica-1.png" },
-  { title: "Amparo Patrimonial", desc: "Protección de tu patrimonio frente a reclamaciones económicas por daños causados a terceros.", icon: "/Imagenes/Amparo patrimonial 1.png" },
-  { title: "Accidentes Personales", desc: "Cobertura de gastos médicos para el conductor y los ocupantes del vehículo en caso de accidente.", icon: "/Imagenes/Accidentes personales 1.png" }
+  { title: "Accidentes Personales", desc: "Cobertura de gastos médicos que aplica únicamente para el conductor en caso de accidente.", icon: "/Imagenes/Accidentes personales 1.png" }
 ]
 
 export function Coberturas() {

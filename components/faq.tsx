@@ -47,10 +47,6 @@ const faqs = [
     a: "Sí. El pago se procesa a través de canales seguros y certificados directamente con la aseguradora. Proyectar no almacena datos de tarjetas ni información financiera sensible."
   },
   {
-    q: "¿Mi póliza tiene algún tipo de período de carencia?",
-    a: "Depende de la cobertura y la aseguradora. Algunas coberturas como hurto pueden tener un período de espera inicial. Esto queda especificado claramente en las condiciones de cada opción al cotizar."
-  },
-  {
     q: "¿Puedo renovar mi póliza a través de Proyectar?",
     a: "Sí. Cuando tu póliza esté próxima a vencer, te notificamos con anticipación para que puedas renovarla o comparar nuevas opciones."
   }

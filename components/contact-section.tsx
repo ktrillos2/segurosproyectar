@@ -152,7 +152,7 @@ export function ContactSection() {
                     <h4 className="font-bold text-slate-900 text-sm uppercase tracking-wider mb-1">Horarios Administrativos</h4>
                     <p className="text-slate-600 font-medium whitespace-pre-line">
                       Lunes a Viernes<br/>
-                      8:00 am - 6:00 pm
+                      8:00 am - 5:00 pm
                     </p>
                   </div>
                 </div>

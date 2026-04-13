@@ -12,8 +12,8 @@ export default function PQRSSPage() {
     <div className="min-h-screen flex flex-col bg-slate-50">
       <Header />
       <main className="flex-grow pt-8 pb-24">
-        <article className="max-w-4xl mx-auto px-4 md:px-12 py-12 bg-white rounded-2xl shadow-sm border border-slate-200">
-          <div className="mb-12 text-center border-b border-slate-100 pb-8">
+        <article className="max-w-4xl mx-auto px-4 md:px-4 py-8">
+          <div className="mb-12 text-center border-b border-slate-200 pb-8">
             <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight mb-4 text-balance uppercase">
               Canal de Peticiones, Quejas, Reclamos y Sugerencias (PQRS)
             </h1>
@@ -21,7 +21,7 @@ export default function PQRSSPage() {
               PROYECTAR SEGUROS S.A.S.
             </p>
             <p className="text-sm text-slate-400 mt-2">
-              Bogotá, Colombia — 2026
+              Bogotá, Colombia — {new Date().getFullYear()}
             </p>
           </div>
 
@@ -82,13 +82,13 @@ export default function PQRSSPage() {
             <section>
               <h2 className="text-xl font-bold text-slate-900 mt-10 mb-4">3. Formulario de radicación</h2>
               <p className="mb-6">
-                Diligencie el siguiente formulario con información completa y veraz. También puede radicar su solicitud enviando un correo electrónico a: <a href="mailto:contactenos@seguros-proyectar.com" className="text-primary font-bold hover:underline">contactenos@seguros-proyectar.com</a>. Al enviar su solicitud recibirá un correo electrónico de confirmación con su número de radicado.
+                Diligencie el siguiente formulario con información completa y veraz. Al enviar su solicitud recibirá un correo electrónico de confirmación con su número de radicado, el cual le permitirá hacer seguimiento a su caso en cualquier momento.
               </p>
               
               <form 
                 action={`https://formsubmit.co/${process.env.NEXT_PUBLIC_PQRS_EMAIL || 'contactenos@seguros-proyectar.com'}`} 
                 method="POST" 
-                className="bg-slate-50 p-6 rounded-xl border border-slate-200"
+                className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 mt-6"
               >
                 <input type="hidden" name="_subject" value="Nueva Radicación PQRS Web" />
                 <input type="hidden" name="_captcha" value="false" />
@@ -96,52 +96,58 @@ export default function PQRSSPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                   <div>
-                    <label htmlFor="nombre" className="block text-sm font-semibold text-slate-700 mb-2">Nombre completo</label>
-                    <input type="text" id="nombre" name="nombre" required className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors" placeholder="Tu nombre" />
+                    <label htmlFor="nombre" className="block text-[15px] font-bold text-slate-900 mb-2">Nombre completo</label>
+                    <input type="text" id="nombre" name="nombre" required className="w-full px-4 h-12 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-slate-900 outline-none transition-colors text-slate-900 placeholder:text-slate-400 text-[15px]" placeholder="Ej. Carlos Rodríguez Pérez" />
                   </div>
                   <div>
-                    <label htmlFor="cedula" className="block text-sm font-semibold text-slate-700 mb-2">Número de cédula</label>
-                    <input type="text" id="cedula" name="cedula" required className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors" placeholder="Tu número de documento" />
+                    <label htmlFor="cedula" className="block text-[15px] font-bold text-slate-900 mb-2">Número de cédula</label>
+                    <input type="number" id="cedula" name="cedula" required className="w-full px-4 h-12 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-slate-900 outline-none transition-colors text-slate-900 placeholder:text-slate-400 text-[15px]" placeholder="Ej. 1020304050" />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                   <div>
-                    <label htmlFor="email" className="block text-sm font-semibold text-slate-700 mb-2">Correo electrónico</label>
-                    <input type="email" id="email" name="email" required className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors" placeholder="tu@correo.com" />
+                    <label htmlFor="email" className="block text-[15px] font-bold text-slate-900 mb-2">Correo electrónico</label>
+                    <input type="email" id="email" name="email" required className="w-full px-4 h-12 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-slate-900 outline-none transition-colors text-slate-900 placeholder:text-slate-400 text-[15px]" placeholder="correo@ejemplo.com" />
                   </div>
                   <div>
-                    <label htmlFor="telefono" className="block text-sm font-semibold text-slate-700 mb-2">Teléfono de contacto</label>
-                    <input type="tel" id="telefono" name="telefono" required className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors" placeholder="Tu número de teléfono" />
+                    <label htmlFor="telefono" className="block text-[15px] font-bold text-slate-900 mb-2">Teléfono de contacto</label>
+                    <input type="tel" id="telefono" name="telefono" required className="w-full px-4 h-12 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-slate-900 outline-none transition-colors text-slate-900 placeholder:text-slate-400 text-[15px]" placeholder="310 000 0000" />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                   <div>
-                    <label htmlFor="poliza" className="block text-sm font-semibold text-slate-700 mb-2">Número de póliza (si aplica)</label>
-                    <input type="text" id="poliza" name="poliza" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors" placeholder="Número de póliza" />
+                    <label htmlFor="poliza" className="block text-[15px] font-bold text-slate-900 mb-2">Número de póliza <span className="font-normal text-slate-500">(si aplica)</span></label>
+                    <input type="text" id="poliza" name="poliza" className="w-full px-4 h-12 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-slate-900 outline-none transition-colors text-slate-900 placeholder:text-slate-400 text-[15px]" placeholder="Ej. POL-2026-001234" />
                   </div>
                   <div>
-                    <label htmlFor="tipo" className="block text-sm font-semibold text-slate-700 mb-2">Tipo de solicitud</label>
-                    <select id="tipo" name="tipo_incidencia" required className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors bg-white">
-                      <option value="">Selecciona una opción</option>
-                      <option value="peticion">Petición</option>
-                      <option value="queja">Queja</option>
-                      <option value="reclamo">Reclamo</option>
-                      <option value="sugerencia">Sugerencia</option>
-                    </select>
+                    <label htmlFor="tipo" className="block text-[15px] font-bold text-slate-900 mb-2">Tipo de solicitud</label>
+                    <div className="relative">
+                      <select id="tipo" name="tipo_incidencia" required className="w-full px-4 h-12 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-slate-900 outline-none transition-colors text-slate-900 bg-white appearance-none text-[15px]">
+                        <option value="">Selecciona una opción</option>
+                        <option value="peticion">Petición</option>
+                        <option value="queja">Queja</option>
+                        <option value="reclamo">Reclamo</option>
+                        <option value="sugerencia">Sugerencia</option>
+                      </select>
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                        <svg className="h-4 w-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <div className="mb-6">
-                  <label htmlFor="descripcion" className="block text-sm font-semibold text-slate-700 mb-2">Descripción de la solicitud</label>
-                  <textarea id="descripcion" name="descripcion" required rows={4} className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors resize-y" placeholder="Describe tu solicitud en detalle..."></textarea>
+                <div className="mb-8">
+                  <label htmlFor="descripcion" className="block text-[15px] font-bold text-slate-900 mb-2">Descripción de la solicitud</label>
+                  <textarea id="descripcion" name="descripcion" required rows={5} className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:border-slate-900 outline-none transition-colors text-slate-900 placeholder:text-slate-400 text-[15px] resize-y" placeholder="Describa su caso con el mayor detalle posible. Incluya fechas, nombres o cualquier información que facilite la gestión de su solicitud."></textarea>
                 </div>
 
-                <button type="submit" className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 px-6 rounded-lg transition-colors shadow-sm">
+                <button type="submit" className="w-full bg-[#1e3450] hover:bg-[#162539] text-white font-bold py-4 px-6 rounded-lg transition-colors shadow-sm text-[15px] tracking-wide mb-6">
                   ENVIAR SOLICITUD
                 </button>
-                <div className="mt-4 text-sm text-slate-500 text-center">
+                
+                <div className="text-sm text-slate-600 text-center space-y-1">
                   <p>Al enviar este formulario recibirá un correo de confirmación con su número de radicado.</p>
                   <p>Proyectar Seguros responde en máximo 15 días hábiles conforme a la normativa SFC.</p>
                 </div>
@@ -164,11 +170,6 @@ export default function PQRSSPage() {
                 Si considera que sus derechos han sido vulnerados en materia de seguros o servicios financieros, puede presentar una queja ante la Superintendencia Financiera de Colombia en <a href="https://www.superfinanciera.gov.co" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-bold">www.superfinanciera.gov.co</a>. Para asuntos relacionados con protección al consumidor o datos personales, puede acudir a la Superintendencia de Industria y Comercio (SIC) en <a href="https://www.sic.gov.co" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-bold">www.sic.gov.co</a>.
               </p>
             </section>
-
-            <div className="mt-16 pt-8 border-t border-slate-200 text-center sm:text-left text-sm font-medium text-slate-500">
-              <p>PROYECTAR SEGUROS S.A.S. — NIT 830139875-7</p>
-              <p><a href="https://seguros-proyectar.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-bold">seguros-proyectar.com</a></p>
-            </div>
 
           </div>
         </article>
