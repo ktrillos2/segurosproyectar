@@ -7,7 +7,6 @@ const stats = [
   { value: "+20", label: "Años de trayectoria" },
   { value: "6", label: "Aseguradoras aliadas" },
   { value: "100%", label: "Digital y seguro" },
-  { value: "SFC", label: "Vigilado" },
 ]
 
 export default function NosotrosPage() {
