@@ -43,8 +43,8 @@ export default function PoliticaDatosPage() {
               </p>
               <p className="mb-2">Para cualquier consulta, solicitud o reclamo relacionado con tus datos personales, puedes contactarnos por:</p>
               <ul className="list-disc pl-5 space-y-1">
-                <li>Correo electrónico: <a href="mailto:autos@seguros-proyectar.com" className="text-primary hover:underline">autos@seguros-proyectar.com</a></li>
-                <li>Responsable designado: Juan Camilo Cárdenas</li>
+                <li>Correo electrónico: <a href="mailto:contactenos@seguros-proyectar.com" className="text-primary hover:underline">contactenos@seguros-proyectar.com</a></li>
+                <li>Responsable designado: Gerente Comercial, Proyectar Seguros S.A.S.</li>
                 <li>Horario de atención: lunes a viernes, 8:00 a.m. – 6:00 p.m.</li>
               </ul>
             </section>
@@ -106,9 +106,10 @@ export default function PoliticaDatosPage() {
               <p className="mb-2">Como intermediario del sector asegurador supervisado, estamos obligados a recopilar información para la gestión del riesgo de lavado de activos y financiación del terrorismo. Esto incluye:</p>
               <ul className="list-disc pl-5 space-y-1">
                 <li>Actividad económica y fuente de ingresos</li>
-                <li>Información patrimonial y financiera relevante</li>
+                <li>Información patrimonial y financiera relevante (ingresos, egresos, activos, pasivos y patrimonio)</li>
                 <li>Calidad de persona expuesta políticamente (PEP)</li>
                 <li>Documentación de respaldo requerida por el sistema</li>
+                <li>Declaración de veracidad y origen lícito de recursos: el cliente suscribe una declaración mediante la cual certifica que toda la información suministrada es veraz, que sus recursos son de origen lícito y que no provienen de actividades relacionadas con lavado de activos ni financiación del terrorismo. Esta declaración queda registrada con fecha, hora e IP como evidencia del consentimiento informado, y es requerida antes de proceder con la emisión de la póliza.</li>
               </ul>
 
               <h3 className="text-lg font-bold text-slate-800 mt-6 mb-2">4.5. Datos de personas jurídicas (aliados y clientes empresariales)</h3>
@@ -120,9 +121,9 @@ export default function PoliticaDatosPage() {
               </ul>
 
               <h3 className="text-lg font-bold text-slate-800 mt-6 mb-2">4.6. Datos recopilados a través de canales digitales</h3>
-              <p className="mb-2">Cuando interactúas con nuestra plataforma web, chatbot o canales de WhatsApp automatizados, podemos recopilar adicionalmente:</p>
+              <p className="mb-2">Cuando interactúas con nuestra plataforma web, asistente virtual o canales de WhatsApp automatizados, podemos recopilar adicionalmente:</p>
               <ul className="list-disc pl-5 space-y-1">
-                <li>Historial de conversaciones con el asistente virtual o chatbot</li>
+                <li>Historial de conversaciones con el asistente virtual</li>
                 <li>Mensajes y consultas enviadas a través de WhatsApp Business</li>
                 <li>Datos de navegación: páginas visitadas, tiempo en el sitio, clics y dispositivo utilizado</li>
                 <li>Dirección IP y datos técnicos del navegador (recopilados mediante cookies)</li>
@@ -131,9 +132,8 @@ export default function PoliticaDatosPage() {
 
             <section>
               <h2 className="text-xl font-bold text-slate-900 mt-10 mb-4">5. Base legal del tratamiento</h2>
-              <p className="mb-2">Tratamos tus datos personales con base en alguna de las siguientes bases legales:</p>
               <ul className="space-y-4">
-                <li><strong>Autorización del titular:</strong> cuando nos das tu consentimiento expreso a través del formulario de cotización, chatbot, WhatsApp u otros canales digitales autorizados.</li>
+                <li><strong>Autorización del titular:</strong> cuando nos das tu consentimiento expreso a través del formulario de cotización, asistente virtual, WhatsApp u otros canales digitales autorizados.</li>
                 <li><strong>Obligación legal:</strong> cuando el tratamiento es necesario para cumplir con normativas como SARLAFT, reportes regulatorios u otras obligaciones del sector asegurador.</li>
                 <li><strong>Relación contractual:</strong> cuando el tratamiento es necesario para ejecutar el contrato de alianza comercial o la póliza de seguro contratada.</li>
                 <li><strong>Interés legítimo:</strong> para mejorar nuestros servicios, prevenir fraudes y garantizar la seguridad de la plataforma.</li>
@@ -147,7 +147,7 @@ export default function PoliticaDatosPage() {
                 <li>Gestionar cotizaciones, comparación y emisión de seguros de vehículos.</li>
                 <li>Intermediar entre el usuario y las aseguradoras aliadas.</li>
                 <li>Cumplir obligaciones legales aplicables al sector asegurador en Colombia.</li>
-                <li>Gestionar el SARLAFT conforme a la normativa vigente.</li>
+                <li>Gestionar el SARLAFT conforme a la normativa vigente, incluyendo el registro y custodia de la declaración de veracidad y origen de fondos suscrita por el cliente.</li>
                 <li>Enviar comunicaciones sobre el estado de tu cotización, póliza, renovación o vencimiento.</li>
                 <li>Gestionar el programa de aliados: trazabilidad de referidos y liquidación de comisiones.</li>
                 <li>Enviarte comunicaciones comerciales e informativas si has dado tu autorización.</li>
@@ -160,9 +160,9 @@ export default function PoliticaDatosPage() {
               <h2 className="text-xl font-bold text-slate-900 mt-10 mb-4">7. Herramientas digitales y automatización</h2>
               <p className="mb-4">Proyectar Seguros utiliza tecnología avanzada para brindarte una experiencia ágil y eficiente. En este contexto, tus datos pueden ser procesados por:</p>
               <ul className="space-y-3">
-                <li><strong>Chatbot e inteligencia artificial:</strong> nuestro asistente virtual puede recopilar y procesar información para ayudarte a cotizar y comparar opciones de seguro de manera automatizada.</li>
+                <li><strong>Asistente virtual automatizado:</strong> nuestro asistente virtual puede recopilar y procesar información para ayudarte a cotizar y comparar opciones de seguro de manera automatizada.</li>
                 <li><strong>WhatsApp Business API:</strong> utilizamos esta plataforma para enviarte notificaciones sobre tu cotización, póliza y recordatorios de renovación. Al interactuar con nosotros por este canal, aceptas el tratamiento de tus datos en dicho entorno.</li>
-                <li><strong>Automatización de procesos (RPA):</strong> utilizamos robots de proceso automatizado para consultar cotizaciones en las plataformas de aseguradoras, siempre bajo tu autorización.</li>
+                <li><strong>Automatización de procesos:</strong> utilizamos sistemas automatizados para consultar cotizaciones en las plataformas de aseguradoras, siempre bajo tu autorización.</li>
                 <li><strong>Correo electrónico automatizado:</strong> enviamos notificaciones, confirmaciones y recordatorios de manera automatizada a través de nuestro sistema de comunicaciones.</li>
               </ul>
               <p className="mt-4">En todos los casos, el tratamiento automatizado está sujeto a los mismos principios y garantías descritos en esta política.</p>
@@ -172,7 +172,7 @@ export default function PoliticaDatosPage() {
               <h2 className="text-xl font-bold text-slate-900 mt-10 mb-4">8. ¿Con quién compartimos tus datos?</h2>
               <p className="mb-4">Proyectar Seguros puede compartir tus datos con terceros únicamente en los siguientes casos:</p>
               <ul className="list-disc pl-5 space-y-1">
-                <li>Aseguradoras aliadas (AXA Colpatria, Zurich, Seguros del Estado, Qualitas, Seguros Mundial, Equidad Seguros u otras) para cotización y emisión de pólizas.</li>
+                <li>Aseguradoras aliadas (AXA Colpatria, Zurich, Seguros del Estado, Quálitas, Seguros Mundial, Equidad Seguros u otras) para cotización y emisión de pólizas.</li>
                 <li>Proveedores tecnológicos de infraestructura, desarrollo web o automatización, bajo estrictos acuerdos de confidencialidad.</li>
                 <li>Autoridades judiciales, organismos de control o entidades gubernamentales cuando exista obligación legal.</li>
                 <li>Organismos de supervisión del sector asegurador en Colombia en el marco de obligaciones de reporte.</li>
@@ -187,7 +187,6 @@ export default function PoliticaDatosPage() {
 
             <section>
               <h2 className="text-xl font-bold text-slate-900 mt-10 mb-4">10. Cookies y tecnologías de rastreo</h2>
-              <p className="mb-4">Nuestra plataforma utiliza cookies y tecnologías similares. Dependiendo de su función, estas se clasifican en:</p>
               <ul className="space-y-4">
                 <li><strong>Cookies técnicas o esenciales:</strong> necesarias para el funcionamiento básico del sitio web. No pueden desactivarse sin afectar la navegación.</li>
                 <li><strong>Cookies analíticas:</strong> nos ayudan a entender cómo los usuarios interactúan con la plataforma (páginas visitadas, tiempo de navegación, errores). Usamos esta información para mejorar la experiencia.</li>
@@ -212,7 +211,7 @@ export default function PoliticaDatosPage() {
 
             <section>
               <h2 className="text-xl font-bold text-slate-900 mt-10 mb-4">12. ¿Cómo ejercer tus derechos? (Habeas Data)</h2>
-              <p className="mb-4">Para ejercer cualquiera de tus derechos, envía un correo a <a href="mailto:autos@seguros-proyectar.com" className="text-primary hover:underline font-bold">autos@seguros-proyectar.com</a> con el asunto: <strong>SOLICITUD HABEAS DATA — [Tu nombre completo]</strong>.</p>
+              <p className="mb-4">Para ejercer cualquiera de tus derechos, envía un correo a <a href="mailto:contactenos@seguros-proyectar.com" className="text-primary hover:underline font-bold">contactenos@seguros-proyectar.com</a> con el asunto: <strong>SOLICITUD HABEAS DATA — [Tu nombre completo]</strong>.</p>
               <p className="mb-4">Tu solicitud debe incluir: nombre completo, número de documento de identidad, descripción clara de lo que solicitas y correo electrónico para recibir respuesta.</p>
               <p className="mb-2 font-bold">Tiempos de respuesta conforme a la Ley 1581 de 2012:</p>
               <ul className="list-disc pl-5 space-y-1">
@@ -227,7 +226,7 @@ export default function PoliticaDatosPage() {
               <p className="mb-4">PROYECTAR SEGUROS S.A.S. obtiene la autorización previa, expresa e informada del titular antes de proceder con el tratamiento de sus datos personales. Esta autorización se obtiene a través de:</p>
               <ul className="list-disc pl-5 space-y-1">
                 <li>Casilla de aceptación en el formulario de cotización de la plataforma web.</li>
-                <li>Interacción con el chatbot o asistente virtual, donde se informa al usuario sobre el tratamiento de sus datos antes de iniciar la conversación.</li>
+                <li>Interacción con el asistente virtual, donde se informa al usuario sobre el tratamiento de sus datos antes de iniciar la conversación.</li>
                 <li>Canales digitales como WhatsApp Business, mediante mensaje de aceptación al inicio de la comunicación.</li>
                 <li>Firma del contrato de alianza comercial para aliados referenciadores.</li>
                 <li>Cualquier otra manifestación escrita o digital que permita concluir de manera inequívoca que el titular otorgó su consentimiento.</li>
@@ -276,7 +275,7 @@ export default function PoliticaDatosPage() {
             <div className="mt-16 pt-8 border-t border-slate-200 text-center sm:text-left text-sm font-medium text-slate-500">
               <p>PROYECTAR SEGUROS S.A.S. — NIT 830139875-7</p>
               <p>Bogotá D.C., Colombia — 2026</p>
-              <p><a href="mailto:autos@seguros-proyectar.com" className="text-primary hover:underline">autos@seguros-proyectar.com</a></p>
+              <p><a href="mailto:contactenos@seguros-proyectar.com" className="text-primary hover:underline">contactenos@seguros-proyectar.com</a></p>
             </div>
           </div>
         </article>

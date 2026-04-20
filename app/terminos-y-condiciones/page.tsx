@@ -42,8 +42,8 @@ export default function TerminosYCondicionesPage() {
               </p>
               <p className="mb-2">Puedes contactarnos a través de:</p>
               <ul className="list-disc pl-5 space-y-1">
-                <li>Correo electrónico: <a href="mailto:autos@seguros-proyectar.com" className="text-primary hover:underline font-bold">autos@seguros-proyectar.com</a></li>
-                <li>Responsable: Juan Camilo Cárdenas</li>
+                <li>Correo electrónico: <a href="mailto:contactenos@seguros-proyectar.com" className="text-primary hover:underline font-bold">contactenos@seguros-proyectar.com</a></li>
+                <li>Responsable: Gerente Comercial, Proyectar Seguros S.A.S.</li>
                 <li>Horario de atención: lunes a viernes, 8:00 a.m. – 6:00 p.m.</li>
               </ul>
             </section>
@@ -188,6 +188,11 @@ export default function TerminosYCondicionesPage() {
                 de las aseguradoras. Cualquier pago debe realizarse exclusivamente a través de los canales 
                 oficiales de la aseguradora seleccionada.
               </p>
+
+              <h3 className="text-lg font-bold text-slate-800 mt-6 mb-2">6.5. Cumplimiento SARLAFT durante la contratación</h3>
+              <p>
+                Como parte del proceso de contratación, el usuario deberá diligenciar el formulario de conocimiento del cliente requerido por la normativa SARLAFT. En dicho formulario, el usuario declara bajo la gravedad de juramento que toda la información suministrada es veraz, actual y completa; que sus recursos son de origen lícito; y que los fondos utilizados para el pago de la prima no provienen de actividades relacionadas con el lavado de activos, la financiación del terrorismo ni ninguna actividad ilegal. Esta declaración queda registrada con fecha, hora e IP como evidencia del consentimiento informado y es requisito previo a la emisión de la póliza. El usuario se compromete a mantener actualizada esta información y a reportar cualquier cambio relevante.
+              </p>
             </section>
 
             <section>
@@ -251,7 +256,7 @@ export default function TerminosYCondicionesPage() {
               <p>
                 Estas comunicaciones se realizarán a través de correo electrónico, WhatsApp y otros canales 
                 digitales. El usuario puede revocar su autorización para comunicaciones comerciales en 
-                cualquier momento escribiendo a <a href="mailto:autos@seguros-proyectar.com" className="text-primary hover:underline font-bold">autos@seguros-proyectar.com</a>.
+                cualquier momento escribiendo a <a href="mailto:contactenos@seguros-proyectar.com" className="text-primary hover:underline font-bold">contactenos@seguros-proyectar.com</a>.
               </p>
             </section>
 
@@ -259,10 +264,10 @@ export default function TerminosYCondicionesPage() {
               <h2 className="text-xl font-bold text-slate-900 mt-10 mb-4">10. Propiedad intelectual</h2>
               <p className="mb-4">
                 Todos los contenidos de la plataforma de Proyectar Seguros — incluyendo textos, imágenes, 
-                ilustraciones, logotipos, diseños, código fuente, algoritmos, modelos de inteligencia artificial, 
-                sistemas automatizados, flujos de cotización y cualquier tecnología propia desarrollada para la 
-                operación de la plataforma — son propiedad de <strong>PROYECTAR SEGUROS S.A.S.</strong> o de sus 
-                licenciantes, y están protegidos por las leyes de propiedad intelectual aplicables en Colombia.
+                ilustraciones, logotipos, diseños, código fuente, algoritmos, sistemas automatizados, flujos de 
+                cotización y cualquier tecnología propia desarrollada para la operación de la plataforma — son 
+                propiedad de <strong>PROYECTAR SEGUROS S.A.S.</strong> o de sus licenciantes, y están 
+                protegidos por las leyes de propiedad intelectual aplicables en Colombia.
               </p>
               <p>
                 El usuario no podrá reproducir, distribuir, modificar, comunicar públicamente, realizar ingeniería 
@@ -334,18 +339,18 @@ export default function TerminosYCondicionesPage() {
               <p className="mb-2">El acceso y uso de la plataforma de Proyectar Seguros implica la aceptación plena y sin reservas de estos Términos y Condiciones. Esta aceptación se formaliza mediante:</p>
               <ul className="list-disc pl-5 space-y-1 mb-4">
                 <li>La marcación de la casilla de aceptación en el formulario de cotización o registro.</li>
-                <li>La interacción con el chatbot o asistente virtual de la plataforma.</li>
+                <li>La interacción con el asistente virtual de la plataforma.</li>
                 <li>El uso continuado de los servicios de la plataforma.</li>
               </ul>
               <p>
-                Si tienes dudas sobre estos términos, puedes contactarnos en <a href="mailto:autos@seguros-proyectar.com" className="text-primary hover:underline font-bold">autos@seguros-proyectar.com</a> antes de continuar usando el servicio.
+                Si tienes dudas sobre estos términos, puedes contactarnos en <a href="mailto:contactenos@seguros-proyectar.com" className="text-primary hover:underline font-bold">contactenos@seguros-proyectar.com</a> antes de continuar usando el servicio.
               </p>
             </section>
 
             <div className="mt-16 pt-8 border-t border-slate-200 text-center sm:text-left text-sm font-medium text-slate-500">
               <p>PROYECTAR SEGUROS S.A.S. — NIT 830139875-7</p>
               <p>Bogotá D.C., Colombia — 2026</p>
-              <p><a href="mailto:autos@seguros-proyectar.com" className="text-primary hover:underline font-bold">autos@seguros-proyectar.com</a></p>
+              <p><a href="mailto:contactenos@seguros-proyectar.com" className="text-primary hover:underline font-bold">contactenos@seguros-proyectar.com</a></p>
             </div>
           </div>
         </article>
