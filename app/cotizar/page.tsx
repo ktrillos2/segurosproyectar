@@ -17,7 +17,8 @@ type Message = {
 
 type UserInfo = {
   nombre?: string
-  documento?: string
+  documento_tipo?: string
+  documento_numero?: string
   fecha_nacimiento?: string
   placa?: string
   ciudad?: string
@@ -241,7 +242,7 @@ export default function CotizarPage() {
               <h2 className="text-2xl font-black text-slate-900 mb-4">Tu seguridad es nuestra prioridad</h2>
               <div className="space-y-4 text-slate-600 text-[15px] leading-relaxed max-w-sm">
                 <p>
-                  Para brindarte una cotización precisa con AXA, Mundial y demás aseguradoras, necesitamos recolectar algunos datos personales.
+                  Para brindarte una cotización precisa con nuestras aseguradoras aliadas, necesitamos recolectar algunos datos personales.
                 </p>
                 <div className="bg-white p-4 rounded-2xl border border-slate-200 text-xs text-left space-y-2 shadow-sm">
                   <div className="flex gap-2">
@@ -383,7 +384,7 @@ export default function CotizarPage() {
                         <label className="text-xs font-bold text-slate-500 uppercase ml-1">Documento confirmado</label>
                         <Input 
                           disabled
-                          value={userInfo.documento || "No detectado"}
+                          value={userInfo.documento_numero || "No detectado"}
                           className="rounded-xl h-12 bg-slate-100 border-slate-200 text-slate-500"
                         />
                       </div>
