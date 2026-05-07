@@ -211,8 +211,8 @@ export default function CotizarPage() {
     <main className="min-h-screen flex flex-col bg-slate-50">
       <Header />
 
-      <div className="flex-1 flex flex-col items-center py-6 px-4 md:py-12">
-        <div className="max-w-2xl w-full bg-white flex flex-col shadow-2xl rounded-2xl overflow-hidden border border-slate-200 h-[650px] md:h-[750px] relative">
+      <div className="flex-1 flex flex-col items-center py-4 md:py-12 px-4">
+        <div className="max-w-2xl w-full bg-white flex flex-col shadow-2xl rounded-2xl overflow-hidden border border-slate-200 h-[calc(100dvh-100px)] md:h-[750px] relative">
           
           {/* Header del bot */}
           <div className="bg-slate-900 border-b border-slate-800 p-4 shadow-sm z-10 flex items-center justify-between shrink-0">
@@ -235,37 +235,39 @@ export default function CotizarPage() {
 
           {/* Conditional Content based on Agreement */}
           {!isAgreed ? (
-            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-slate-50/50 animate-in fade-in duration-700">
-              <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center mb-6 rotate-3">
-                <Icon icon="ph:shield-check-fill" className="w-10 h-10 text-primary" />
+            <div className="flex-1 flex flex-col items-center justify-center p-5 md:p-8 text-center bg-slate-50/50 animate-in fade-in duration-700 overflow-y-auto">
+              <div className="w-16 h-16 md:w-20 md:h-20 bg-primary/10 rounded-3xl flex items-center justify-center mb-4 md:mb-6 rotate-3 shrink-0">
+                <Icon icon="ph:shield-check-fill" className="w-8 h-8 md:w-10 md:h-10 text-primary" />
               </div>
-              <h2 className="text-2xl font-black text-slate-900 mb-4">Tu seguridad es nuestra prioridad</h2>
-              <div className="space-y-4 text-slate-600 text-[15px] leading-relaxed max-w-sm">
+              <h2 className="text-xl md:text-2xl font-black text-slate-900 mb-3 md:mb-4 leading-tight px-2">
+                Tu seguridad es nuestra prioridad
+              </h2>
+              <div className="space-y-3 md:space-y-4 text-slate-600 text-sm md:text-[15px] leading-relaxed max-w-sm px-2">
                 <p>
                   Para brindarte una cotización precisa con nuestras aseguradoras aliadas, necesitamos recolectar algunos datos personales.
                 </p>
-                <div className="bg-white p-4 rounded-2xl border border-slate-200 text-xs text-left space-y-2 shadow-sm">
-                  <div className="flex gap-2">
-                    <Icon icon="ph:check-circle-fill" className="text-primary shrink-0 w-4 h-4" />
+                <div className="bg-white p-4 md:p-5 rounded-2xl border border-slate-200 text-[11px] md:text-xs text-left space-y-2.5 shadow-sm">
+                  <div className="flex gap-2.5 items-start">
+                    <Icon icon="ph:check-circle-fill" className="text-primary shrink-0 w-4 h-4 mt-0.5" />
                     <span>Tus datos se usarán solo para fines de cotización.</span>
                   </div>
-                  <div className="flex gap-2">
-                    <Icon icon="ph:check-circle-fill" className="text-primary shrink-0 w-4 h-4" />
+                  <div className="flex gap-2.5 items-start">
+                    <Icon icon="ph:check-circle-fill" className="text-primary shrink-0 w-4 h-4 mt-0.5" />
                     <span>Cumplimos con la Ley 1581 de Protección de Datos.</span>
                   </div>
-                  <div className="flex gap-2">
-                    <Icon icon="ph:check-circle-fill" className="text-primary shrink-0 w-4 h-4" />
+                  <div className="flex gap-2.5 items-start">
+                    <Icon icon="ph:check-circle-fill" className="text-primary shrink-0 w-4 h-4 mt-0.5" />
                     <span>No compartiremos tu información con terceros no autorizados.</span>
                   </div>
                 </div>
               </div>
               <Button 
                 onClick={() => setIsAgreed(true)}
-                className="mt-10 w-full max-w-sm h-14 rounded-2xl font-bold text-lg shadow-xl shadow-primary/20 hover:scale-[1.02] transition-transform"
+                className="mt-6 md:mt-10 w-full max-w-sm h-14 rounded-2xl font-bold text-lg shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
               >
                 Aceptar y Empezar
               </Button>
-              <p className="mt-4 text-[10px] text-slate-400 uppercase tracking-widest font-bold">
+              <p className="mt-4 text-[9px] md:text-[10px] text-slate-400 uppercase tracking-widest font-bold px-4">
                 Al hacer clic, aceptas nuestra política de tratamiento de datos.
               </p>
             </div>
@@ -498,11 +500,6 @@ export default function CotizarPage() {
             </>
           )}
         </div>
-        
-        <p className="max-w-2xl w-full text-center text-[11px] text-slate-400 mt-8 font-medium uppercase tracking-widest px-6">
-          Al interactuar con Sofía, aceptas nuestra política de tratamiento de datos personales. 
-          Toda la información recolectada se utiliza exclusivamente para fines de cotización.
-        </p>
       </div>
 
       <Footer />
