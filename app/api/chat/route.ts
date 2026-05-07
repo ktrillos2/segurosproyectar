@@ -28,10 +28,15 @@ export async function POST(req: Request) {
       - Una vez recolectados TODOS los datos, informa al usuario que vas a proceder a generar su cotización personalizada.
 
       EXTRACCIÓN DE DATOS (CRÍTICO):
-      Al final de cada mensaje, SIEMPRE incluye un bloque JSON oculto con los datos que has recolectado hasta ahora y 3 sugerencias de respuesta corta para el usuario.
+      Al final de cada mensaje, SIEMPRE incluye un bloque JSON oculto con los datos que has recolectado hasta ahora y sugerencias de respuesta.
       Formato: ###DATA###{"nombre": "...", "documento": "...", "fecha_nacimiento": "...", "placa": "...", "ciudad": "...", "contacto": "...", "sugerencias": ["Opción 1", "Opción 2", "Opción 3"], "completado": false}###ENDDATA###
-      Si un dato no lo tienes, ponlo como null. Las sugerencias deben ser muy naturales y coherentes con tu última pregunta.
-      Establece "completado": true SOLO cuando tengas todos los datos necesarios para cotizar.
+      
+      REGLAS PARA SUGERENCIAS:
+      - Las sugerencias deben ser MUY CORTAS (máximo 2 palabras).
+      - SI ESTÁS PIDIENDO DATOS PRIVADOS (Cédula, NIT, Teléfono, Correo, Fecha de Nacimiento), pon las sugerencias como un array vacío: "sugerencias": [].
+      - No incluyas preguntas en las sugerencias, solo posibles respuestas del usuario.
+      
+      Si un dato no lo tienes, ponlo como null. Establece "completado": true SOLO cuando tengas todos los datos necesarios para cotizar.
     `;
 
     // Intentamos usar el modelo que el usuario especificó, con fallback a llama-3.3-70b

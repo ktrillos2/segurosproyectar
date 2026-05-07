@@ -94,7 +94,7 @@ export default function CotizarPage() {
   const [inputValue, setInputValue] = useState("")
   const [isTyping, setIsTyping] = useState(false)
   const [userInfo, setUserInfo] = useState<UserInfo>({})
-  const [suggestions, setSuggestions] = useState<string[]>(["Juan Pérez", "ABC123", "Medellín"])
+  const [suggestions, setSuggestions] = useState<string[]>(["Juan", "ABC123", "Bogotá"])
   const [appState, setAppState] = useState<AppState>("chatting")
   const [selectedQuote, setSelectedQuote] = useState<InsuranceQuote | null>(null)
   const [sarlaftData, setSarlaftData] = useState({ ocupacion: "", fondos: "Salario" })
