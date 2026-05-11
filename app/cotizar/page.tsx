@@ -23,6 +23,9 @@ type UserInfo = {
   placa?: string
   ciudad?: string
   celular?: string
+  beneficiario_oneroso?: string
+  entidad_financiera?: string
+  correo?: string
 }
 
 type InsuranceQuote = {
@@ -257,7 +260,7 @@ export default function CotizarPage() {
         numero_documento: userInfo.documento_numero || "1090384736",
         fecha_nacimiento: userInfo.fecha_nacimiento || "03/08/1999",
         tipo_persona_qualitas: "1",
-        correo: "keyner@prueba.com",
+        correo: userInfo.correo || "keyner@prueba.com",
         celular: userInfo.celular || "3101234567",
         direccion: "Cucuta, Norte de Santander"
       },
@@ -272,7 +275,7 @@ export default function CotizarPage() {
         id_zona_axa: "1",
         descripcion: "Mazda 3",
         ciudad_residencia: "Bogota",
-        oneroso_qualitas: false
+        oneroso_qualitas: userInfo.beneficiario_oneroso === "Sí" ? true : false
       }
     }
 
