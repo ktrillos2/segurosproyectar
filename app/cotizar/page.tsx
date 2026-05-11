@@ -22,7 +22,7 @@ type UserInfo = {
   fecha_nacimiento?: string
   placa?: string
   ciudad?: string
-  contacto?: string
+  celular?: string
 }
 
 type InsuranceQuote = {
@@ -33,6 +33,39 @@ type InsuranceQuote = {
   color: string
   description: string
   plans?: any[]
+}
+
+type PollingResult = {
+  aseguradora: string
+  estado: string
+  datos: {
+    caracteristicas: {
+      numero_cotizacion: string
+      agente: string
+      vehiculo: string
+      tarifa_aplicada: string
+      tipo_uso: string
+      servicio: string
+      amparo_paquete: string
+      modalidad_pago: string
+      periodo_gracia: string
+    }
+    desglose_financiero: {
+      prima_neta: string
+      gastos_expedicion: string
+      iva: string
+      subtotal: string
+      primer_pago: string
+      pago_subsecuente: string
+      importe_total: string
+    }
+    amparos_base: Array<{
+      cobertura: string
+      valor_asegurado: string
+      deducible: string
+    }>
+    amparos_accesorios: any[]
+  }
 }
 
 const QUOTES: InsuranceQuote[] = [
@@ -83,7 +116,7 @@ const QUOTES: InsuranceQuote[] = [
   }
 ]
 
-type AppState = "chatting" | "quoting" | "selecting" | "sarlaft" | "issuing" | "finished"
+type AppState = "chatting" | "verifying_sms" | "quoting" | "selecting" | "sarlaft" | "issuing" | "finished" | "completed_quote"
 
 export default function CotizarPage() {
   const [isAgreed, setIsAgreed] = useState(false)
@@ -100,6 +133,13 @@ export default function CotizarPage() {
   const [appState, setAppState] = useState<AppState>("chatting")
   const [selectedQuote, setSelectedQuote] = useState<InsuranceQuote | null>(null)
   const [sarlaftData, setSarlaftData] = useState({ ocupacion: "", fondos: "Salario" })
+  const [quoteResult, setQuoteResult] = useState<PollingResult | null>(null)
+  const [pollingTaskId, setPollingTaskId] = useState<string | null>(null)
+  const [otpCode, setOtpCode] = useState("")
+  const [isSendingSms, setIsSendingSms] = useState(false)
+  const [smsError, setSmsError] = useState("")
+  const [isEditingPhone, setIsEditingPhone] = useState(false)
+  const [tempPhone, setTempPhone] = useState("")
   
   const messagesContainerRef = useRef<HTMLDivElement>(null)
 
@@ -129,7 +169,7 @@ export default function CotizarPage() {
         }
 
         if (extractedData.completado) {
-          setTimeout(() => startQuotingFlow(), 2000)
+          setTimeout(() => requestSmsVerification(extractedData.celular || userInfo.celular), 2000)
         }
         
         return content.replace(/###DATA###.*?###ENDDATA###/s, "").trim()
@@ -140,12 +180,154 @@ export default function CotizarPage() {
     return content
   }
 
-  const startQuotingFlow = () => {
-    setAppState("quoting")
-    setTimeout(() => {
-      setAppState("selecting")
-    }, 5000)
+  const requestSmsVerification = async (phoneToUse?: string) => {
+    const phone = phoneToUse || userInfo.celular;
+    if (!phone) {
+      toast.error("No se detectó un número de celular válido.");
+      setAppState("chatting");
+      return;
+    }
+    
+    setAppState("verifying_sms");
+    setIsSendingSms(true);
+    setSmsError("");
+
+    try {
+      const res = await fetch("/api/verify/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone })
+      });
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || "Error enviando SMS");
+      }
+      
+      if (phoneToUse) {
+        setUserInfo(prev => ({ ...prev, celular: phoneToUse }));
+      }
+      toast.success("Código enviado por SMS");
+      setIsEditingPhone(false);
+    } catch (err: any) {
+      setSmsError(err.message);
+      toast.error(err.message);
+    } finally {
+      setIsSendingSms(false);
+    }
   }
+
+  const verifySmsAndQuote = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!otpCode || otpCode.length < 6) {
+      setSmsError("Ingresa el código de 6 dígitos");
+      return;
+    }
+
+    setIsSendingSms(true);
+    setSmsError("");
+
+    try {
+      const res = await fetch("/api/verify/check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: userInfo.celular, code: otpCode })
+      });
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || "Código incorrecto");
+      }
+      
+      toast.success("Verificación exitosa");
+      startQuotingFlow();
+    } catch (err: any) {
+      setSmsError(err.message);
+      toast.error(err.message);
+      setIsSendingSms(false);
+    }
+  }
+
+  const startQuotingFlow = async () => {
+    setAppState("quoting")
+    const payload = {
+      cliente: {
+        nombre_completo: userInfo.nombre || "Keyner Steban Trillos Useche",
+        tipo_documento_axa: userInfo.documento_tipo === "NIT" ? "NIT" : (userInfo.documento_tipo === "Cédula de Extranjería" ? "CE" : "CC"),
+        numero_documento: userInfo.documento_numero || "1090384736",
+        fecha_nacimiento: userInfo.fecha_nacimiento || "03/08/1999",
+        tipo_persona_qualitas: "1",
+        correo: "keyner@prueba.com",
+        celular: userInfo.celular || "3101234567",
+        direccion: "Cucuta, Norte de Santander"
+      },
+      vehiculo: {
+        placa: userInfo.placa || "DDB440",
+        ciudad: userInfo.ciudad || "Bogota",
+        modelo: "2024",
+        precio: "50000000",
+        id_marca_axa: "1",
+        marca_nombre: "Mazda",
+        id_color_axa: "1",
+        id_zona_axa: "1",
+        descripcion: "Mazda 3",
+        ciudad_residencia: "Bogota",
+        oneroso_qualitas: false
+      }
+    }
+
+    try {
+      const res = await fetch(`/api/v1/cotizar`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      })
+      const data = await res.json()
+      if (data.task_id) {
+        setPollingTaskId(data.task_id)
+      } else {
+        toast.error("Error al iniciar cotización")
+        setAppState("chatting")
+      }
+    } catch (error) {
+      console.error("Fetch error:", error)
+      toast.error("Error de conexión al cotizar")
+      setAppState("chatting")
+    }
+  }
+
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout
+    if (appState === "quoting" && pollingTaskId) {
+      intervalId = setInterval(async () => {
+        try {
+          const res = await fetch(`/api/v1/cotizar/status/${pollingTaskId}`)
+          const data = await res.json()
+          
+          if (data.status === "completado" || data.status === "error") {
+            clearInterval(intervalId)
+            if (data.status === "completado") {
+              if (data.data && data.data.length > 0) {
+                setQuoteResult(data.data[0])
+                setAppState("completed_quote")
+              } else {
+                toast.error("Cotización sin resultados")
+                setAppState("chatting")
+              }
+            } else {
+              toast.error("Error en la cotización")
+              setAppState("chatting")
+            }
+          }
+        } catch (error) {
+          console.error("Polling error:", error)
+        }
+      }, 5000)
+    }
+    return () => {
+      if (intervalId) clearInterval(intervalId)
+    }
+  }, [appState, pollingTaskId])
 
   const handleSelectQuote = (quote: InsuranceQuote) => {
     setSelectedQuote(quote)
@@ -307,6 +489,97 @@ export default function CotizarPage() {
                   </div>
                 )}
 
+                {/* Phase: Verifying SMS */}
+                {appState === "verifying_sms" && (
+                  <div className="flex flex-col items-center justify-center py-10 space-y-6 animate-in fade-in zoom-in duration-500 max-w-sm mx-auto">
+                    <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center">
+                      <Icon icon="ph:device-mobile-speaker-fill" className="w-10 h-10 text-primary" />
+                    </div>
+                    
+                    {!isEditingPhone ? (
+                      <>
+                        <div className="text-center">
+                          <h3 className="text-2xl font-bold text-slate-800">Verifica tu número</h3>
+                          <p className="text-slate-500 text-sm mt-2 leading-relaxed">
+                            Hemos enviado un código SMS al número <br/>
+                            <span className="font-bold text-slate-700">{userInfo.celular}</span>
+                          </p>
+                          <button 
+                            onClick={() => {
+                              setTempPhone(userInfo.celular || "");
+                              setIsEditingPhone(true);
+                            }}
+                            className="text-[11px] font-bold text-primary hover:underline mt-2 inline-flex items-center gap-1"
+                          >
+                            <Icon icon="ph:pencil-simple-fill" /> ¿Te equivocaste de número?
+                          </button>
+                        </div>
+
+                        <form onSubmit={verifySmsAndQuote} className="w-full space-y-4">
+                          <div>
+                            <Input
+                              placeholder="Ingresa el código de 6 dígitos"
+                              value={otpCode}
+                              onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                              className="text-center text-2xl tracking-[0.5em] font-black h-16 rounded-2xl bg-white border-2 border-slate-200 focus:border-primary shadow-sm"
+                              disabled={isSendingSms}
+                            />
+                            {smsError && <p className="text-red-500 text-xs font-bold text-center mt-2">{smsError}</p>}
+                          </div>
+                          <Button 
+                            type="submit" 
+                            disabled={isSendingSms || otpCode.length < 6}
+                            className="w-full h-14 rounded-2xl font-bold text-lg shadow-xl shadow-primary/20"
+                          >
+                            {isSendingSms ? "Verificando..." : "Confirmar y Cotizar"}
+                          </Button>
+                          <div className="text-center">
+                            <button 
+                              type="button" 
+                              onClick={() => requestSmsVerification()}
+                              disabled={isSendingSms}
+                              className="text-xs font-bold text-slate-500 hover:text-primary transition-colors"
+                            >
+                              Reenviar código
+                            </button>
+                          </div>
+                        </form>
+                      </>
+                    ) : (
+                      <div className="w-full text-center space-y-4 animate-in fade-in duration-300">
+                        <h3 className="text-xl font-bold text-slate-800">Editar número</h3>
+                        <p className="text-slate-500 text-sm">
+                          Ingresa tu número correcto y te enviaremos un nuevo código.
+                        </p>
+                        <Input
+                          placeholder="Ej: 3101234567"
+                          value={tempPhone}
+                          onChange={(e) => setTempPhone(e.target.value.replace(/\D/g, ""))}
+                          className="text-center text-xl font-bold h-14 rounded-2xl bg-white border-2 border-slate-200 focus:border-primary shadow-sm"
+                          disabled={isSendingSms}
+                        />
+                        <div className="flex gap-2">
+                          <Button 
+                            variant="outline" 
+                            onClick={() => setIsEditingPhone(false)}
+                            className="flex-1 h-12 rounded-xl font-bold border-2"
+                            disabled={isSendingSms}
+                          >
+                            Cancelar
+                          </Button>
+                          <Button 
+                            onClick={() => requestSmsVerification(tempPhone)}
+                            className="flex-1 h-12 rounded-xl font-bold"
+                            disabled={isSendingSms || tempPhone.length < 10}
+                          >
+                            {isSendingSms ? "Enviando..." : "Enviar código"}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Phase: Quoting Simulation */}
                 {appState === "quoting" && (
                   <div className="flex flex-col items-center justify-center py-12 space-y-6 animate-in fade-in zoom-in duration-500">
@@ -316,58 +589,116 @@ export default function CotizarPage() {
                       <Icon icon="ph:calculator-fill" className="absolute inset-0 m-auto w-10 h-10 text-primary animate-pulse" />
                     </div>
                     <div className="text-center">
-                      <h3 className="text-xl font-bold text-slate-800">Realizando cotización...</h3>
-                      <p className="text-slate-500 text-sm mt-2">Consultando con AXA, Mundial, Quálitas y más...</p>
+                      <h3 className="text-xl font-bold text-slate-800">Cotizando con aseguradoras...</h3>
+                      <p className="text-slate-500 text-sm mt-2">Por favor espera, conectando con los servicios oficiales...</p>
                     </div>
                   </div>
                 )}
 
-                {/* Phase: Quote Selection */}
-                {appState === "selecting" && (
-                  <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-10">
-                    <div className="text-center mb-4">
-                      <h3 className="text-xl font-bold text-slate-800">¡Resultados para la placa {userInfo.placa}!</h3>
-                      <p className="text-slate-500 text-sm">Selecciona la mejor opción para tu vehículo</p>
-                    </div>
-                    <div className="grid gap-4">
-                      {QUOTES.map((quote) => (
-                        <div key={quote.id} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md hover:border-primary/30 transition-all group">
-                          <div className="flex justify-between items-start mb-4">
-                            <div className="flex items-center gap-3">
-                              <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center p-2">
-                                <Icon icon={quote.logo} className="w-full h-full text-slate-700" />
-                              </div>
-                              <div>
-                                <h4 className="font-bold text-slate-900 text-lg">{quote.name}</h4>
-                                <p className="text-[11px] text-slate-500 max-w-[200px] leading-tight">{quote.description}</p>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <span className="text-[10px] uppercase font-extrabold text-slate-400 tracking-wider">Desde</span>
-                              <p className="text-xl font-black text-primary">{formatCurrency(quote.price)}</p>
-                            </div>
-                          </div>
-                          
-                          {quote.plans && (
-                            <div className="mb-4 bg-slate-50 rounded-lg p-3 space-y-2">
-                              {quote.plans.map((plan, i) => (
-                                <div key={i} className="flex justify-between text-xs font-medium text-slate-600">
-                                  <span>{plan.name}</span>
-                                  <span className="font-bold">{formatCurrency(plan.price)}</span>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-
-                          <Button 
-                            onClick={() => handleSelectQuote(quote)}
-                            className="w-full rounded-xl py-6 font-bold shadow-none hover:shadow-lg transition-all"
-                          >
-                            Seleccionar {quote.name}
-                          </Button>
+                {/* Phase: Dashboard Result (Completed Quote) */}
+                {appState === "completed_quote" && quoteResult && (
+                  <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 w-full max-w-4xl mx-auto pb-10">
+                    
+                    {/* Header Destacado */}
+                    <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-6 md:p-8 text-white shadow-xl relative overflow-hidden">
+                      <div className="absolute top-0 right-0 p-8 opacity-10">
+                        <Icon icon="mdi:car-shield" className="w-48 h-48" />
+                      </div>
+                      <div className="relative z-10">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-xs font-semibold uppercase tracking-wider mb-4 border border-white/20">
+                          <Icon icon="ph:shield-check-fill" className="text-emerald-400 w-4 h-4" />
+                          <span>{quoteResult.aseguradora}</span>
                         </div>
-                      ))}
+                        <h2 className="text-2xl md:text-3xl font-black mb-2">{quoteResult.datos.caracteristicas.vehiculo}</h2>
+                        <p className="text-slate-300 font-medium text-sm md:text-base">
+                          Cotización #{quoteResult.datos.caracteristicas.numero_cotizacion}
+                        </p>
+                      </div>
                     </div>
+
+                    {/* Tarjetas Financieras */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="md:col-span-3 bg-white border border-primary/20 rounded-3xl p-6 shadow-lg shadow-primary/5 flex flex-col md:flex-row items-center justify-between gap-4 relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-2 h-full bg-primary"></div>
+                        <div>
+                          <p className="text-sm font-bold text-slate-500 uppercase tracking-wider">Importe Total</p>
+                          <h3 className="text-4xl md:text-5xl font-black text-primary mt-1">{quoteResult.datos.desglose_financiero.importe_total}</h3>
+                        </div>
+                        <div className="flex gap-4 md:gap-8 w-full md:w-auto">
+                          <div className="flex-1 md:flex-none bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                            <p className="text-xs font-bold text-slate-500 uppercase">Prima Neta</p>
+                            <p className="text-xl font-bold text-slate-800">{quoteResult.datos.desglose_financiero.prima_neta}</p>
+                          </div>
+                          <div className="flex-1 md:flex-none bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                            <p className="text-xs font-bold text-slate-500 uppercase">IVA</p>
+                            <p className="text-xl font-bold text-slate-800">{quoteResult.datos.desglose_financiero.iva}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Características */}
+                    <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-100">
+                      <h4 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                        <Icon icon="ph:list-dashes-bold" className="text-primary w-5 h-5" />
+                        Características de la Póliza
+                      </h4>
+                      <div className="flex flex-wrap gap-3">
+                        <div className="px-4 py-2.5 bg-blue-50 text-blue-700 rounded-xl font-semibold text-sm border border-blue-100 flex items-center gap-2">
+                          <Icon icon="ph:car-profile-fill" /> {quoteResult.datos.caracteristicas.tipo_uso}
+                        </div>
+                        <div className="px-4 py-2.5 bg-purple-50 text-purple-700 rounded-xl font-semibold text-sm border border-purple-100 flex items-center gap-2">
+                          <Icon icon="ph:package-fill" /> {quoteResult.datos.caracteristicas.amparo_paquete}
+                        </div>
+                        <div className="px-4 py-2.5 bg-emerald-50 text-emerald-700 rounded-xl font-semibold text-sm border border-emerald-100 flex items-center gap-2">
+                          <Icon icon="ph:credit-card-fill" /> Pago {quoteResult.datos.caracteristicas.modalidad_pago}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Amparos Base */}
+                    <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-100 overflow-hidden">
+                      <h4 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                        <Icon icon="ph:shield-star-bold" className="text-primary w-5 h-5" />
+                        Amparos Base
+                      </h4>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                          <thead>
+                            <tr className="border-b-2 border-slate-100">
+                              <th className="pb-4 pt-2 px-4 text-xs font-extrabold text-slate-400 uppercase tracking-wider w-1/2">Cobertura</th>
+                              <th className="pb-4 pt-2 px-4 text-xs font-extrabold text-slate-400 uppercase tracking-wider text-right">Valor Asegurado</th>
+                              <th className="pb-4 pt-2 px-4 text-xs font-extrabold text-slate-400 uppercase tracking-wider text-right">Deducible</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-50">
+                            {quoteResult.datos.amparos_base.map((amparo, idx) => (
+                              <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
+                                <td className="py-4 px-4 font-semibold text-slate-700 text-sm flex items-center gap-3">
+                                  <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                                    <Icon icon="ph:check-bold" className="w-4 h-4" />
+                                  </div>
+                                  {amparo.cobertura}
+                                </td>
+                                <td className="py-4 px-4 font-bold text-slate-800 text-right whitespace-nowrap">{amparo.valor_asegurado}</td>
+                                <td className="py-4 px-4 font-semibold text-slate-500 text-right whitespace-nowrap">{amparo.deducible}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                    
+                    {/* Call to action */}
+                    <div className="mt-8 flex justify-center">
+                      <Button 
+                        onClick={() => setAppState("sarlaft")}
+                        className="w-full md:w-auto px-12 h-14 rounded-2xl font-bold text-lg shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
+                      >
+                        Continuar y Emitir
+                      </Button>
+                    </div>
+                    
                   </div>
                 )}
 
@@ -445,8 +776,8 @@ export default function CotizarPage() {
                     </p>
                     <div className="mt-8 p-6 bg-slate-50 rounded-3xl border border-slate-100 w-full">
                       <p className="text-slate-600 text-sm leading-relaxed">
-                        Hemos enviado los documentos a <span className="font-bold">{userInfo.contacto}</span>. 
-                        Por favor sigue las instrucciones en tu correo para activar tu cobertura hoy mismo.
+                        Hemos enviado los documentos a tu número <span className="font-bold">{userInfo.celular}</span>. 
+                        Por favor sigue las instrucciones en tu bandeja para activar tu cobertura hoy mismo.
                       </p>
                     </div>
                     <Button 

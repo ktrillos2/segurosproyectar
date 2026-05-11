@@ -18,7 +18,7 @@ export async function POST(req: Request) {
       4. Fecha de nacimiento (Día/Mes/Año).
       5. Placa del vehículo.
       6. Ciudad donde circula el vehículo.
-      7. Información de contacto (Correo electrónico o Teléfono).
+      7. Número de teléfono celular (obligatorio para enviar el SMS de verificación).
 
       REGLAS DE FLUJO (ESTRICTO):
       - NO SALTES NINGÚN DATO. Cada campo es obligatorio para que el orquestador de seguros funcione.
@@ -28,13 +28,13 @@ export async function POST(req: Request) {
 
       EXTRACCIÓN DE DATOS (CRÍTICO):
       Al final de cada mensaje, SIEMPRE incluye el bloque JSON oculto.
-      Formato: ###DATA###{"nombre": "...", "documento_tipo": "...", "documento_numero": "...", "fecha_nacimiento": "...", "placa": "...", "ciudad": "...", "contacto": "...", "sugerencias": ["Opción 1", "Opción 2"], "completado": false}###ENDDATA###
+      Formato: ###DATA###{"nombre": "...", "documento_tipo": "...", "documento_numero": "...", "fecha_nacimiento": "...", "placa": "...", "ciudad": "...", "celular": "...", "sugerencias": ["Opción 1", "Opción 2"], "completado": false}###ENDDATA###
       
       REGLAS PARA SUGERENCIAS:
       - Máximo 2 palabras.
       - Si pides datos privados (números, fechas, contacto), deja "sugerencias": [].
       
-      "completado" será true ÚNICAMENTE cuando todos los campos (nombre, documento_tipo, documento_numero, fecha_nacimiento, placa, ciudad, contacto) tengan valores válidos.
+      "completado" será true ÚNICAMENTE cuando todos los campos (nombre, documento_tipo, documento_numero, fecha_nacimiento, placa, ciudad, celular) tengan valores válidos.
     `;
 
     // Intentamos usar el modelo que el usuario especificó, con fallback a llama-3.3-70b
