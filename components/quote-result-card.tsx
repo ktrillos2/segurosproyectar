@@ -44,8 +44,33 @@ interface QuoteResultCardProps {
 
 export function QuoteResultCard({ quoteResult, onContinue }: QuoteResultCardProps) {
   const [showModal, setShowModal] = useState(false)
+  const [showAdvisorMessage, setShowAdvisorMessage] = useState(false)
+  
   const { datos, aseguradora } = quoteResult
   const { caracteristicas, desglose_financiero, amparos_base } = datos
+
+  // Smart vehicle data parsing
+  const rawVehiculo = caracteristicas.vehiculo || ""
+  const vehicleParts = rawVehiculo.split(" ")
+  
+  // 1. Extract Year (4 digits)
+  const yearMatch = rawVehiculo.match(/\b(19|20)\d{2}\b/)
+  const year = yearMatch ? yearMatch[0] : ""
+  
+  // 2. Identify Brand/Model (First 2 parts)
+  const vehicleTitle = vehicleParts.slice(0, 2).join(" ")
+  
+  // 3. Clean up the rest
+  const keywordsToRemove = ["CÓDIGO", "FASECOLDA", "FASE", "COLDA", year]
+  const cleanedDetails = vehicleParts
+    .slice(2)
+    .filter(part => {
+      const p = part.toUpperCase()
+      return !keywordsToRemove.some(k => p.includes(k)) && p.length > 1
+    })
+    // Remove Fasecolda ID if it's the last part or contains only digits
+    .filter(part => !(/^\d{7,8}$/.test(part)))
+    .join(" ")
 
   return (
     <>
@@ -54,13 +79,20 @@ export function QuoteResultCard({ quoteResult, onContinue }: QuoteResultCardProp
       ────────────────────────────────────────────── */}
       <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 w-full">
         {/* Gradient header badge */}
-        <div className="mb-4 flex items-center gap-2">
+        <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-full">
             <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
             <span className="text-emerald-700 text-xs font-bold uppercase tracking-wider">
               Cotización Lista
             </span>
           </div>
+          {showAdvisorMessage && (
+            <div className="animate-in fade-in slide-in-from-right-4 bg-primary/10 border border-primary/20 px-4 py-1.5 rounded-full">
+              <p className="text-primary text-[11px] font-bold">
+                ¡Solicitud enviada! Un asesor te contactará pronto.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Main summary card */}
@@ -70,28 +102,36 @@ export function QuoteResultCard({ quoteResult, onContinue }: QuoteResultCardProp
           <div className="h-1.5 w-full bg-gradient-to-r from-[#0B5A92] via-[#4EA7E1] to-[#0B5A92] bg-[length:200%_100%] animate-gradient" />
 
           <div className="p-6 space-y-5">
-            {/* Aseguradora + No. cotización */}
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
-                  <Icon icon="mdi:car-shield" className="w-6 h-6 text-primary" />
+            {/* Aseguradora + No. cotización + Vehículo details */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              {/* Left: Insurer branding */}
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0 border border-primary/5 shadow-inner">
+                  <Icon icon="mdi:car-shield" className="w-9 h-9 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-black text-slate-900 leading-tight">
+                  <h2 className="text-2xl font-black text-slate-900 leading-tight">
                     {aseguradora}
                   </h2>
-                  <p className="text-xs text-slate-400 font-semibold mt-0.5">
-                    # {caracteristicas.numero_cotizacion}
+                  <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">
+                    No. Cotización: <span className="text-slate-600">#{caracteristicas.numero_cotizacion}</span>
                   </p>
                 </div>
               </div>
-              <div className="text-right shrink-0">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                  Vehículo
+
+              {/* Right: Vehicle details (Clean layout) */}
+              <div className="text-left md:text-right md:border-l md:border-slate-100 md:pl-6">
+                <p className="text-lg font-black text-slate-900 tracking-tight leading-none uppercase">
+                  {vehicleTitle} {year && `, ${year}`}
                 </p>
-                <p className="text-sm font-bold text-slate-700 mt-0.5 max-w-[120px] text-right leading-tight">
-                  {caracteristicas.vehiculo}
+                <p className="text-[11px] font-bold text-slate-500 mt-2 flex items-center md:justify-end gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary/30" />
+                  {cleanedDetails || "Detalles básicos"}
                 </p>
+                <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 rounded-lg text-[10px] font-black text-slate-600 uppercase">
+                  <Icon icon="ph:barcode-bold" className="w-3.5 h-3.5 text-primary" />
+                  FASECOLDA: {caracteristicas.tarifa_aplicada}
+                </div>
               </div>
             </div>
 
@@ -119,7 +159,7 @@ export function QuoteResultCard({ quoteResult, onContinue }: QuoteResultCardProp
               </div>
 
               {/* Key badges */}
-              <div className="flex flex-col gap-2 items-end">
+              <div className="flex flex-wrap gap-2 justify-center sm:justify-end">
                 <span className="px-3 py-1 bg-blue-50 text-blue-700 border border-blue-100 rounded-full text-[11px] font-bold flex items-center gap-1.5">
                   <Icon icon="ph:car-profile-fill" className="w-3.5 h-3.5" />
                   {caracteristicas.tipo_uso}
@@ -135,20 +175,20 @@ export function QuoteResultCard({ quoteResult, onContinue }: QuoteResultCardProp
               </div>
             </div>
 
-            {/* Quick coverages preview (first 3) */}
+            {/* Quick coverages preview */}
             <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
                 <Icon icon="ph:shield-star-bold" className="w-3.5 h-3.5 text-primary" />
                 Principales amparos incluidos
               </p>
               <div className="space-y-2">
-                {amparos_base.slice(0, 3).map((amparo, idx) => (
+                {(amparos_base || []).slice(0, 3).map((amparo, idx) => (
                   <div key={idx} className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-4 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                         <Icon icon="ph:check-bold" className="w-2.5 h-2.5 text-primary" />
                       </div>
-                      <span className="text-xs font-semibold text-slate-700 truncate max-w-[150px]">
+                      <span className="text-xs font-semibold text-slate-700 truncate max-w-[200px]">
                         {amparo.cobertura}
                       </span>
                     </div>
@@ -158,29 +198,49 @@ export function QuoteResultCard({ quoteResult, onContinue }: QuoteResultCardProp
                   </div>
                 ))}
               </div>
-              {amparos_base.length > 3 && (
-                <p className="text-[10px] text-slate-400 font-semibold mt-2 ml-6">
-                  +{amparos_base.length - 3} amparos más incluidos
-                </p>
-              )}
             </div>
 
             {/* Actions */}
-            <div className="flex flex-col sm:flex-row gap-3 pt-1">
-              <button
-                onClick={() => setShowModal(true)}
-                className="flex-1 h-12 rounded-2xl border-2 border-primary/20 text-primary font-bold text-sm hover:bg-primary/5 hover:border-primary/40 transition-all duration-200 flex items-center justify-center gap-2 active:scale-95"
-              >
-                <Icon icon="ph:magnifying-glass-plus-bold" className="w-4 h-4" />
-                Ver más detalles
-              </button>
-              <Button
-                onClick={onContinue}
-                className="flex-1 h-12 rounded-2xl font-bold text-sm shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
-              >
-                <Icon icon="ph:check-circle-fill" className="w-4 h-4 mr-1.5" />
-                Continuar y Emitir
-              </Button>
+            <div className="flex flex-col gap-3 pt-1">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={() => setShowModal(true)}
+                  className="flex-1 h-12 rounded-2xl border-2 border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50 transition-all duration-200 flex items-center justify-center gap-2 active:scale-95"
+                >
+                  <Icon icon="ph:magnifying-glass-plus-bold" className="w-4 h-4" />
+                  Ver más detalles
+                </button>
+                <Button
+                  onClick={onContinue}
+                  className="flex-1 h-12 rounded-2xl font-bold text-sm shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
+                >
+                  <Icon icon="ph:check-circle-fill" className="w-4 h-4 mr-1.5" />
+                  Continuar y Emitir
+                </Button>
+              </div>
+
+              {/* Advisor Button */}
+              {!showAdvisorMessage ? (
+                <button
+                  onClick={() => setShowAdvisorMessage(true)}
+                  className="w-full h-12 rounded-2xl bg-slate-900 text-white font-bold text-sm hover:bg-slate-800 transition-all flex items-center justify-center gap-2 shadow-lg shadow-slate-200 active:scale-95"
+                >
+                  <Icon icon="ph:headset-bold" className="w-5 h-5 text-emerald-400" />
+                  Hablar con un asesor experto
+                </button>
+              ) : (
+                <div className="w-full bg-emerald-50 border border-emerald-100 rounded-2xl p-4 flex items-center gap-3 animate-in zoom-in-95">
+                  <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center shrink-0">
+                    <Icon icon="ph:user-focus-fill" className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-black text-emerald-800 leading-tight">Solicitud de contacto recibida</p>
+                    <p className="text-xs font-bold text-emerald-600 mt-0.5">
+                      En unos minutos uno de nuestros asesores se comunicará contigo.
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -277,12 +337,12 @@ export function QuoteResultCard({ quoteResult, onContinue }: QuoteResultCardProp
                 </h4>
                 <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
                   {[
-                    { label: "Prima Neta", value: desglose_financiero.prima_neta, accent: false },
-                    { label: "Gastos de Expedición", value: desglose_financiero.gastos_expedicion, accent: false },
-                    { label: "IVA", value: desglose_financiero.iva, accent: false },
-                    { label: "Subtotal", value: desglose_financiero.subtotal, accent: false },
-                    { label: "Primer Pago", value: desglose_financiero.primer_pago, accent: false },
-                    { label: "Pagos Subsecuentes", value: desglose_financiero.pago_subsecuente, accent: false },
+                    { label: "Prima Neta", value: desglose_financiero.prima_neta },
+                    { label: "Gastos de Expedición", value: desglose_financiero.gastos_expedicion },
+                    { label: "IVA", value: desglose_financiero.iva },
+                    { label: "Subtotal", value: desglose_financiero.subtotal },
+                    { label: "Primer Pago", value: desglose_financiero.primer_pago },
+                    { label: "Pagos Subsecuentes", value: desglose_financiero.pago_subsecuente },
                   ].map(({ label, value }, idx, arr) => (
                     <div
                       key={label}
@@ -311,7 +371,7 @@ export function QuoteResultCard({ quoteResult, onContinue }: QuoteResultCardProp
                   Amparos Base
                 </h4>
                 <div className="space-y-2">
-                  {amparos_base.map((amparo, idx) => (
+                  {(amparos_base || []).map((amparo, idx) => (
                     <div
                       key={idx}
                       className="flex items-center gap-3 bg-white border border-slate-100 rounded-2xl px-4 py-3 hover:border-primary/20 hover:bg-primary/5 transition-all duration-200"
