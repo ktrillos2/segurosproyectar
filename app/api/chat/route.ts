@@ -32,6 +32,8 @@ DATOS A RECOLECTAR (en este orden):
 ESTRUCTURA DE CONVERSACIÓN (CRÍTICO):
 - Sofía hace UNA sola pregunta por mensaje. Espera la respuesta 
   y solo entonces pasa a la siguiente.
+- NUNCA pidas más de un dato a la vez. No los combines (ej: no pidas nombre y documento juntos).
+- Pide los datos uno por uno, estrictamente en el orden definido.
 - Nunca adelanta el siguiente campo antes de recibir respuesta.
 - Nunca lista los datos que va a pedir.
 - El usuario nunca debe sentir que está llenando un formulario — 
@@ -44,6 +46,7 @@ ESTRUCTURA DE CONVERSACIÓN (CRÍTICO):
   para mantener la conversación fluida y natural.
 
 REGLAS DE FLUJO:
+- Los datos se piden estrictamente UNO POR UNO. No se combinan preguntas.
 - Tipo de documento SIEMPRE antes que número. Nunca juntos.
 - Beneficiario oneroso: si el usuario dice Sí, 
   pregunta inmediatamente el nombre de la entidad financiera 
@@ -67,6 +70,22 @@ REGLAS DE FLUJO:
 - Nunca menciones nombres de aseguradoras específicas.
 - Nunca menciones inteligencia artificial, bots, 
   modelos de lenguaje ni tecnología interna.
+
+VALIDACIÓN Y CONCORDANCIA DE DATOS (CRÍTICO):
+Antes de guardar un dato en el JSON y avanzar, VERIFICA su concordancia:
+- Nombre completo: Al menos 2 palabras, solo letras. Si escribe "hola" o "123", NO es un nombre.
+- Número de documento: Solo números (8 a 10 dígitos usualmente). Si contiene letras (salvo en NIT), NO es válido.
+- Fecha de nacimiento: Debe ser una fecha real y coherente (el usuario debe ser mayor de edad).
+- Placa: Debe seguir el formato colombiano (3 letras y 3 números, ej: ABC123). Si escribe "mi carro es rojo", NO es una placa.
+- Ciudad: Debe ser una ciudad o municipio real de Colombia.
+- Correo: Debe tener un formato de email válido (usuario@dominio.com).
+- Celular: 10 dígitos exactos, debe empezar por 3 (ej: 3001234567).
+
+Si el dato NO tiene concordancia o el formato es inválido:
+1. NO lo guardes en el JSON (deja el campo como "").
+2. NO avances a la siguiente pregunta.
+3. Informa el error amablemente y pide el dato de nuevo (ej: "Esa no parece una placa válida, ¿me la repites? 😊").
+4. El campo "completado" solo será true si TODOS los datos pasaron esta validación.
 
 REGLAS ESTRICTAS — NUNCA ROMPER:
 - Nunca digas "asesora digital", "IA", "bot" ni ningún término 
@@ -211,8 +230,8 @@ Este bloque NUNCA debe ser visible para el usuario.
 ###ENDDATA###
 
 REGLAS DEL JSON:
-- Llena solo los campos ya confirmados por el usuario.
-- Campos pendientes siempre van como string vacío "".
+- Llena solo los campos ya confirmados por el usuario y que CUMPLAN con las reglas de concordancia.
+- Si el dato es inválido, deja el campo como string vacío "".
 - "entidad_financiera": solo se llena si beneficiario_oneroso es "Sí". 
   Si es "No", dejar como "N/A".
 - "requiere_asesor": true solo si el usuario falló 3 veces 
@@ -227,17 +246,18 @@ REGLAS DEL JSON:
   obligatorios tienen valores válidos y confirmados.
   (entidad_financiera es obligatorio solo si beneficiario_oneroso es "Sí")`;
 
-    // Usamos el modelo 8b-instant que tiene un rate limit mucho mayor en la capa gratuita (o 70b si tienes tier de pago)
-    // Cambiamos a 8b-instant para evitar el error TPM limit 12000
-    const modelToUse = "llama-3.1-8b-instant"; 
+    // Usamos el modelo gpt-4o-mini a través de OpenRouter
+    const modelToUse = "google/gemini-2.5-flash"; 
     
-    // Solo enviamos los últimos 10 mensajes para no saturar el límite de tokens de Groq
+    // Solo enviamos los últimos 10 mensajes para no saturar el contexto
     const recentMessages = messages.slice(-10);
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "HTTP-Referer": "https://segurosproyectar.com", // Opcional
+        "X-Title": "Proyectar Seguros", // Opcional
       },
       body: JSON.stringify({
         model: modelToUse,
@@ -253,7 +273,7 @@ REGLAS DEL JSON:
     const data = await response.json();
 
     if (!response.ok) {
-      console.error("Groq API Error:", data);
+      console.error("OpenRouter API Error:", data);
       return NextResponse.json({ error: "Error en la comunicación con Sofía" }, { status: 500 });
     }
 
@@ -261,10 +281,22 @@ REGLAS DEL JSON:
 
     // Simulación de "Guardado de información" en el servidor
     if (assistantMessage.includes("###DATA###")) {
-      const dataStr = assistantMessage.split("###DATA###")[1].split("###ENDDATA###")[0];
-      const extractedData = JSON.parse(dataStr);
-      // Aquí podrías guardar en base de datos. Por ahora, logueamos el "guardado"
-      console.log("💾 GUARDANDO LEAD EN SISTEMA:", extractedData);
+      try {
+        const rawData = assistantMessage.split("###DATA###")[1].split("###ENDDATA###")[0].trim();
+        // Buscamos el primer '{' y el último '}' para extraer solo el objeto JSON válido
+        const start = rawData.indexOf('{');
+        const end = rawData.lastIndexOf('}');
+        
+        if (start !== -1 && end !== -1) {
+          const jsonStr = rawData.substring(start, end + 1);
+          const extractedData = JSON.parse(jsonStr);
+          // Aquí podrías guardar en base de datos. Por ahora, logueamos el "guardado"
+          console.log("💾 GUARDANDO LEAD EN SISTEMA:", extractedData);
+        }
+      } catch (parseError) {
+        console.error("❌ Error al parsear JSON de Sofía:", parseError);
+        // No bloqueamos la respuesta al usuario si el guardado falla
+      }
     }
 
     return NextResponse.json({

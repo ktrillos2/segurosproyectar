@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Icon } from "@iconify/react"
 import { useState, useRef, useEffect } from "react"
 import { toast } from "sonner"
+import { QuoteResultCard } from "@/components/quote-result-card"
 
 const BOT_AVATAR = "/images/sofia.jpeg"
 
@@ -126,7 +127,7 @@ export default function CotizarPage() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "bot",
-      content: "¡Hola! Soy Sofía, tu asesora de Proyectar Seguros. ¿Listo para encontrar el mejor seguro para tu vehículo? Cuéntame, ¿cuál es tu nombre completo y la placa del carro que quieres cotizar?"
+      content: "¡Hola! Soy Sofía de Proyectar Seguros 👋 En minutos te muestro las mejores opciones de seguro para tu carro. ¿Me dices tu nombre completo para empezar?"
     }
   ])
   const [inputValue, setInputValue] = useState("")
@@ -143,7 +144,9 @@ export default function CotizarPage() {
   const [smsError, setSmsError] = useState("")
   const [isEditingPhone, setIsEditingPhone] = useState(false)
   const [tempPhone, setTempPhone] = useState("")
-  
+  // Snapshot of complete userInfo received when completado:true — avoids stale closure in async flow
+  const [latestUserInfo, setLatestUserInfo] = useState<UserInfo | null>(null)
+
   const messagesContainerRef = useRef<HTMLDivElement>(null)
 
   const scrollToBottom = () => {
@@ -161,21 +164,34 @@ export default function CotizarPage() {
   }, [messages, isTyping, appState])
 
   const processAIData = (content: string) => {
-    const dataMatch = content.match(/###DATA###(.*?)###ENDDATA###/s)
+    const dataMatch = content.match(/###DATA###([\s\S]*?)###ENDDATA###/)
     if (dataMatch) {
       try {
         const extractedData = JSON.parse(dataMatch[1])
-        setUserInfo(prev => ({ ...prev, ...extractedData }))
-        
+        // Merge and obtain the up-to-date snapshot synchronously
+        let mergedInfo: UserInfo = {}
+        setUserInfo(prev => {
+          mergedInfo = { ...prev, ...extractedData }
+          return mergedInfo
+        })
+
         if (extractedData.sugerencias && Array.isArray(extractedData.sugerencias)) {
           setSuggestions(extractedData.sugerencias)
         }
 
         if (extractedData.completado) {
-          setTimeout(() => requestSmsVerification(extractedData.celular || userInfo.celular), 2000)
+          // MODO PRUEBA: Saltar verificación SMS y cotizar directo
+          setTimeout(() => startQuotingFlow(mergedInfo), 2000);
+
+          /* MODO PRODUCCIÓN: Activar verificación SMS
+          setTimeout(() => requestSmsVerification(
+            extractedData.celular || mergedInfo.celular,
+            mergedInfo
+          ), 2000)
+          */
         }
-        
-        return content.replace(/###DATA###.*?###ENDDATA###/s, "").trim()
+
+        return content.replace(/###DATA###[\s\S]*?###ENDDATA###/, "").trim()
       } catch (e) {
         console.error("Error parseando datos de la IA:", e)
       }
@@ -183,14 +199,14 @@ export default function CotizarPage() {
     return content
   }
 
-  const requestSmsVerification = async (phoneToUse?: string) => {
+  const requestSmsVerification = async (phoneToUse?: string, infoSnapshot?: UserInfo) => {
     const phone = phoneToUse || userInfo.celular;
     if (!phone) {
       toast.error("No se detectó un número de celular válido.");
       setAppState("chatting");
       return;
     }
-    
+
     setAppState("verifying_sms");
     setIsSendingSms(true);
     setSmsError("");
@@ -202,13 +218,18 @@ export default function CotizarPage() {
         body: JSON.stringify({ phone })
       });
       const data = await res.json();
-      
+
       if (!res.ok) {
         throw new Error(data.error || "Error enviando SMS");
       }
-      
+
+      // Persist the phone in state if it came externally
       if (phoneToUse) {
         setUserInfo(prev => ({ ...prev, celular: phoneToUse }));
+      }
+      // Keep the fresh snapshot so verifySmsAndQuote can use it later
+      if (infoSnapshot) {
+        setLatestUserInfo(infoSnapshot);
       }
       toast.success("Código enviado por SMS");
       setIsEditingPhone(false);
@@ -237,13 +258,14 @@ export default function CotizarPage() {
         body: JSON.stringify({ phone: userInfo.celular, code: otpCode })
       });
       const data = await res.json();
-      
+
       if (!res.ok) {
         throw new Error(data.error || "Código incorrecto");
       }
-      
+
       toast.success("Verificación exitosa");
-      startQuotingFlow();
+      // Use latestUserInfo snapshot to avoid stale closure
+      startQuotingFlow(latestUserInfo || userInfo);
     } catch (err: any) {
       setSmsError(err.message);
       toast.error(err.message);
@@ -251,50 +273,66 @@ export default function CotizarPage() {
     }
   }
 
-  const startQuotingFlow = async () => {
+  /**
+   * Builds the payload from the most up-to-date userInfo snapshot and
+   * POSTs it to the proxy route → Python bot → returns task_id for polling.
+   */
+  const startQuotingFlow = async (info: UserInfo = userInfo) => {
     setAppState("quoting")
+
+    // Map tipo_documento to the code expected by AXA
+    const tipoDocAxa =
+      info.documento_tipo === "NIT" ? "NIT" :
+      info.documento_tipo === "Cédula de Extranjería" ? "CE" : "CC";
+
     const payload = {
       cliente: {
-        nombre_completo: userInfo.nombre || "Keyner Steban Trillos Useche",
-        tipo_documento_axa: userInfo.documento_tipo === "NIT" ? "NIT" : (userInfo.documento_tipo === "Cédula de Extranjería" ? "CE" : "CC"),
-        numero_documento: userInfo.documento_numero || "1090384736",
-        fecha_nacimiento: userInfo.fecha_nacimiento || "03/08/1999",
+        nombre_completo: info.nombre || "",
+        tipo_documento_axa: tipoDocAxa,
+        numero_documento: info.documento_numero || "",
+        fecha_nacimiento: info.fecha_nacimiento || "",
         tipo_persona_qualitas: "1",
-        correo: userInfo.correo || "keyner@prueba.com",
-        celular: userInfo.celular || "3101234567",
-        direccion: "Cucuta, Norte de Santander"
+        correo: info.correo || "",
+        celular: info.celular || "",
+        direccion: info.ciudad ? `${info.ciudad}, Colombia` : "Colombia"
       },
       vehiculo: {
-        placa: userInfo.placa || "DDB440",
-        ciudad: userInfo.ciudad || "Bogota",
-        modelo: "2024",
-        precio: "50000000",
-        id_marca_axa: "1",
-        marca_nombre: "Mazda",
-        id_color_axa: "1",
-        id_zona_axa: "1",
-        descripcion: "Mazda 3",
-        ciudad_residencia: "Bogota",
-        oneroso_qualitas: userInfo.beneficiario_oneroso === "Sí" ? true : false
+        placa: info.placa || "",
+        ciudad: info.ciudad || "",
+        modelo: "",        // el bot lo consulta por placa
+        precio: "",
+        id_marca_axa: "",
+        marca_nombre: "",
+        id_color_axa: "",
+        id_zona_axa: "",
+        descripcion: "",
+        ciudad_residencia: info.ciudad || "",
+        oneroso_qualitas: info.beneficiario_oneroso === "Sí"
       }
     }
 
+    console.log("🚀 Enviando payload al bot:", JSON.stringify(payload, null, 2));
+
     try {
-      const res = await fetch(`/api/v1/cotizar`, {
+      const res = await fetch("/api/v1/cotizar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       })
       const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || "Error al iniciar cotización")
+      }
+
       if (data.task_id) {
         setPollingTaskId(data.task_id)
       } else {
-        toast.error("Error al iniciar cotización")
-        setAppState("chatting")
+        throw new Error("El bot no retornó un task_id")
       }
-    } catch (error) {
-      console.error("Fetch error:", error)
-      toast.error("Error de conexión al cotizar")
+    } catch (error: any) {
+      console.error("startQuotingFlow error:", error)
+      toast.error(error.message || "Error de conexión al cotizar")
       setAppState("chatting")
     }
   }
@@ -600,108 +638,11 @@ export default function CotizarPage() {
 
                 {/* Phase: Dashboard Result (Completed Quote) */}
                 {appState === "completed_quote" && quoteResult && (
-                  <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 w-full max-w-4xl mx-auto pb-10">
-                    
-                    {/* Header Destacado */}
-                    <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-6 md:p-8 text-white shadow-xl relative overflow-hidden">
-                      <div className="absolute top-0 right-0 p-8 opacity-10">
-                        <Icon icon="mdi:car-shield" className="w-48 h-48" />
-                      </div>
-                      <div className="relative z-10">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-xs font-semibold uppercase tracking-wider mb-4 border border-white/20">
-                          <Icon icon="ph:shield-check-fill" className="text-emerald-400 w-4 h-4" />
-                          <span>{quoteResult.aseguradora}</span>
-                        </div>
-                        <h2 className="text-2xl md:text-3xl font-black mb-2">{quoteResult.datos.caracteristicas.vehiculo}</h2>
-                        <p className="text-slate-300 font-medium text-sm md:text-base">
-                          Cotización #{quoteResult.datos.caracteristicas.numero_cotizacion}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Tarjetas Financieras */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="md:col-span-3 bg-white border border-primary/20 rounded-3xl p-6 shadow-lg shadow-primary/5 flex flex-col md:flex-row items-center justify-between gap-4 relative overflow-hidden">
-                        <div className="absolute top-0 left-0 w-2 h-full bg-primary"></div>
-                        <div>
-                          <p className="text-sm font-bold text-slate-500 uppercase tracking-wider">Importe Total</p>
-                          <h3 className="text-4xl md:text-5xl font-black text-primary mt-1">{quoteResult.datos.desglose_financiero.importe_total}</h3>
-                        </div>
-                        <div className="flex gap-4 md:gap-8 w-full md:w-auto">
-                          <div className="flex-1 md:flex-none bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                            <p className="text-xs font-bold text-slate-500 uppercase">Prima Neta</p>
-                            <p className="text-xl font-bold text-slate-800">{quoteResult.datos.desglose_financiero.prima_neta}</p>
-                          </div>
-                          <div className="flex-1 md:flex-none bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                            <p className="text-xs font-bold text-slate-500 uppercase">IVA</p>
-                            <p className="text-xl font-bold text-slate-800">{quoteResult.datos.desglose_financiero.iva}</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Características */}
-                    <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-100">
-                      <h4 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                        <Icon icon="ph:list-dashes-bold" className="text-primary w-5 h-5" />
-                        Características de la Póliza
-                      </h4>
-                      <div className="flex flex-wrap gap-3">
-                        <div className="px-4 py-2.5 bg-blue-50 text-blue-700 rounded-xl font-semibold text-sm border border-blue-100 flex items-center gap-2">
-                          <Icon icon="ph:car-profile-fill" /> {quoteResult.datos.caracteristicas.tipo_uso}
-                        </div>
-                        <div className="px-4 py-2.5 bg-purple-50 text-purple-700 rounded-xl font-semibold text-sm border border-purple-100 flex items-center gap-2">
-                          <Icon icon="ph:package-fill" /> {quoteResult.datos.caracteristicas.amparo_paquete}
-                        </div>
-                        <div className="px-4 py-2.5 bg-emerald-50 text-emerald-700 rounded-xl font-semibold text-sm border border-emerald-100 flex items-center gap-2">
-                          <Icon icon="ph:credit-card-fill" /> Pago {quoteResult.datos.caracteristicas.modalidad_pago}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Amparos Base */}
-                    <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-100 overflow-hidden">
-                      <h4 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                        <Icon icon="ph:shield-star-bold" className="text-primary w-5 h-5" />
-                        Amparos Base
-                      </h4>
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
-                          <thead>
-                            <tr className="border-b-2 border-slate-100">
-                              <th className="pb-4 pt-2 px-4 text-xs font-extrabold text-slate-400 uppercase tracking-wider w-1/2">Cobertura</th>
-                              <th className="pb-4 pt-2 px-4 text-xs font-extrabold text-slate-400 uppercase tracking-wider text-right">Valor Asegurado</th>
-                              <th className="pb-4 pt-2 px-4 text-xs font-extrabold text-slate-400 uppercase tracking-wider text-right">Deducible</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-slate-50">
-                            {quoteResult.datos.amparos_base.map((amparo, idx) => (
-                              <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
-                                <td className="py-4 px-4 font-semibold text-slate-700 text-sm flex items-center gap-3">
-                                  <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                                    <Icon icon="ph:check-bold" className="w-4 h-4" />
-                                  </div>
-                                  {amparo.cobertura}
-                                </td>
-                                <td className="py-4 px-4 font-bold text-slate-800 text-right whitespace-nowrap">{amparo.valor_asegurado}</td>
-                                <td className="py-4 px-4 font-semibold text-slate-500 text-right whitespace-nowrap">{amparo.deducible}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                    
-                    {/* Call to action */}
-                    <div className="mt-8 flex justify-center">
-                      <Button 
-                        onClick={() => setAppState("sarlaft")}
-                        className="w-full md:w-auto px-12 h-14 rounded-2xl font-bold text-lg shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
-                      >
-                        Continuar y Emitir
-                      </Button>
-                    </div>
-                    
+                  <div className="w-full pb-6">
+                    <QuoteResultCard
+                      quoteResult={quoteResult}
+                      onContinue={() => setAppState("sarlaft")}
+                    />
                   </div>
                 )}
 
