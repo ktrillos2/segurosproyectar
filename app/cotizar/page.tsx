@@ -180,15 +180,11 @@ export default function CotizarPage() {
         }
 
         if (extractedData.completado) {
-          // MODO PRUEBA: Saltar verificación SMS y cotizar directo
-          setTimeout(() => startQuotingFlow(mergedInfo), 2000);
-
-          /* MODO PRODUCCIÓN: Activar verificación SMS
+          // Pass the merged snapshot so requestSmsVerification doesn't rely on stale state
           setTimeout(() => requestSmsVerification(
             extractedData.celular || mergedInfo.celular,
             mergedInfo
           ), 2000)
-          */
         }
 
         return content.replace(/###DATA###[\s\S]*?###ENDDATA###/, "").trim()
