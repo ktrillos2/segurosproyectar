@@ -17,16 +17,33 @@ type Message = {
 }
 
 type UserInfo = {
-  nombre?: string
-  documento_tipo?: string
-  documento_numero?: string
-  fecha_nacimiento?: string
-  placa?: string
-  ciudad?: string
-  celular?: string
-  beneficiario_oneroso?: string
-  entidad_financiera?: string
-  correo?: string
+  cliente?: {
+    tipo_documento?: string
+    numero_documento?: string
+    nombre?: string
+    apellidos?: string
+    fecha_nacimiento?: string
+    genero?: string
+    correo?: string
+    celular?: string
+    direccion?: string
+  }
+  vehiculo?: {
+    placa?: string
+    ciudad?: string
+    departamento?: string
+    modelo?: string
+    precio?: string
+    marca?: string
+    linea?: string
+    descripcion?: string
+    color?: string
+    servicio?: string
+    cero_km?: boolean
+    valor_accesorios?: string
+    oneroso?: boolean
+    beneficiario?: boolean
+  }
 }
 
 type InsuranceQuote = {
@@ -41,35 +58,27 @@ type InsuranceQuote = {
 
 type PollingResult = {
   aseguradora: string
+  status: "ok" | "error" | "sin_cotizacion"
   estado: string
-  datos: {
-    caracteristicas: {
-      numero_cotizacion: string
-      agente: string
-      vehiculo: string
-      tarifa_aplicada: string
-      tipo_uso: string
-      servicio: string
-      amparo_paquete: string
-      modalidad_pago: string
-      periodo_gracia: string
-    }
-    desglose_financiero: {
-      prima_neta: string
-      gastos_expedicion: string
-      iva: string
-      subtotal: string
-      primer_pago: string
-      pago_subsecuente: string
-      importe_total: string
-    }
-    amparos_base: Array<{
-      cobertura: string
-      valor_asegurado: string
-      deducible: string
-    }>
-    amparos_accesorios: any[]
-  }
+  mensaje: string | null
+  error: any | null
+  plan_recomendado: any | null
+  vehiculo: any
+  asegurado: any
+  amparos: Array<{
+    nombre: string
+    valor: string
+    deducible: string | null
+  }>
+  planes_disponibles: Array<{
+    nombre: string
+    id_producto: string | null
+    prima_neta: number | { valor: number; texto: string }
+    iva: number | { valor: number; texto: string }
+    gastos_expedicion: number | { valor: number; texto: string } | null
+    total: number | { valor: number; texto: string }
+  }>
+  raw: any
 }
 
 const QUOTES: InsuranceQuote[] = [
@@ -120,24 +129,183 @@ const QUOTES: InsuranceQuote[] = [
   }
 ]
 
+const SAMPLE_DATA = {
+  cliente: {
+    tipo_documento: "CC",
+    numero_documento: "1090384736",
+    nombre: "Keyner Steban",
+    apellidos: "Trillos Useche",
+    fecha_nacimiento: "03/08/1997",
+    genero: "Masculino",
+    correo: "contacto@ktcode.com",
+    celular: "3103035289",
+    direccion: "Cucuta, Norte de Santander"
+  },
+  vehiculo: {
+    placa: "DDB440",
+    ciudad: "BOGOTA",
+    departamento: "BOGOTA",
+    modelo: "2024",
+    precio: "50000000",
+    marca: "MAZDA",
+    linea: "3",
+    descripcion: "MAZDA 3",
+    color: "ROJO",
+    servicio: "Particular",
+    cero_km: false,
+    valor_accesorios: "0",
+    oneroso: false,
+    beneficiario: false
+  }
+}
+
 type AppState = "chatting" | "verifying_sms" | "quoting" | "selecting" | "sarlaft" | "issuing" | "finished" | "completed_quote"
+
+const normalizeQuoteData = (rawItem: any) => {
+  const isError = rawItem.status === "error" || !rawItem.aseguradora;
+  if (isError) {
+    return {
+      aseguradora: rawItem.aseguradora || "Desconocida",
+      status: "error",
+      estado: rawItem.error || "Error",
+      mensaje: null,
+      error: rawItem.error,
+      plan_recomendado: null,
+      vehiculo: null,
+      asegurado: null,
+      amparos: [],
+      planes_disponibles: [],
+      raw: rawItem
+    };
+  }
+
+  const parseAmount = (val: any) => {
+    if (!val) return 0;
+    if (typeof val === 'number') return val;
+    const clean = String(val).replace(/[^0-9]/g, "");
+    return parseInt(clean) || 0;
+  }
+
+  const result: any = {
+    aseguradora: rawItem.aseguradora,
+    status: "ok",
+    estado: rawItem.estado || "OK",
+    mensaje: null,
+    error: null,
+    raw: rawItem,
+    vehiculo: rawItem.vehiculo || { placa: "N/A" },
+    asegurado: rawItem.asegurado || null,
+    amparos: [],
+    planes_disponibles: [],
+    plan_recomendado: null
+  };
+
+  const nameL = String(rawItem.aseguradora).toLowerCase();
+
+  // AXA Mapping
+  if (nameL.includes("axa")) {
+    if (rawItem.producto?.plan_seleccionado) {
+      const p = rawItem.producto.plan_seleccionado;
+      result.plan_recomendado = {
+        nombre: rawItem.producto.nombre || "ESENCIAL",
+        prima_neta: parseAmount(p.prima_neta),
+        iva: parseAmount(p.iva),
+        gastos_expedicion: parseAmount(p.gastos_expedicion),
+        total: parseAmount(p.total),
+        valor_asegurado: parseAmount(rawItem.valores?.valor_asegurado)
+      };
+    }
+    if (Array.isArray(rawItem.cotizaciones_disponibles)) {
+      result.planes_disponibles = rawItem.cotizaciones_disponibles.map((p: any) => ({
+        nombre: p.producto || "Opción",
+        prima_neta: parseAmount(p.prima_neta),
+        iva: parseAmount(p.iva),
+        gastos_expedicion: parseAmount(p.gastos_expedicion),
+        total: parseAmount(p.total)
+      }));
+    }
+    if (Array.isArray(rawItem.amparos)) {
+      result.amparos = rawItem.amparos.map((amp: any) => ({
+        nombre: typeof amp === 'string' ? amp : amp.nombre,
+        valor: "Amparada",
+        deducible: null
+      }));
+    }
+  }
+  // Equidad Mapping
+  else if (nameL.includes("equidad")) {
+    if (rawItem.datos?.planes && rawItem.datos.planes.length > 0) {
+      result.planes_disponibles = rawItem.datos.planes.map((p: any) => ({
+        nombre: p.nombre_plan || "Plan",
+        prima_neta: parseAmount(p.prima_anual) * 0.8,
+        iva: parseAmount(p.prima_anual) * 0.19,
+        gastos_expedicion: 0,
+        total: parseAmount(p.prima_anual)
+      }));
+      result.plan_recomendado = result.planes_disponibles[0];
+      
+      const firstPlan = rawItem.datos.planes[0];
+      result.amparos = [
+        { nombre: "RCE", valor: firstPlan.limite_rce, deducible: "0" },
+        { nombre: "Pérdidas Totales", valor: "Amparada", deducible: firstPlan.deducible_perdidas_totales },
+        { nombre: "Pérdidas Parciales", valor: "Amparada", deducible: firstPlan.deducible_perdidas_parciales },
+        { nombre: "Vehículo Sustituto", valor: firstPlan.limite_vehiculo_sustituto, deducible: "0" }
+      ];
+    } else {
+      result.status = "error";
+    }
+  }
+  // Quálitas Mapping
+  else if (nameL.includes("quálitas") || nameL.includes("qualitas")) {
+    const fin = rawItem.datos?.desglose_financiero;
+    if (fin) {
+      result.plan_recomendado = {
+        nombre: rawItem.datos?.caracteristicas?.amparo_paquete || "AMPLIA",
+        prima_neta: parseAmount(fin.prima_neta),
+        iva: parseAmount(fin.iva),
+        gastos_expedicion: parseAmount(fin.gastos_expedicion),
+        total: parseAmount(fin.importe_total || fin.subtotal)
+      };
+      result.planes_disponibles = [result.plan_recomendado];
+    } else {
+      result.status = "error";
+    }
+    if (Array.isArray(rawItem.datos?.amparos_base)) {
+      result.amparos = rawItem.datos.amparos_base.map((amp: any) => ({
+        nombre: amp.cobertura,
+        valor: amp.valor_asegurado,
+        deducible: amp.deducible
+      }));
+    }
+  }
+  // Generic Fallback
+  else {
+    if (rawItem.plan_recomendado) {
+      result.plan_recomendado = rawItem.plan_recomendado;
+      result.planes_disponibles = rawItem.planes_disponibles || [rawItem.plan_recomendado];
+      result.amparos = rawItem.amparos || [];
+    } else {
+      result.status = "error";
+    }
+  }
+
+  return result;
+}
 
 export default function CotizarPage() {
   const [isAgreed, setIsAgreed] = useState(false)
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: "bot",
-      content: "¡Hola! Soy Sofía de Proyectar Seguros 👋 En minutos te muestro las mejores opciones de seguro para tu carro. ¿Me dices tu nombre completo para empezar?"
-    }
-  ])
+  const [messages, setMessages] = useState<Message[]>([])
   const [inputValue, setInputValue] = useState("")
+  const [dateDay, setDateDay] = useState("")
+  const [dateMonth, setDateMonth] = useState("")
+  const [dateYear, setDateYear] = useState("")
   const [isTyping, setIsTyping] = useState(false)
   const [userInfo, setUserInfo] = useState<UserInfo>({})
   const [suggestions, setSuggestions] = useState<string[]>(["Juan", "ABC123", "Bogotá"])
   const [appState, setAppState] = useState<AppState>("chatting")
   const [selectedQuote, setSelectedQuote] = useState<InsuranceQuote | null>(null)
   const [sarlaftData, setSarlaftData] = useState({ ocupacion: "", fondos: "Salario" })
-  const [quoteResult, setQuoteResult] = useState<PollingResult | null>(null)
+  const [quoteResults, setQuoteResults] = useState<PollingResult[]>([])
   const [pollingTaskId, setPollingTaskId] = useState<string | null>(null)
   const [otpCode, setOtpCode] = useState("")
   const [isSendingSms, setIsSendingSms] = useState(false)
@@ -148,6 +316,34 @@ export default function CotizarPage() {
   const [latestUserInfo, setLatestUserInfo] = useState<UserInfo | null>(null)
 
   const messagesContainerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    // Initiate chat if empty
+    if (messages.length === 0 && !isTyping) {
+      initChat()
+    }
+  }, [])
+
+  const initChat = async () => {
+    setIsTyping(true)
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: [] })
+      })
+      if (!response.ok) throw new Error("Error iniciando chat")
+      
+      const data = await response.json()
+      processAIData(data.content)
+      setMessages([{ role: "bot", content: data.content }])
+    } catch (error) {
+      console.error(error)
+      setMessages([{ role: "bot", content: "¡Hola! Soy Sofía de Proyectar Seguros 👋 ¿Me dices tu nombre completo para empezar?" }])
+    } finally {
+      setIsTyping(false)
+    }
+  }
 
   const scrollToBottom = () => {
     if (messagesContainerRef.current) {
@@ -166,12 +362,18 @@ export default function CotizarPage() {
   const processAIData = (content: string) => {
     const dataMatch = content.match(/###DATA###([\s\S]*?)###ENDDATA###/)
     if (dataMatch) {
+      const cleanContent = content.replace(/###DATA###[\s\S]*?###ENDDATA###/, "").trim()
       try {
         const extractedData = JSON.parse(dataMatch[1])
         // Merge and obtain the up-to-date snapshot synchronously
         let mergedInfo: UserInfo = {}
         setUserInfo(prev => {
-          mergedInfo = { ...prev, ...extractedData }
+          mergedInfo = {
+            ...prev,
+            ...extractedData,
+            cliente: { ...(prev.cliente || {}), ...(extractedData.cliente || {}) },
+            vehiculo: { ...(prev.vehiculo || {}), ...(extractedData.vehiculo || {}) }
+          }
           return mergedInfo
         })
 
@@ -182,21 +384,30 @@ export default function CotizarPage() {
         if (extractedData.completado) {
           // Pass the merged snapshot so requestSmsVerification doesn't rely on stale state
           setTimeout(() => requestSmsVerification(
-            extractedData.celular || mergedInfo.celular,
+            extractedData.cliente?.celular || mergedInfo.cliente?.celular,
             mergedInfo
           ), 2000)
         }
-
-        return content.replace(/###DATA###[\s\S]*?###ENDDATA###/, "").trim()
       } catch (e) {
         console.error("Error parseando datos de la IA:", e)
       }
+      return cleanContent
     }
-    return content
+
+    // Hide the block while it's streaming (if ###DATA### has started but ###ENDDATA### is missing)
+    let processedContent = content;
+    if (processedContent.includes("###DATA###")) {
+      processedContent = processedContent.split("###DATA###")[0].trim()
+    }
+
+    // Failsafe: Remove "Sugerencias: [...]" if the AI accidentally prints it in visible text
+    processedContent = processedContent.replace(/Sugerencias:\s*\[.*?\]/g, "").trim()
+
+    return processedContent
   }
 
   const requestSmsVerification = async (phoneToUse?: string, infoSnapshot?: UserInfo) => {
-    const phone = phoneToUse || userInfo.celular;
+    const phone = phoneToUse || userInfo.cliente?.celular;
     if (!phone) {
       toast.error("No se detectó un número de celular válido.");
       setAppState("chatting");
@@ -221,7 +432,7 @@ export default function CotizarPage() {
 
       // Persist the phone in state if it came externally
       if (phoneToUse) {
-        setUserInfo(prev => ({ ...prev, celular: phoneToUse }));
+        setUserInfo(prev => ({ ...prev, cliente: { ...prev.cliente, celular: phoneToUse } }));
       }
       // Keep the fresh snapshot so verifySmsAndQuote can use it later
       if (infoSnapshot) {
@@ -251,7 +462,7 @@ export default function CotizarPage() {
       const res = await fetch("/api/verify/check", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: userInfo.celular, code: otpCode })
+        body: JSON.stringify({ phone: userInfo.cliente?.celular, code: otpCode })
       });
       const data = await res.json();
 
@@ -276,35 +487,9 @@ export default function CotizarPage() {
   const startQuotingFlow = async (info: UserInfo = userInfo) => {
     setAppState("quoting")
 
-    // Map tipo_documento to the code expected by AXA
-    const tipoDocAxa =
-      info.documento_tipo === "NIT" ? "NIT" :
-      info.documento_tipo === "Cédula de Extranjería" ? "CE" : "CC";
-
     const payload = {
-      cliente: {
-        nombre_completo: info.nombre || "",
-        tipo_documento_axa: tipoDocAxa,
-        numero_documento: info.documento_numero || "",
-        fecha_nacimiento: info.fecha_nacimiento || "",
-        tipo_persona_qualitas: "1",
-        correo: info.correo || "",
-        celular: info.celular || "",
-        direccion: info.ciudad ? `${info.ciudad}, Colombia` : "Colombia"
-      },
-      vehiculo: {
-        placa: info.placa || "",
-        ciudad: info.ciudad || "",
-        modelo: "",        // el bot lo consulta por placa
-        precio: "",
-        id_marca_axa: "",
-        marca_nombre: "",
-        id_color_axa: "",
-        id_zona_axa: "",
-        descripcion: "",
-        ciudad_residencia: info.ciudad || "",
-        oneroso_qualitas: info.beneficiario_oneroso === "Sí"
-      }
+      cliente: info.cliente || {},
+      vehiculo: info.vehiculo || {}
     }
 
     console.log("🚀 Enviando payload al bot:", JSON.stringify(payload, null, 2));
@@ -333,6 +518,237 @@ export default function CotizarPage() {
     }
   }
 
+  const handleDirectQuote = async () => {
+    setAppState("quoting")
+    console.log("⏩ Saltando verificación. Enviando payload de ejemplo:", JSON.stringify(SAMPLE_DATA, null, 2));
+
+    try {
+      const res = await fetch("/api/v1/cotizar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(SAMPLE_DATA)
+      })
+      const data = await res.json()
+
+      if (!res.ok) throw new Error(data.error || "Error al iniciar cotización")
+      if (data.task_id) setPollingTaskId(data.task_id)
+      else throw new Error("El bot no retornó un task_id")
+    } catch (error: any) {
+      console.error("handleDirectQuote error:", error)
+      toast.error(error.message || "Error de conexión al cotizar")
+      setAppState("chatting")
+    }
+  }
+
+  const handleTestMockQuote = () => {
+    const mockResults: PollingResult[] = [
+      {
+        aseguradora: "Quálitas",
+        status: "ok",
+        estado: "Cotización generada correctamente",
+        mensaje: null,
+        error: null,
+        plan_recomendado: {
+          nombre: "AMPLIA",
+          id_producto: null,
+          prima_neta: { valor: 1921244, texto: "$1.921.244" },
+          iva: { valor: 372066, texto: "$372.066" },
+          gastos_expedicion: { valor: 37000, texto: "$37.000" },
+          total: { valor: 2330310, texto: "$2.330.310" },
+          valor_asegurado: { valor: 38600000, texto: "$38.600.000" }
+        },
+        vehiculo: {
+          marca: "RENAULT",
+          linea: "KWID OUTSIDER AA 4X2 GSL MT.",
+          modelo: "2022",
+          descripcion: "RENAULT KWID OUTSIDER AA 4X2 GSL MT., 05 PSJ. 2022",
+          codigo_fasecolda: "8001195",
+          placa: "KNY605",
+          motor: null,
+          chasis: null,
+          zona_tarifacion: "BOGOTA",
+          accesorios: null
+        },
+        asegurado: {
+          fecha_nacimiento: "14/05/2006",
+          genero: "FEMENINO"
+        },
+        amparos: [
+          { nombre: "Pérdida Parcial por Daños", valor: "$38.600.000", deducible: "1.400.000" },
+          { nombre: "Pérdida Total por Daños", valor: "$38.600.000", deducible: "0%" },
+          { nombre: "Responsabilidad Civil Extracontractual", valor: "$4.000.000.000", deducible: "0" }
+        ],
+        planes_disponibles: [
+          {
+            nombre: "AMPLIA",
+            id_producto: null,
+            prima_neta: 1921244,
+            iva: 372066,
+            gastos_expedicion: 37000,
+            total: 2330310
+          }
+        ],
+        raw: {
+          numero_cotizacion: "0004917853",
+          agente: "20296",
+          tarifa_aplicada: "2507",
+          tipo_uso: "PARTICULAR",
+          servicio: "Livianos",
+          modalidad_pago: "ANUAL",
+          periodo_gracia: "No disponible",
+          primer_pago: "$2.330.310",
+          pago_subsecuente: "-"
+        }
+      },
+      {
+        aseguradora: "Equidad",
+        status: "ok",
+        estado: "Cotización generada correctamente",
+        mensaje: null,
+        error: null,
+        plan_recomendado: {
+          nombre: "PLAN BRONCE",
+          id_producto: null,
+          prima_neta: { valor: 1550000, texto: "$1.550.000" },
+          iva: { valor: 294500, texto: "$294.500" },
+          gastos_expedicion: { valor: 25000, texto: "$25.000" },
+          total: { valor: 1869500, texto: "$1.869.500" },
+          valor_asegurado: { valor: 38600000, texto: "$38.600.000" }
+        },
+        vehiculo: { placa: "KNY605" },
+        asegurado: null,
+        amparos: [
+          { nombre: "Responsabilidad Civil", valor: "$1.000.000.000", deducible: "0" }
+        ],
+        planes_disponibles: [
+          { nombre: "PLAN BRONCE", id_producto: "1", prima_neta: 1550000, iva: 294500, gastos_expedicion: 25000, total: 1869500 },
+          { nombre: "PLAN PLATA", id_producto: "2", prima_neta: 1850000, iva: 351500, gastos_expedicion: 25000, total: 2226500 }
+        ],
+        raw: null
+      },
+      {
+        aseguradora: "Mundial",
+        status: "ok",
+        estado: "Cotización generada correctamente",
+        mensaje: null,
+        error: null,
+        plan_recomendado: {
+          nombre: "AUTOS TRADICIONAL",
+          id_producto: null,
+          prima_neta: { valor: 1720000, texto: "$1.720.000" },
+          iva: { valor: 326800, texto: "$326.800" },
+          gastos_expedicion: { valor: 20000, texto: "$20.000" },
+          total: { valor: 2066800, texto: "$2.066.800" },
+          valor_asegurado: { valor: 38600000, texto: "$38.600.000" }
+        },
+        vehiculo: { placa: "KNY605" },
+        asegurado: null,
+        amparos: [
+          { nombre: "Responsabilidad Civil Extracontractual", valor: "$2.000.000.000", deducible: "0" }
+        ],
+        planes_disponibles: [
+          { nombre: "AUTOS TRADICIONAL", id_producto: "1", prima_neta: 1720000, iva: 326800, gastos_expedicion: 20000, total: 2066800 }
+        ],
+        raw: null
+      },
+      {
+        aseguradora: "Seguros del Estado",
+        status: "ok",
+        estado: "Cotización generada correctamente",
+        mensaje: null,
+        error: null,
+        plan_recomendado: {
+          nombre: "PLAN FULL EQUIPO",
+          id_producto: null,
+          prima_neta: { valor: 1810000, texto: "$1.810.000" },
+          iva: { valor: 343900, texto: "$343.900" },
+          gastos_expedicion: { valor: 30000, texto: "$30.000" },
+          total: { valor: 2183900, texto: "$2.183.900" },
+          valor_asegurado: { valor: 38600000, texto: "$38.600.000" }
+        },
+        vehiculo: { placa: "KNY605" },
+        asegurado: null,
+        amparos: [
+          { nombre: "Responsabilidad Civil Extracontractual", valor: "$3.000.000.000", deducible: "0" }
+        ],
+        planes_disponibles: [
+          { nombre: "PLAN FULL EQUIPO", id_producto: "1", prima_neta: 1810000, iva: 343900, gastos_expedicion: 30000, total: 2183900 }
+        ],
+        raw: null
+      },
+      {
+        aseguradora: "AXA Colpatria",
+        status: "ok",
+        estado: "Cotización generada correctamente",
+        mensaje: null,
+        error: null,
+        plan_recomendado: {
+          nombre: "PLUS",
+          id_producto: null,
+          prima_neta: { valor: 1950000, texto: "$1.950.000" },
+          iva: { valor: 370500, texto: "$370.500" },
+          gastos_expedicion: { valor: 35000, texto: "$35.000" },
+          total: { valor: 2355500, texto: "$2.355.500" },
+          valor_asegurado: { valor: 38600000, texto: "$38.600.000" }
+        },
+        vehiculo: { placa: "KNY605" },
+        asegurado: null,
+        amparos: [
+          { nombre: "Responsabilidad Civil Extracontractual", valor: "$3.500.000.000", deducible: "0" }
+        ],
+        planes_disponibles: [
+          { nombre: "PLUS", id_producto: "1", prima_neta: 1950000, iva: 370500, gastos_expedicion: 35000, total: 2355500 }
+        ],
+        raw: null
+      },
+      {
+        aseguradora: "Zurich",
+        status: "ok",
+        estado: "Cotización generada correctamente",
+        mensaje: null,
+        error: null,
+        plan_recomendado: {
+          nombre: "ZURICH AUTOS",
+          id_producto: null,
+          prima_neta: { valor: 2100000, texto: "$2.100.000" },
+          iva: { valor: 399000, texto: "$399.000" },
+          gastos_expedicion: { valor: 40000, texto: "$40.000" },
+          total: { valor: 2539000, texto: "$2.539.000" },
+          valor_asegurado: { valor: 38600000, texto: "$38.600.000" }
+        },
+        vehiculo: { placa: "KNY605" },
+        asegurado: null,
+        amparos: [
+          { nombre: "Responsabilidad Civil Extracontractual", valor: "$4.000.000.000", deducible: "0" }
+        ],
+        planes_disponibles: [
+          { nombre: "ZURICH AUTOS", id_producto: "1", prima_neta: 2100000, iva: 399000, gastos_expedicion: 40000, total: 2539000 }
+        ],
+        raw: null
+      }
+    ];
+
+    const mockUser: UserInfo = {
+      cliente: {
+        nombre: "Keyner",
+        apellidos: "Trillos Useche",
+        celular: "3103035289",
+        numero_documento: "1090384736",
+        tipo_documento: "CC"
+      },
+      vehiculo: {
+        placa: "DDB440",
+        ciudad: "Bogota"
+      }
+    };
+    
+    setUserInfo(mockUser);
+    setLatestUserInfo(mockUser);
+    setIsAgreed(true);
+    setQuoteResults(mockResults);
+    setAppState("completed_quote");
+  }
+
   useEffect(() => {
     let intervalId: NodeJS.Timeout
     if (appState === "quoting" && pollingTaskId) {
@@ -341,11 +757,12 @@ export default function CotizarPage() {
           const res = await fetch(`/api/v1/cotizar/status/${pollingTaskId}`)
           const data = await res.json()
           
-          if (data.status === "completado" || data.status === "error") {
+          if (data.status === "completado" || data.status === "completado_con_errores" || data.status === "error") {
             clearInterval(intervalId)
-            if (data.status === "completado") {
-              if (data.data && data.data.length > 0) {
-                setQuoteResult(data.data[0])
+            if (data.status === "completado" || data.status === "completado_con_errores") {
+              const resArray = data.cotizaciones || data.data || []
+              if (resArray.length > 0) {
+                setQuoteResults(resArray.map(normalizeQuoteData))
                 setAppState("completed_quote")
               } else {
                 toast.error("Cotización sin resultados")
@@ -389,6 +806,9 @@ export default function CotizarPage() {
     const newUserMessage: Message = { role: "user", content: text }
     setMessages(prev => [...prev, newUserMessage])
     setInputValue("")
+    setDateDay("")
+    setDateMonth("")
+    setDateYear("")
     setSuggestions([])
     setIsTyping(true)
 
@@ -407,9 +827,9 @@ export default function CotizarPage() {
       if (!response.ok) throw new Error("Error en la respuesta")
 
       const data = await response.json()
-      const cleanContent = processAIData(data.content)
+      processAIData(data.content)
 
-      setMessages(prev => [...prev, { role: "bot", content: cleanContent }])
+      setMessages(prev => [...prev, { role: "bot", content: data.content }])
     } catch (error) {
       console.error("Error:", error)
       toast.error("Lo siento, tuve un problema de conexión.")
@@ -480,12 +900,27 @@ export default function CotizarPage() {
                   </div>
                 </div>
               </div>
-              <Button 
-                onClick={() => setIsAgreed(true)}
-                className="mt-6 md:mt-10 w-full max-w-sm h-14 rounded-2xl font-bold text-lg shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
-              >
-                Aceptar y Empezar
-              </Button>
+              <div className="mt-6 md:mt-10 w-full max-w-sm flex flex-col gap-3">
+                <Button 
+                  onClick={() => {
+                    setIsAgreed(true)
+                    if (process.env.NEXT_PUBLIC_SKIP_VERIFICATION === "true") {
+                      handleDirectQuote()
+                    }
+                  }}
+                  className="w-full h-14 rounded-2xl font-bold text-lg shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
+                >
+                  Aceptar y Empezar
+                </Button>
+                <Button 
+                  onClick={handleTestMockQuote}
+                  variant="outline"
+                  className="w-full h-12 rounded-2xl font-bold text-xs border-dashed border-2 border-slate-300 hover:border-primary text-slate-500 hover:text-primary transition-all"
+                >
+                  <Icon icon="ph:eye-bold" className="w-4 h-4 mr-1.5" />
+                  Probar Diseño (Todas las Aseguradoras)
+                </Button>
+              </div>
               <p className="mt-4 text-[9px] md:text-[10px] text-slate-400 uppercase tracking-widest font-bold px-4">
                 Al hacer clic, aceptas nuestra política de tratamiento de datos.
               </p>
@@ -507,7 +942,12 @@ export default function CotizarPage() {
                       <div className={`rounded-2xl px-5 py-4 shadow-sm text-[15px] leading-relaxed font-medium ${
                         message.role === "user" ? "bg-primary text-white rounded-tr-sm shadow-md" : "bg-white text-slate-800 rounded-tl-sm border border-slate-100 shadow-sm"
                       }`}>
-                        <p className="whitespace-pre-wrap">{message.content}</p>
+                        <p className="whitespace-pre-wrap">
+                          {message.content
+                            .replace(/###DATA###[\s\S]*?###ENDDATA###/g, "")
+                            .replace(/Sugerencias:\s*\[.*?\]/g, "")
+                            .trim()}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -539,11 +979,11 @@ export default function CotizarPage() {
                           <h3 className="text-2xl font-bold text-slate-800">Verifica tu número</h3>
                           <p className="text-slate-500 text-sm mt-2 leading-relaxed">
                             Hemos enviado un código SMS al número <br/>
-                            <span className="font-bold text-slate-700">{userInfo.celular}</span>
+                            <span className="font-bold text-slate-700">{userInfo.cliente?.celular}</span>
                           </p>
                           <button 
                             onClick={() => {
-                              setTempPhone(userInfo.celular || "");
+                              setTempPhone(userInfo.cliente?.celular || "");
                               setIsEditingPhone(true);
                             }}
                             className="text-[11px] font-bold text-primary hover:underline mt-2 inline-flex items-center gap-1"
@@ -555,10 +995,10 @@ export default function CotizarPage() {
                         <form onSubmit={verifySmsAndQuote} className="w-full space-y-4">
                           <div>
                             <Input
-                              placeholder="Ingresa el código de 6 dígitos"
+                              placeholder="Ingresa el código"
                               value={otpCode}
                               onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                              className="text-center text-2xl tracking-[0.5em] font-black h-16 rounded-2xl bg-white border-2 border-slate-200 focus:border-primary shadow-sm"
+                              className="text-center text-2xl tracking-[0.5em] font-black h-16 rounded-2xl bg-white border-2 border-slate-200 focus:border-primary shadow-sm placeholder:tracking-normal placeholder:text-sm placeholder:font-normal"
                               disabled={isSendingSms}
                             />
                             {smsError && <p className="text-red-500 text-xs font-bold text-center mt-2">{smsError}</p>}
@@ -628,17 +1068,50 @@ export default function CotizarPage() {
                     <div className="text-center">
                       <h3 className="text-xl font-bold text-slate-800">Cotizando con aseguradoras...</h3>
                       <p className="text-slate-500 text-sm mt-2">Por favor espera, conectando con los servicios oficiales...</p>
+                      {pollingTaskId && (
+                        <p className="text-[11px] text-slate-400 font-medium mt-4">
+                          ID de Solicitud: {pollingTaskId}
+                        </p>
+                      )}
                     </div>
                   </div>
                 )}
 
                 {/* Phase: Dashboard Result (Completed Quote) */}
-                {appState === "completed_quote" && quoteResult && (
-                  <div className="w-full pb-6">
-                    <QuoteResultCard
-                      quoteResult={quoteResult}
-                      onContinue={() => setAppState("sarlaft")}
-                    />
+                {appState === "completed_quote" && quoteResults.length > 0 && (
+                  <div className="w-full pb-6 space-y-8">
+                    {(() => {
+                      const exitosas = quoteResults.filter(c => c.status === "ok");
+                      const errores = quoteResults.filter(c => c.status === "error");
+                      const sinCotizacion = quoteResults.filter(c => c.status === "sin_cotizacion");
+                      
+                      return (
+                        <>
+                          {pollingTaskId && (
+                            <div className="w-full text-center mb-6">
+                              <p className="text-[11px] text-slate-400 font-medium">
+                                ID de Solicitud: {pollingTaskId}
+                              </p>
+                            </div>
+                          )}
+                          {exitosas.length > 0 && (
+                            <div className="space-y-4">
+                              <h3 className="text-xl font-bold text-slate-800 px-2">Opciones Disponibles</h3>
+                              {exitosas.map((result, index) => (
+                                <QuoteResultCard
+                                  key={`ok-${index}`}
+                                  quoteResult={result}
+                                  onContinue={(name) => {
+                                    setSelectedQuote({ name } as any)
+                                    setAppState("sarlaft")
+                                  }}
+                                />
+                              ))}
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
                 )}
 
@@ -650,14 +1123,14 @@ export default function CotizarPage() {
                         <Icon icon="ph:identification-card-fill" className="w-8 h-8 text-primary" />
                       </div>
                       <h3 className="text-xl font-bold text-slate-800">Formulario de Seguridad</h3>
-                      <p className="text-slate-500 text-sm">Hola {userInfo.nombre}, solo necesitamos confirmar estos datos para {selectedQuote?.name}</p>
+                      <p className="text-slate-500 text-sm">Hola {userInfo.cliente?.nombre}, solo necesitamos confirmar estos datos para {selectedQuote?.name}</p>
                     </div>
                     <form onSubmit={handleSarlaftSubmit} className="space-y-4">
                       <div className="space-y-1.5">
                         <label className="text-xs font-bold text-slate-500 uppercase ml-1">Documento confirmado</label>
                         <Input 
                           disabled
-                          value={userInfo.documento_numero || "No detectado"}
+                          value={userInfo.cliente?.numero_documento || "No detectado"}
                           className="rounded-xl h-12 bg-slate-100 border-slate-200 text-slate-500"
                         />
                       </div>
@@ -716,7 +1189,7 @@ export default function CotizarPage() {
                     </p>
                     <div className="mt-8 p-6 bg-slate-50 rounded-3xl border border-slate-100 w-full">
                       <p className="text-slate-600 text-sm leading-relaxed">
-                        Hemos enviado los documentos a tu número <span className="font-bold">{userInfo.celular}</span>. 
+                        Hemos enviado los documentos a tu número <span className="font-bold">{userInfo.cliente?.celular}</span>. 
                         Por favor sigue las instrucciones en tu bandeja para activar tu cobertura hoy mismo.
                       </p>
                     </div>
@@ -749,23 +1222,138 @@ export default function CotizarPage() {
                     </div>
                   )}
 
-                  <form onSubmit={(e) => { e.preventDefault(); sendMessage(inputValue); }} className="flex gap-3 max-w-4xl mx-auto items-center">
-                    <Input
-                      value={inputValue}
-                      onChange={(e) => setInputValue(e.target.value)}
-                      placeholder="Escribe aquí tu respuesta..."
-                      disabled={isTyping}
-                      className="flex-1 h-14 min-h-[56px] rounded-full bg-slate-50 border-slate-200 focus:border-primary/50 focus:ring-4 focus:ring-primary/10 px-6 shadow-inner text-[15px] font-medium transition-all"
-                    />
-                    <Button 
-                      type="submit"
-                      disabled={isTyping || !inputValue.trim()}
-                      size="icon" 
-                      className="h-14 w-14 min-h-[56px] min-w-[56px] rounded-full bg-primary hover:bg-primary/90 shadow-[0_5px_15px_-5px_rgba(var(--primary),0.5)] shrink-0 transition-all active:scale-95 disabled:opacity-50"
-                    >
-                      <Icon icon="ph:paper-plane-right-fill" className="w-5 h-5 ml-1 text-white" />
-                    </Button>
-                  </form>
+                  {(() => {
+                    const lastBotMessage = messages.filter(m => m.role === "bot").pop()?.content.toLowerCase() || "";
+                    const isAskingForDate = lastBotMessage.includes("fecha de nacimiento");
+
+                    // Custom date lists
+                    const days = Array.from({ length: 31 }, (_, i) => {
+                      const d = i + 1;
+                      return d < 10 ? `0${d}` : `${d}`;
+                    });
+
+                    const monthsList = [
+                      { value: "01", label: "Ene" },
+                      { value: "02", label: "Feb" },
+                      { value: "03", label: "Mar" },
+                      { value: "04", label: "Abr" },
+                      { value: "05", label: "May" },
+                      { value: "06", label: "Jun" },
+                      { value: "07", label: "Jul" },
+                      { value: "08", label: "Ago" },
+                      { value: "09", label: "Sep" },
+                      { value: "10", label: "Oct" },
+                      { value: "11", label: "Nov" },
+                      { value: "12", label: "Dic" }
+                    ];
+
+                    const currentYear = new Date().getFullYear();
+                    // Colombian insurers require being 18+ and under 85
+                    const minAge = 18;
+                    const maxAge = 85;
+                    const startYear = currentYear - minAge;
+                    const endYear = currentYear - maxAge;
+                    const years = Array.from({ length: startYear - endYear + 1 }, (_, i) => String(startYear - i));
+
+                    const handleFormSubmit = (e: React.FormEvent) => {
+                      e.preventDefault();
+                      if (isAskingForDate) {
+                        if (dateDay && dateMonth && dateYear) {
+                          sendMessage(`${dateDay}/${dateMonth}/${dateYear}`);
+                        }
+                      } else {
+                        sendMessage(inputValue);
+                      }
+                    };
+
+                    if (isAskingForDate) {
+                      return (
+                        <form onSubmit={handleFormSubmit} className="w-full max-w-4xl mx-auto flex flex-col gap-2.5 animate-in fade-in slide-in-from-bottom-3 duration-500">
+                          <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-0.5 flex items-center gap-1.5 px-1">
+                            <Icon icon="ph:calendar-blank-fill" className="text-primary w-4.5 h-4.5" />
+                            Selecciona tu fecha de nacimiento:
+                          </div>
+                          <div className="flex gap-3 items-center">
+                            <div className="flex-1 grid grid-cols-3 gap-2">
+                              <div className="relative">
+                                <select
+                                  value={dateDay}
+                                  onChange={(e) => setDateDay(e.target.value)}
+                                  disabled={isTyping}
+                                  className="w-full h-14 rounded-2xl bg-slate-50/80 backdrop-blur border border-slate-200 focus:border-primary/50 focus:ring-4 focus:ring-primary/10 px-4 pr-8 text-[15px] font-bold text-slate-700 transition-all cursor-pointer shadow-inner appearance-none text-center focus:outline-none"
+                                >
+                                  <option value="">Día</option>
+                                  {days.map(d => (
+                                    <option key={d} value={d}>{d}</option>
+                                  ))}
+                                </select>
+                                <Icon icon="ph:caret-down-fill" className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                              </div>
+
+                              <div className="relative">
+                                <select
+                                  value={dateMonth}
+                                  onChange={(e) => setDateMonth(e.target.value)}
+                                  disabled={isTyping}
+                                  className="w-full h-14 rounded-2xl bg-slate-50/80 backdrop-blur border border-slate-200 focus:border-primary/50 focus:ring-4 focus:ring-primary/10 px-4 pr-8 text-[15px] font-bold text-slate-700 transition-all cursor-pointer shadow-inner appearance-none text-center focus:outline-none"
+                                >
+                                  <option value="">Mes</option>
+                                  {monthsList.map(m => (
+                                    <option key={m.value} value={m.value}>{m.label}</option>
+                                  ))}
+                                </select>
+                                <Icon icon="ph:caret-down-fill" className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                              </div>
+
+                              <div className="relative">
+                                <select
+                                  value={dateYear}
+                                  onChange={(e) => setDateYear(e.target.value)}
+                                  disabled={isTyping}
+                                  className="w-full h-14 rounded-2xl bg-slate-50/80 backdrop-blur border border-slate-200 focus:border-primary/50 focus:ring-4 focus:ring-primary/10 px-4 pr-8 text-[15px] font-bold text-slate-700 transition-all cursor-pointer shadow-inner appearance-none text-center focus:outline-none"
+                                >
+                                  <option value="">Año</option>
+                                  {years.map(y => (
+                                    <option key={y} value={y}>{y}</option>
+                                  ))}
+                                </select>
+                                <Icon icon="ph:caret-down-fill" className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                              </div>
+                            </div>
+
+                            <Button 
+                              type="submit"
+                              disabled={isTyping || !dateDay || !dateMonth || !dateYear}
+                              size="icon" 
+                              className="h-14 w-14 min-h-[56px] min-w-[56px] rounded-2xl bg-primary hover:bg-primary/90 shadow-[0_5px_15px_-5px_rgba(var(--primary),0.5)] shrink-0 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center"
+                            >
+                              <Icon icon="ph:paper-plane-right-fill" className="w-5 h-5 ml-0.5 text-white" />
+                            </Button>
+                          </div>
+                        </form>
+                      );
+                    }
+
+                    return (
+                      <form onSubmit={handleFormSubmit} className="flex gap-3 max-w-4xl mx-auto items-center">
+                        <Input
+                          value={inputValue}
+                          onChange={(e) => setInputValue(e.target.value)}
+                          placeholder="Escribe aquí tu respuesta..."
+                          disabled={isTyping}
+                          className="flex-1 h-14 min-h-[56px] rounded-full bg-slate-50 border-slate-200 focus:border-primary/50 focus:ring-4 focus:ring-primary/10 px-6 shadow-inner text-[15px] font-medium transition-all"
+                        />
+                        <Button 
+                          type="submit"
+                          disabled={isTyping || !inputValue.trim()}
+                          size="icon" 
+                          className="h-14 w-14 min-h-[56px] min-w-[56px] rounded-full bg-primary hover:bg-primary/90 shadow-[0_5px_15px_-5px_rgba(var(--primary),0.5)] shrink-0 transition-all active:scale-95 disabled:opacity-50"
+                        >
+                          <Icon icon="ph:paper-plane-right-fill" className="w-5 h-5 ml-1 text-white" />
+                        </Button>
+                      </form>
+                    );
+                  })()}
                 </div>
               )}
             </>
