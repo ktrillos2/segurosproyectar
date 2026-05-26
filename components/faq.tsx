@@ -52,20 +52,32 @@ const faqs = [
   }
 ]
 
-export function Faq() {
+interface FaqItem {
+  q: string;
+  a: string;
+}
+
+interface FaqProps {
+  faqTitle?: string;
+  faqSubtitle?: string;
+  faqsList?: FaqItem[];
+}
+
+export function Faq({ faqTitle, faqSubtitle, faqsList }: FaqProps) {
+  const currentFaqs = faqsList || faqs;
   return (
     <section className="bg-slate-50 py-20 lg:py-28 border-b border-slate-200">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <span className="inline-block px-3 py-1 rounded-sm bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-[0.2em] mb-4 border border-primary/20">
-              Preguntas Frecuentes
+              {faqSubtitle || "Preguntas Frecuentes"}
             </span>
-            <h2 className="text-3xl font-black text-slate-900 tracking-tight">Resolvemos tus dudas</h2>
+            <h2 className="text-3xl font-black text-slate-900 tracking-tight">{faqTitle || "Resolvemos tus dudas"}</h2>
           </div>
           
           <Accordion type="single" collapsible className="w-full space-y-4">
-            {faqs.map((faq, idx) => (
+            {currentFaqs.map((faq, idx) => (
               <AccordionItem key={idx} value={`item-${idx}`} className="bg-white border border-slate-200 rounded-xl px-6 shadow-sm overflow-hidden">
                 <AccordionTrigger className="text-left font-bold text-slate-900 hover:text-primary transition-colors py-6 text-base md:text-lg">
                   {faq.q}

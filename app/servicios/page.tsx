@@ -16,87 +16,19 @@ import {
   Key,
   ArrowRight
 } from "lucide-react"
+import { client } from "@/sanity/lib/client"
 
-const personalServices = [
-  { 
-    icon: Car, 
-    title: "Seguros de Movilidad", 
-    description: "Proteccion completa para tu vehiculo, moto o cualquier medio de transporte personal."
-  },
-  { 
-    icon: Heart, 
-    title: "Salud", 
-    description: "Planes de salud integrales para ti y toda tu familia con las mejores coberturas."
-  },
-  { 
-    icon: Shield, 
-    title: "Seguro de Vida", 
-    description: "Asegura el bienestar economico de tus seres queridos ante cualquier eventualidad."
-  },
-  { 
-    icon: Home, 
-    title: "Seguro Hogar", 
-    description: "Protege tu vivienda y todos tus bienes contra robos, incendios y desastres naturales."
-  },
-  { 
-    icon: GraduationCap, 
-    title: "Seguro Educativo", 
-    description: "Garantiza la educacion de tus hijos sin importar lo que pase."
-  },
-  { 
-    icon: PawPrint, 
-    title: "Seguro de Mascotas", 
-    description: "Proteccion veterinaria y responsabilidad civil para tus companeros peludos."
-  },
-  { 
-    icon: Key, 
-    title: "Seguro de Arrendamiento", 
-    description: "Tranquilidad para propietarios e inquilinos en contratos de arriendo."
-  },
-]
+// Mapeo de iconos
+const IconMap: Record<string, any> = {
+  Car, Heart, Shield, Scale, Home, Users, Truck, GraduationCap, PawPrint, Building, Key
+}
 
-const businessServices = [
-  { 
-    icon: Building, 
-    title: "Seguro de Propiedad", 
-    description: "Proteccion integral para inmuebles comerciales e industriales."
-  },
-  { 
-    icon: Users, 
-    title: "Seguro Colectivo", 
-    description: "Planes grupales para empleados con beneficios exclusivos."
-  },
-  { 
-    icon: Truck, 
-    title: "Seguro de Transportes", 
-    description: "Cobertura para mercancias y vehiculos de carga."
-  },
-  { 
-    icon: Scale, 
-    title: "Polizas Judiciales", 
-    description: "Garantias para procesos legales y licitaciones."
-  },
-]
-
-const additionalProducts = [
-  "Automóviles",
-  "Integral del hogar",
-  "Vida",
-  "Seguro educativo",
-  "Arrendamiento",
-  "Multirriesgo",
-  "Daño material",
-  "Todo riesgo construcción",
-  "Transporte de mercancías",
-  "Transporte de valores",
-  "Cumplimiento",
-  "Manejo",
-  "Pólizas judiciales",
-  "Responsabilidad civil e infidelidad",
-  "Riesgos financieros"
-]
-
-export default function ServiciosPage() {
+export default async function ServiciosPage() {
+  const data = await client.fetch(`*[_type == "servicesPage"][0]`)
+  
+  const personalServices = data?.personalServices || []
+  const businessServices = data?.businessServices || []
+  const additionalProducts = data?.additionalSpecialties || []
   return (
     <main className="min-h-screen">
       <Header />
@@ -105,14 +37,13 @@ export default function ServiciosPage() {
       <section className="bg-slate-50 border-b border-slate-200 py-20 md:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center max-w-4xl">
           <span className="inline-flex px-3 py-1 rounded-sm bg-primary/5 text-primary text-[10px] font-bold uppercase tracking-[0.2em] mb-6">
-            Nuestros Servicios
+            {data?.heroSubtitle || "Nuestros Servicios"}
           </span>
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-slate-900 leading-[1.1] tracking-tight">
-            Líderes en asesoría de <span className="text-primary">seguros</span>
+            {data?.heroTitle || "Líderes en asesoría de"} <span className="text-primary">{data?.heroTitleHighlight || "seguros"}</span>
           </h1>
           <p className="mt-8 text-lg text-slate-600 leading-relaxed font-medium mx-auto">
-            Ofrecemos las mejores coberturas, haciendo un análisis comparativo de condiciones de mercado 
-            con las diferentes compañías de seguros. Un seguro para cada necesidad.
+            {data?.heroDescription || "Ofrecemos las mejores coberturas..."}
           </p>
         </div>
       </section>
@@ -130,20 +61,23 @@ export default function ServiciosPage() {
           </div>
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {personalServices.map((service, index) => (
-              <div
-                key={index}
-                className="group bg-white rounded-md p-8 border border-slate-100 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.05)] transition-all hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] hover:-translate-y-1"
-              >
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="flex-shrink-0 w-12 h-12 rounded-sm bg-primary/5 flex items-center justify-center">
-                    <service.icon strokeWidth={1.5} className="w-5 h-5 text-primary" />
+            {personalServices.map((service: any, index: number) => {
+              const ServiceIcon = IconMap[service.iconName] || Shield;
+              return (
+                <div
+                  key={service._key || index}
+                  className="group bg-white rounded-md p-8 border border-slate-100 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.05)] transition-all hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] hover:-translate-y-1"
+                >
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="flex-shrink-0 w-12 h-12 rounded-sm bg-primary/5 flex items-center justify-center">
+                      <ServiceIcon strokeWidth={1.5} className="w-5 h-5 text-primary" />
+                    </div>
+                    <h3 className="font-extrabold text-slate-900 text-lg leading-tight">{service.title}</h3>
                   </div>
-                  <h3 className="font-extrabold text-slate-900 text-lg leading-tight">{service.title}</h3>
+                  <p className="text-slate-500 font-medium text-[15px] leading-relaxed">{service.description}</p>
                 </div>
-                <p className="text-slate-500 font-medium text-[15px] leading-relaxed">{service.description}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -161,18 +95,21 @@ export default function ServiciosPage() {
           </div>
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {businessServices.map((service, index) => (
-              <div
-                key={index}
-                className="group bg-white rounded-md p-8 border border-slate-100 shadow-sm transition-all hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] hover:-translate-y-1"
-              >
-                <div className="w-12 h-12 rounded-sm bg-primary/5 flex items-center justify-center mb-6">
-                  <service.icon strokeWidth={1.5} className="w-5 h-5 text-primary" />
+            {businessServices.map((service: any, index: number) => {
+              const ServiceIcon = IconMap[service.iconName] || Building;
+              return (
+                <div
+                  key={service._key || index}
+                  className="group bg-white rounded-md p-8 border border-slate-100 shadow-sm transition-all hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] hover:-translate-y-1"
+                >
+                  <div className="w-12 h-12 rounded-sm bg-primary/5 flex items-center justify-center mb-6">
+                    <ServiceIcon strokeWidth={1.5} className="w-5 h-5 text-primary" />
+                  </div>
+                  <h3 className="font-extrabold text-slate-900 text-base mb-3 leading-tight">{service.title}</h3>
+                  <p className="text-slate-500 font-medium text-[14px] leading-relaxed">{service.description}</p>
                 </div>
-                <h3 className="font-extrabold text-slate-900 text-base mb-3 leading-tight">{service.title}</h3>
-                <p className="text-slate-500 font-medium text-[14px] leading-relaxed">{service.description}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -189,7 +126,7 @@ export default function ServiciosPage() {
               </p>
               
               <div className="flex flex-wrap gap-3">
-                {additionalProducts.map((product, index) => (
+                {additionalProducts.map((product: string, index: number) => (
                   <div 
                     key={index}
                     className="bg-slate-50 border border-slate-100 rounded-sm px-5 py-2.5 text-[13px] font-extrabold text-slate-700 uppercase tracking-tight hover:bg-primary/5 hover:text-primary hover:border-primary/20 transition-all cursor-default"

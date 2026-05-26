@@ -5,10 +5,17 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { useState } from "react"
 
-export function ContactSection() {
+interface ContactSectionProps {
+  email?: string;
+  address?: string;
+  schedules?: string;
+}
+
+export function ContactSection({ email, address, schedules }: ContactSectionProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Utilizaremos FormSubmit para el envío de correos sin backend
+  const contactEmail = email || process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'autos@seguros-proyectar.com'
 
   return (
     <section id="contacto" className="bg-slate-50 py-20 lg:py-28 border-y border-slate-200 overflow-hidden">
@@ -30,7 +37,7 @@ export function ContactSection() {
           <div className="flex flex-col">
             <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] p-8 md:p-10">
               <form 
-                action={`https://formsubmit.co/${process.env.NEXT_PUBLIC_CONTACT_EMAIL || 'autos@seguros-proyectar.com'}`} 
+                action={`https://formsubmit.co/${contactEmail}`} 
                 method="POST" 
                 className="space-y-6"
               >
@@ -125,9 +132,8 @@ export function ContactSection() {
                   </div>
                   <div>
                     <h4 className="font-bold text-slate-900 text-sm uppercase tracking-wider mb-1">Oficina Principal</h4>
-                    <p className="text-slate-600 font-medium">
-                      Calle 140 # 11-45, Oficina 813<br/>
-                      Bogotá D.C., Colombia
+                    <p className="text-slate-600 font-medium whitespace-pre-line">
+                      {address || 'Calle 140 # 11-45, Oficina 813\nBogotá D.C., Colombia'}
                     </p>
                   </div>
                 </div>
@@ -138,8 +144,8 @@ export function ContactSection() {
                   </div>
                   <div>
                     <h4 className="font-bold text-slate-900 text-sm uppercase tracking-wider mb-1">Correo Electrónico</h4>
-                    <a href="mailto:autos@seguros-proyectar.com" className="text-primary hover:text-slate-900 transition-colors font-medium">
-                      autos@seguros-proyectar.com
+                    <a href={`mailto:${contactEmail}`} className="text-primary hover:text-slate-900 transition-colors font-medium">
+                      {contactEmail}
                     </a>
                   </div>
                 </div>
@@ -151,8 +157,7 @@ export function ContactSection() {
                   <div>
                     <h4 className="font-bold text-slate-900 text-sm uppercase tracking-wider mb-1">Horarios Administrativos</h4>
                     <p className="text-slate-600 font-medium whitespace-pre-line">
-                      Lunes a Viernes<br/>
-                      8:00 am - 5:00 pm
+                      {schedules || 'Lunes a Viernes\n8:00 am - 5:00 pm'}
                     </p>
                   </div>
                 </div>

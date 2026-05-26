@@ -1,56 +1,36 @@
 import { Icon } from "@iconify/react"
 
-const differentiators = [
-  {
-    icon: "ph:rocket-light",
-    title: "Rápido",
-    description: "De la cotización a la póliza en minutos",
-  },
-  {
-    icon: "ph:magnifying-glass-light",
-    title: "Transparente",
-    description: "Ves todo antes de pagar, sin letras pequeñas",
-  },
-  {
-    icon: "ph:shield-check-light",
-    title: "Respaldado",
-    description: "+20 años de trayectoria y 6 aseguradoras aliadas",
-  },
-  {
-    icon: "ph:device-mobile-light",
-    title: "100% Digital",
-    description: "Desde el celular, sin visitas ni llamadas",
-  },
-  {
-    icon: "ph:currency-circle-dollar-light",
-    title: "Precio justo",
-    description: "Comparamos para que siempre pagues lo correcto",
-  },
-  {
-    icon: "ph:lightning-light",
-    title: "Sin enredos",
-    description: "Simple como debe ser",
-  },
-]
+export function Differentiators({ data }: { data?: any }) {
+  if (!data) return null;
 
-export function Differentiators() {
+  const renderTitle = () => {
+    if (!data.title || !data.titleHighlight) return data.title;
+    const parts = data.title.split(data.titleHighlight);
+    if (parts.length < 2) return data.title;
+    return (
+      <>
+        {parts[0]}<span className="text-primary">{data.titleHighlight}</span>{parts[1]}
+      </>
+    );
+  };
+
   return (
     <section className="bg-slate-50 py-20 lg:py-28 border-t border-slate-200">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         
         <div className="text-center max-w-3xl mx-auto mb-16">
           <span className="inline-block px-3 py-1 rounded-sm bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-[0.2em] mb-6 border border-primary/20">
-            Diferenciadores
+            {data.badge}
           </span>
           <h2 className="text-3xl sm:text-4xl lg:text-[2.75rem] font-extrabold text-slate-900 leading-[1.15] text-balance">
-            ¿Por qué asegurarte con <span className="text-primary">Proyectar?</span>
+            {renderTitle()}
           </h2>
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {differentiators.map((item, idx) => (
+          {data.items?.map((item: any) => (
             <div 
-              key={idx} 
+              key={item._key} 
               className="relative group bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden"
             >
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-[100%] -mr-4 -mt-4 transition-transform duration-500 group-hover:scale-110" />

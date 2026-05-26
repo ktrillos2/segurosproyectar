@@ -28,7 +28,7 @@ export function About() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 lg:gap-12 max-w-3xl mx-auto w-full">
             {stats.map((stat, index) => (
               <div key={index} className="text-center group">
                 <div className="text-4xl md:text-6xl font-black text-white mb-3 group-hover:text-primary transition-colors duration-300">

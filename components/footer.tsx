@@ -1,9 +1,23 @@
 import { Icon } from "@iconify/react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { client } from "@/sanity/lib/client"
 
-export function Footer() {
+export async function Footer({ data: dataProp }: { data?: any }) {
   const currentYear = new Date().getFullYear();
+  const data = dataProp ?? await client.fetch(`*[_type == "globalConfig"][0]`);
+  if (!data) return null;
+
+  const renderCtaTitle = () => {
+    if (!data.footerCtaTitle || !data.footerCtaTitleHighlight) return data.footerCtaTitle;
+    const parts = data.footerCtaTitle.split(data.footerCtaTitleHighlight);
+    if (parts.length < 2) return data.footerCtaTitle;
+    return (
+      <>
+        {parts[0]}<span className="text-primary">{data.footerCtaTitleHighlight}</span>{parts[1]}
+      </>
+    );
+  };
 
   return (
     <footer className="bg-slate-900 text-slate-300">
@@ -13,16 +27,16 @@ export function Footer() {
           {/* Bloque izquierdo — llamado a la acción de cierre */}
           <div className="flex flex-col items-center lg:items-start text-center lg:text-left space-y-6">
             <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight text-balance">
-              ¿Listo para asegurar tu vehículo <span className="text-primary">sin enredos?</span>
+              {renderCtaTitle()}
             </h2>
             
             <p className="text-slate-400 leading-relaxed text-lg font-medium max-w-md">
-              Cotiza gratis en menos de 3 minutos y encuentra la mejor opción para ti.
+              {data.footerCtaDescription}
             </p>
 
             <Button asChild size="lg" className="h-14 px-8 text-base font-bold text-white bg-primary hover:bg-primary/90 rounded-md shadow-md gap-2 mt-4 inline-flex">
-              <Link href="/cotizar">
-                Cotizar mi seguro
+              <Link href={data.footerCtaButtonLink || "/cotizar"}>
+                {data.footerCtaButtonText}
                 <Icon icon="ph:arrow-right-light" className="w-5 h-5" />
               </Link>
             </Button>
@@ -32,33 +46,39 @@ export function Footer() {
           <div className="flex flex-col items-center lg:items-end lg:text-right space-y-6">
             <h3 className="text-xl font-bold text-white mb-2">Síguenos y aprende sobre seguros</h3>
             <div className="flex items-center gap-4">
-              <a 
-                href="https://www.instagram.com/proyectarsegurosoficial?igsh=MW8zMXB1dGVsMW8ybA%3D%3D&utm_source=qr" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center hover:bg-primary transition-colors hover:text-white"
-                aria-label="Instagram"
-              >
-                <Icon icon="ph:instagram-logo-light" className="w-5 h-5" />
-              </a>
-              <a 
-                href="https://www.tiktok.com/@proyectarsegurosoficial" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center hover:bg-primary transition-colors hover:text-white font-bold"
-                aria-label="TikTok"
-              >
-                <Icon icon="ph:tiktok-logo-light" className="w-5 h-5" />
-              </a>
-              <a 
-                href="https://www.facebook.com/share/18SKTbyy6H/?mibextid=wwXIfr" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center hover:bg-primary transition-colors hover:text-white"
-                aria-label="Facebook"
-              >
-                <Icon icon="ph:facebook-logo-light" className="w-5 h-5" />
-              </a>
+              {data.instagramUrl && (
+                <a 
+                  href={data.instagramUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center hover:bg-primary transition-colors hover:text-white"
+                  aria-label="Instagram"
+                >
+                  <Icon icon="ph:instagram-logo-light" className="w-5 h-5" />
+                </a>
+              )}
+              {data.tiktokUrl && (
+                <a 
+                  href={data.tiktokUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center hover:bg-primary transition-colors hover:text-white font-bold"
+                  aria-label="TikTok"
+                >
+                  <Icon icon="ph:tiktok-logo-light" className="w-5 h-5" />
+                </a>
+              )}
+              {data.facebookUrl && (
+                <a 
+                  href={data.facebookUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center hover:bg-primary transition-colors hover:text-white"
+                  aria-label="Facebook"
+                >
+                  <Icon icon="ph:facebook-logo-light" className="w-5 h-5" />
+                </a>
+              )}
             </div>
           </div>
 
@@ -71,7 +91,7 @@ export function Footer() {
         <div className="flex flex-col lg:flex-row items-center justify-between gap-6 pb-4">
           
           <div className="text-sm font-medium text-slate-500 text-center lg:text-left">
-            © {currentYear} Proyectar Seguros S.A.S. · NIT 830139875-7
+            © {currentYear} {data.companyName} · NIT {data.nit}
           </div>
           
           <div className="flex flex-col sm:flex-row items-center gap-6 text-sm font-medium text-slate-400">
