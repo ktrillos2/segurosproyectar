@@ -1,7 +1,5 @@
 "use client"
 
-import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Icon } from "@iconify/react"
@@ -847,10 +845,8 @@ export default function CotizarPage() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col bg-slate-50">
-      <Header />
-
-      <div className="flex-1 flex flex-col items-center py-4 md:py-12 px-4">
+    <>
+      <div className="flex-1 flex flex-col items-center py-4 md:py-12 px-4 w-full">
         <div className="max-w-2xl w-full bg-white flex flex-col shadow-2xl rounded-2xl overflow-hidden border border-slate-200 h-[calc(100dvh-100px)] md:h-[750px] relative">
           
           {/* Header del bot */}
@@ -1360,8 +1356,6 @@ export default function CotizarPage() {
           )}
         </div>
       </div>
-
-      <Footer />
-    </main>
+    </>
   )
 }
