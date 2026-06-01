@@ -57,5 +57,11 @@ export default defineType({
         { name: 'description', title: 'Descripción', type: 'text' },
       ],
     }),
+    defineField({
+      name: 'missionVisionImage',
+      title: 'Imagen/GIF de Misión y Visión',
+      type: 'image',
+      options: { hotspot: true },
+    }),
   ],
 })

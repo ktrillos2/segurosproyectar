@@ -4,8 +4,17 @@ import { Testimonials } from "@/components/testimonials"
 import { Check, Star, Users, ShieldCheck, Zap, Heart } from "lucide-react"
 import { client } from "@/sanity/lib/client"
 
+export const revalidate = 60
+
 export default async function NosotrosPage() {
-  const data = await client.fetch(`*[_type == "aboutPage"][0]`);
+  const data = await client.fetch(`*[_type == "aboutPage"][0]{
+    ...,
+    missionVisionImage {
+      asset-> {
+        url
+      }
+    }
+  }`);
 
   const stats = data?.stats || [
     { value: "+20", label: "Años de trayectoria" },
@@ -33,13 +42,13 @@ export default async function NosotrosPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 lg:gap-12 max-w-5xl mx-auto w-full place-items-center">
             {stats.map((stat, index) => (
-              <div key={index} className="text-center group">
+              <div key={index} className="flex flex-col items-center justify-center text-center group w-full">
                 <div className="text-4xl md:text-6xl font-black text-white mb-3 group-hover:text-primary transition-colors duration-300">
                   {stat.value}
                 </div>
-                <div className="text-slate-300 text-xs font-bold uppercase tracking-[0.2em]">
+                <div className="text-slate-300 text-xs font-bold uppercase tracking-[0.2em] pl-[0.2em]">
                   {stat.label}
                 </div>
               </div>
@@ -77,7 +86,7 @@ export default async function NosotrosPage() {
 
             <div className="relative flex items-center justify-center">
               <img 
-                src="/Gif/nosotros.gif" 
+                src={data?.missionVisionImage?.asset?.url || "/Gif/nosotros.gif"} 
                 alt="Proyectar Seguros Experience" 
                 className="w-full h-auto object-contain mix-blend-multiply scale-[1.2] md:scale-[1.4] lg:scale-[1.5] transition-transform duration-700 hover:scale-[1.3] md:hover:scale-[1.5] lg:hover:scale-[1.6]"
               />

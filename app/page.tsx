@@ -8,7 +8,14 @@ import { client } from "@/sanity/lib/client"
 export const revalidate = 60
 
 export default async function HomePage() {
-  const heroData = await client.fetch(`*[_type == "hero"][0]`)
+  const heroData = await client.fetch(`*[_type == "hero"][0]{
+    ...,
+    backgroundVideo {
+      asset-> {
+        url
+      }
+    }
+  }`)
   const howItWorksData = await client.fetch(`*[_type == "howItWorks"][0]`)
   const differentiatorsData = await client.fetch(`*[_type == "differentiators"][0]`)
   const globalConfigData = await client.fetch(`*[_type == "globalConfig"][0]`)

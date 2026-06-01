@@ -10,6 +10,7 @@ import { servicesPage } from './servicesPage'
 import { testimonialsPage } from './testimonialsPage'
 import { pqrsPage } from './pqrsPage'
 import { legalPage } from './legalPage'
+import insurerLogo from './insurerLogo'
 
 export const schema: { types: SchemaTypeDefinition[] } = {
   types: [
@@ -23,6 +24,7 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     servicesPage,
     testimonialsPage,
     pqrsPage,
-    legalPage
+    legalPage,
+    insurerLogo
   ],
 }

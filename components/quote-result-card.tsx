@@ -62,6 +62,22 @@ export function QuoteResultCard({ quoteResult, onContinue }: QuoteResultCardProp
 
   const { aseguradora, status, estado, mensaje, error, plan_recomendado, vehiculo, amparos, planes_disponibles } = quoteResult
 
+  const getAmparoWeight = (name: string) => {
+    const n = name.toLowerCase();
+    if (n.includes("responsabilidad civil")) return 1;
+    if (n.includes("pérdida total") || n.includes("perdida total")) return 2;
+    if (n.includes("pérdida parcial") || n.includes("perdida parcial")) return 3;
+    if (n.includes("hurto")) return 4;
+    if (n.includes("terremoto")) return 5;
+    if (n.includes("vehículo sustituto") || n.includes("vehiculo sustituto") || n.includes("reemplazo")) return 6;
+    if (n.includes("asistencia")) return 7;
+    return 99;
+  };
+
+  const sortedAmparos = [...(amparos || [])].sort((a, b) => {
+    return getAmparoWeight(a.nombre || "") - getAmparoWeight(b.nombre || "");
+  });
+
   if (status !== "ok") {
     return null
   }
@@ -166,14 +182,14 @@ export function QuoteResultCard({ quoteResult, onContinue }: QuoteResultCardProp
             </div>
 
             {/* Quick coverages preview */}
-            {amparos && amparos.length > 0 && (
+            {sortedAmparos && sortedAmparos.length > 0 && (
               <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
                   <Icon icon="ph:shield-star-bold" className="w-3.5 h-3.5 text-primary" />
                   Principales amparos incluidos
                 </p>
                 <div className="space-y-2">
-                  {amparos.slice(0, 3).map((amparo, idx) => (
+                  {sortedAmparos.slice(0, 3).map((amparo, idx) => (
                     <div key={idx} className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
                         <div className="w-4 h-4 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
@@ -183,9 +199,16 @@ export function QuoteResultCard({ quoteResult, onContinue }: QuoteResultCardProp
                           {amparo.nombre}
                         </span>
                       </div>
-                      <span className="text-xs font-bold text-slate-500 shrink-0 text-right">
-                        {amparo.valor || (amparo.deducible && `Ded: ${amparo.deducible}`)}
-                      </span>
+                      <div className="flex flex-col items-end shrink-0 text-right">
+                        <span className="text-xs font-bold text-slate-500">
+                          {amparo.valor}
+                        </span>
+                        {amparo.deducible && amparo.deducible !== "0" && amparo.deducible !== "0%" && (
+                          <span className="text-[9px] font-extrabold text-primary bg-primary/10 px-1.5 py-0.5 rounded mt-0.5 uppercase tracking-wide">
+                            Ded: {amparo.deducible}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -330,7 +353,7 @@ export function QuoteResultCard({ quoteResult, onContinue }: QuoteResultCardProp
                   Coberturas y Amparos
                 </h4>
                 <div className="space-y-2">
-                  {(amparos || []).map((amparo, idx) => (
+                  {sortedAmparos.map((amparo, idx) => (
                     <div
                       key={idx}
                       className="flex items-center gap-3 bg-white border border-slate-100 rounded-2xl px-4 py-3 hover:border-primary/20 hover:bg-primary/5 transition-all duration-200"
@@ -342,15 +365,17 @@ export function QuoteResultCard({ quoteResult, onContinue }: QuoteResultCardProp
                         <p className="text-sm font-bold text-slate-800 leading-tight truncate">
                           {amparo.nombre}
                         </p>
-                        {amparo.deducible && (
-                          <p className="text-[11px] text-slate-500 font-semibold mt-0.5">
-                            Deducible: {amparo.deducible}
+                      </div>
+                      <div className="flex flex-col items-end shrink-0 text-right">
+                        <p className="text-sm font-black text-slate-700">
+                          {amparo.valor}
+                        </p>
+                        {amparo.deducible && amparo.deducible !== "0" && amparo.deducible !== "0%" && (
+                          <p className="text-[10px] font-extrabold text-primary bg-primary/10 px-2 py-0.5 rounded mt-1 uppercase tracking-wide">
+                            Ded: {amparo.deducible}
                           </p>
                         )}
                       </div>
-                      <p className="text-sm font-black text-slate-700 shrink-0 text-right">
-                        {amparo.valor}
-                      </p>
                     </div>
                   ))}
                 </div>

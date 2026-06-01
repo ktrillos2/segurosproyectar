@@ -43,6 +43,14 @@ export default defineType({
       options: { hotspot: true },
     }),
     defineField({
+      name: 'backgroundVideo',
+      title: 'Video de Fondo',
+      type: 'file',
+      options: {
+        accept: 'video/mp4,video/x-m4v,video/*',
+      },
+    }),
+    defineField({
       name: 'insurersTitle',
       title: 'Título sección aseguradoras',
       type: 'string',

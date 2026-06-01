@@ -22,8 +22,22 @@ export function Hero({ data }: { data?: any }) {
 
   return (
     <>
-      <section id="hero" className="relative bg-gradient-to-b from-slate-50 to-white pt-12 lg:pt-20 pb-12 lg:pb-16 overflow-hidden">
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <section id="hero" className="relative pt-12 lg:pt-20 pb-12 lg:pb-16 overflow-hidden">
+        {data.backgroundVideo?.asset?.url && (
+          <div className="absolute inset-0 z-0">
+            <video 
+              autoPlay 
+              loop 
+              muted 
+              playsInline 
+              className="absolute inset-0 w-full h-full object-cover"
+            >
+              <source src={data.backgroundVideo.asset.url} type="video/mp4" />
+            </video>
+            <div className="absolute inset-y-0 left-0 w-full lg:w-2/3 bg-gradient-to-r from-white/95 via-white/70 to-transparent"></div>
+          </div>
+        )}
+        <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             
             {/* Left Content */}
@@ -58,15 +72,8 @@ export function Hero({ data }: { data?: any }) {
               </div>
             </div>
 
-            {/* Right Content - Visual */}
-            <div className="relative w-full max-w-2xl mx-auto lg:ml-auto flex justify-center lg:justify-end items-center mt-12 lg:mt-0">
-              {data.heroImage && (
-                <img
-                  src={urlFor(data.heroImage).url()}
-                  alt="Automóvil asegurado digitalmente"
-                  className="w-full max-w-[120%] lg:max-w-[140%] h-auto object-contain scale-110 lg:scale-[1.25] transform lg:translate-x-8"
-                />
-              )}
+            {/* Right Content - Empty space to keep text on left */}
+            <div className="hidden lg:block relative w-full max-w-2xl mx-auto lg:ml-auto h-full">
             </div>
           </div>
         </div>

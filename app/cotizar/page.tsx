@@ -847,7 +847,7 @@ export default function CotizarPage() {
   return (
     <>
       <div className="flex-1 flex flex-col items-center py-4 md:py-12 px-4 w-full">
-        <div className="max-w-2xl w-full bg-white flex flex-col shadow-2xl rounded-2xl overflow-hidden border border-slate-200 h-[calc(100dvh-100px)] md:h-[750px] relative">
+        <div className={`w-full bg-white flex flex-col shadow-2xl rounded-2xl overflow-hidden border border-slate-200 h-[calc(100dvh-100px)] md:h-[750px] relative transition-all duration-500 ${appState === "completed_quote" ? "max-w-5xl" : "max-w-2xl"}`}>
           
           {/* Header del bot */}
           <div className="bg-slate-900 border-b border-slate-800 p-4 shadow-sm z-10 flex items-center justify-between shrink-0">
@@ -929,7 +929,7 @@ export default function CotizarPage() {
                 className="flex-1 overflow-y-auto px-4 md:px-8 py-8 space-y-6 scrollbar-hide bg-slate-50/20 relative"
               >
                 {/* Phase: Chatting */}
-                {(appState === "chatting" || messages.length > 0) && messages.map((message, index) => (
+                {appState !== "completed_quote" && (appState === "chatting" || messages.length > 0) && messages.map((message, index) => (
                   <div key={index} className={`flex flex-col ${message.role === "user" ? "items-end" : "items-start"}`}>
                     <div className={`flex gap-3 lg:gap-4 max-w-[90%] md:max-w-[85%] ${message.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
                       {message.role === "bot" && (
@@ -1091,18 +1091,20 @@ export default function CotizarPage() {
                             </div>
                           )}
                           {exitosas.length > 0 && (
-                            <div className="space-y-4">
-                              <h3 className="text-xl font-bold text-slate-800 px-2">Opciones Disponibles</h3>
-                              {exitosas.map((result, index) => (
-                                <QuoteResultCard
-                                  key={`ok-${index}`}
-                                  quoteResult={result}
-                                  onContinue={(name) => {
-                                    setSelectedQuote({ name } as any)
-                                    setAppState("sarlaft")
-                                  }}
-                                />
-                              ))}
+                            <div className="space-y-6">
+                              <h3 className="text-xl font-bold text-slate-800 px-2 text-center md:text-left">Opciones Disponibles</h3>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                                {exitosas.map((result, index) => (
+                                  <QuoteResultCard
+                                    key={`ok-${index}`}
+                                    quoteResult={result}
+                                    onContinue={(name) => {
+                                      setSelectedQuote({ name } as any)
+                                      setAppState("sarlaft")
+                                    }}
+                                  />
+                                ))}
+                              </div>
                             </div>
                           )}
                         </>

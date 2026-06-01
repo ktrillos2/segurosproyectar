@@ -28,13 +28,13 @@ export function About() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 lg:gap-12 max-w-3xl mx-auto w-full">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 lg:gap-12 max-w-5xl mx-auto w-full place-items-center">
             {stats.map((stat, index) => (
-              <div key={index} className="text-center group">
+              <div key={index} className="flex flex-col items-center justify-center text-center group w-full">
                 <div className="text-4xl md:text-6xl font-black text-white mb-3 group-hover:text-primary transition-colors duration-300">
                   {stat.value}
                 </div>
-                <div className="text-slate-300 text-xs font-bold uppercase tracking-[0.2em]">
+                <div className="text-slate-300 text-xs font-bold uppercase tracking-[0.2em] pl-[0.2em]">
                   {stat.label}
                 </div>
               </div>
