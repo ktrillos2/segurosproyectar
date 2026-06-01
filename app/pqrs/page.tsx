@@ -1,13 +1,24 @@
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Metadata } from "next"
+import { client } from "@/sanity/lib/client"
 
 export const metadata: Metadata = {
   title: "PQRS | Proyectar Seguros",
   description: "Canal oficial para radicar Peticiones, Quejas, Reclamos y Sugerencias de Proyectar Seguros S.A.S.",
 }
 
-export default function PQRSSPage() {
+export const revalidate = 60;
+
+export default async function PQRSSPage() {
+  const data = await client.fetch(`*[_type == "pqrsPage"][0]`);
+
+  const pqrsTypes = data?.pqrsTypes || [
+    { type: "Petición", definition: "Solicitud respetuosa de información relacionada con la prestación de nuestros servicios.", example: "Solicitar copia de una póliza o certificación de cobertura." },
+    { type: "Queja", definition: "Expresión de insatisfacción respecto a la conducta o actuar de un funcionario de la agencia.", example: "Mala atención por parte de un asesor." },
+    { type: "Reclamo", definition: "Expresión de insatisfacción frente a la prestación de los servicios o productos ofrecidos.", example: "Demora injustificada en la expedición de una póliza." },
+    { type: "Sugerencia", definition: "Propuesta para mejorar un proceso o servicio de la agencia.", example: "Sugerir un nuevo canal de atención virtual." }
+  ];
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
       <Header />
