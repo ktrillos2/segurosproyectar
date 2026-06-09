@@ -52,21 +52,23 @@ export const generateQuoteComparisonPDF = async (quoteResults: any[], userInfo: 
         
         if (nombreStr.includes('responsabilidad civil')) {
           coveragesMap.rceGlobalLimit = val;
-        } else if (nombreStr.includes('pérdida total daños') || nombreStr.includes('perdida total daños')) {
+        } else if (nombreStr.includes('pérdida total daños') || nombreStr.includes('perdida total daños') || nombreStr.includes('pérdida total del vehículo por daños')) {
           coveragesMap.totalDamageDeductible = val;
-        } else if (nombreStr.includes('pérdida parcial daños') || nombreStr.includes('perdida parcial daños')) {
+        } else if (nombreStr.includes('pérdida parcial daños') || nombreStr.includes('perdida parcial daños') || nombreStr.includes('pérdida parcial del vehículo por daños')) {
           coveragesMap.partialDamageDeductible = val;
-        } else if (nombreStr.includes('pérdida total hurto') || nombreStr.includes('perdida total hurto')) {
+        } else if (nombreStr.includes('pérdida total hurto') || nombreStr.includes('perdida total hurto') || nombreStr.includes('pérdida total del vehículo por hurto')) {
           coveragesMap.totalTheftDeductible = val;
-        } else if (nombreStr.includes('pérdida parcial hurto') || nombreStr.includes('perdida parcial hurto')) {
+        } else if (nombreStr.includes('pérdida parcial hurto') || nombreStr.includes('perdida parcial hurto') || nombreStr.includes('pérdida parcial del vehículo por hurto')) {
           coveragesMap.partialTheftDeductible = val;
-        } else if (nombreStr.includes('eventos de la naturaleza') || nombreStr.includes('terremoto')) {
+        } else if (nombreStr.includes('eventos de la naturaleza') || nombreStr.includes('terremoto') || nombreStr.includes('temblor')) {
           coveragesMap.naturalEvents = val;
         } else if (nombreStr.includes('amparo patrimonial')) {
           coveragesMap.patrimonialProtection = val;
-        } else if (nombreStr.includes('vehículo de reemplazo') || nombreStr.includes('vehiculo de reemplazo')) {
+        } else if (nombreStr.includes('vehículo de reemplazo') || nombreStr.includes('vehiculo de reemplazo') || nombreStr.includes('gastos de transporte pérdida total') || nombreStr.includes('gastos de transporte por pérdida total')) {
           coveragesMap.replacementVehicleTotalLoss = val;
-        } else if (nombreStr.includes('asistencia en viaje') || nombreStr.includes('asistencias')) {
+        } else if (nombreStr.includes('gastos de transporte pérdida parcial') || nombreStr.includes('gastos de transporte por pérdida parcial')) {
+          coveragesMap.replacementVehiclePartialLoss = val;
+        } else if (nombreStr.includes('asistencia en viaje') || nombreStr.includes('asistencias') || nombreStr.includes('asistencia total') || nombreStr.includes('asistencia esencial') || nombreStr.includes('asistencia estándar')) {
           coveragesMap.travelAssistance = val;
         } else if (nombreStr.includes('conductor elegido')) {
           coveragesMap.chosenDriver = val;

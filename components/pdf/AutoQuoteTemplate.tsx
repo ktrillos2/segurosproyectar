@@ -68,27 +68,6 @@ export function AutoQuoteTemplate({ data }: AutoQuoteTemplateProps) {
         <PdfFooter generatedAt={data.generatedAt} />
       </div>
 
-      {/* PÁGINA INTERNA (si aplica) */}
-      {data.showInternalPage && (
-        <div className="pdf-page">
-          <div className="pdf-content">
-            <div className="header">
-              <img src="/logo.png" alt="Proyectar Seguros" className="logo" />
-              <div className="header-right">
-                <div className="quote-badge" style={{ backgroundColor: '#607d8b' }}>INTERNO</div>
-              </div>
-            </div>
-            
-            <div className="intro-title">Guía de mapeo — ajuste del comparativo de autos</div>
-            
-            <div className="summary-box" style={{ borderLeftColor: '#607d8b' }}>
-              Este PDF es un borrador de maqueta. La tabla siguiente indica de qué campo de la respuesta de cada bot (Quálitas, AXA, Equidad, Seguros del Estado, Zurich) debe alimentarse cada fila. Mundial aún no está integrado: dejar la columna preparada pero oculta hasta que exista el bot.
-            </div>
-          </div>
-          
-          <PdfFooter generatedAt={data.generatedAt} />
-        </div>
-      )}
     </div>
   );
 }

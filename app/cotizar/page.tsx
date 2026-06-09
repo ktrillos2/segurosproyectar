@@ -234,54 +234,120 @@ const normalizeQuoteData = (rawItem: any) => {
   // Equidad Mapping
   else if (nameL.includes("equidad")) {
     if (rawItem.datos?.planes && rawItem.datos.planes.length > 0) {
-      result.planes_disponibles = rawItem.datos.planes.map((p: any) => ({
-        nombre: p.nombre_plan || "Plan",
-        prima_neta: parseAmount(p.prima_anual) * 0.8,
-        iva: parseAmount(p.prima_anual) * 0.19,
-        gastos_expedicion: 0,
-        total: parseAmount(p.prima_anual)
-      }));
-      result.plan_recomendado = result.planes_disponibles[0];
-      
-      const firstPlan = rawItem.datos.planes[0];
-      result.amparos = [
-        { nombre: "RCE", valor: firstPlan.limite_rce, deducible: "0" },
-        { nombre: "Pérdidas Totales", valor: "Amparada", deducible: firstPlan.deducible_perdidas_totales },
-        { nombre: "Pérdidas Parciales", valor: "Amparada", deducible: firstPlan.deducible_perdidas_parciales },
-        { nombre: "Vehículo Sustituto", valor: firstPlan.limite_vehiculo_sustituto, deducible: "0" }
-      ];
+      result.planes_disponibles = rawItem.datos.planes.map((p: any) => {
+        const valTotal = parseAmount(p.prima_anual || p.prima_anual_con_iva || p.prima_neta || p.total);
+        return {
+          nombre: p.nombre_plan || "Plan",
+          prima_neta: valTotal * 0.8,
+          iva: valTotal * 0.19,
+          gastos_expedicion: 0,
+          total: valTotal,
+        amparos: [
+          { nombre: "Responsabilidad Civil Extracontractual", valor: p.limite_rce, deducible: "0" },
+          { nombre: "Pérdida Total Daños", valor: "Amparada", deducible: p.deducible_perdidas_totales },
+          { nombre: "Pérdida Parcial Daños", valor: "Amparada", deducible: p.deducible_perdidas_parciales },
+          { nombre: "Pérdida Total Hurto", valor: "Amparada", deducible: p.deducible_perdidas_totales },
+          { nombre: "Pérdida Parcial Hurto", valor: "Amparada", deducible: p.deducible_perdidas_parciales },
+          { nombre: "Vehículo de reemplazo", valor: p.limite_vehiculo_sustituto, deducible: "0" }
+        ]
+      };
+    });
+    result.plan_recomendado = result.planes_disponibles[0];
+      result.amparos = result.planes_disponibles[0].amparos;
     } else {
       result.status = "error";
     }
   }
   // Quálitas Mapping
   else if (nameL.includes("quálitas") || nameL.includes("qualitas")) {
-    const fin = rawItem.datos?.desglose_financiero;
-    if (fin) {
-      result.plan_recomendado = {
-        nombre: rawItem.datos?.caracteristicas?.amparo_paquete || "AMPLIA",
-        prima_neta: parseAmount(fin.prima_neta),
-        iva: parseAmount(fin.iva),
-        gastos_expedicion: parseAmount(fin.gastos_expedicion),
-        total: parseAmount(fin.importe_total || fin.subtotal)
-      };
-      result.planes_disponibles = [result.plan_recomendado];
+    if (rawItem.datos?.planes && rawItem.datos.planes.length > 0) {
+      result.planes_disponibles = rawItem.datos.planes.map((p: any) => {
+        const valTotal = parseAmount(p.prima_anual_con_iva || p.prima_anual || p.prima_neta || p.total || rawItem.datos?.desglose_financiero?.importe_total || rawItem.datos?.desglose_financiero?.subtotal);
+        return {
+          nombre: p.nombre || "Opción",
+          prima_neta: valTotal * 0.8,
+          iva: valTotal * 0.19,
+          gastos_expedicion: 0,
+          total: valTotal
+        };
+      });
+      
+      // Intentar marcar el seleccionado
+      const planSeleccionado = rawItem.datos.planes.find((p: any) => p.seleccionado);
+      if (planSeleccionado) {
+        result.plan_recomendado = result.planes_disponibles.find((p: any) => p.nombre === planSeleccionado.nombre);
+      } else {
+        result.plan_recomendado = result.planes_disponibles[0];
+      }
+    } else {
+      const fin = rawItem.datos?.desglose_financiero;
+      if (fin) {
+        result.plan_recomendado = {
+          nombre: rawItem.datos?.caracteristicas?.amparo_paquete || "AMPLIA",
+          prima_neta: parseAmount(fin.prima_neta),
+          iva: parseAmount(fin.iva),
+          gastos_expedicion: parseAmount(fin.gastos_expedicion),
+          total: parseAmount(fin.importe_total || fin.subtotal)
+        };
+        result.planes_disponibles = [result.plan_recomendado];
+      } else {
+        result.status = "error";
+      }
+    }
+
+    const baseAmparos = Array.isArray(rawItem.datos?.amparos_base) ? rawItem.datos.amparos_base : [];
+    const extraAmparos = Array.isArray(rawItem.datos?.amparos_accesorios) ? rawItem.datos.amparos_accesorios : [];
+    
+    if (baseAmparos.length > 0 || extraAmparos.length > 0) {
+      result.amparos = [...baseAmparos, ...extraAmparos].map((amp: any) => {
+        let val = amp.valor_asegurado;
+        // Quálitas a veces retorna solo "7", "15" o "30" para gastos de transporte
+        if (amp.cobertura && amp.cobertura.toLowerCase().includes("transporte") && /^\d+$/.test(val)) {
+          val = `${val} Días`;
+        }
+        return {
+          nombre: amp.cobertura,
+          valor: val,
+          deducible: amp.deducible
+        };
+      });
+    }
+  }
+  // Zurich Mapping
+  else if (nameL.includes("zurich")) {
+    if (rawItem.planes && rawItem.planes.length > 0) {
+      result.planes_disponibles = rawItem.planes.map((p: any) => {
+        const valTotal = parseAmount(p.prima_anual_con_iva || p.prima_anual || p.prima_neta || p.total);
+        return {
+          nombre: p.nombre || "Plan",
+          prima_neta: valTotal * 0.8,
+          iva: valTotal * 0.19,
+          gastos_expedicion: 0,
+          total: valTotal,
+          amparos: Array.isArray(p.amparos) ? p.amparos.map((amp: any) => ({
+            nombre: amp.cobertura,
+            valor: amp.limite,
+            deducible: amp.deducible
+          })) : []
+        };
+      });
+      
+      const planSeleccionado = rawItem.planes.find((p: any) => p.seleccionado);
+      if (planSeleccionado) {
+        result.plan_recomendado = result.planes_disponibles.find((p: any) => p.nombre === planSeleccionado.nombre);
+      } else {
+        result.plan_recomendado = result.planes_disponibles[0];
+      }
+      result.amparos = result.plan_recomendado.amparos;
     } else {
       result.status = "error";
-    }
-    if (Array.isArray(rawItem.datos?.amparos_base)) {
-      result.amparos = rawItem.datos.amparos_base.map((amp: any) => ({
-        nombre: amp.cobertura,
-        valor: amp.valor_asegurado,
-        deducible: amp.deducible
-      }));
     }
   }
   // Generic Fallback
   else {
-    if (rawItem.plan_recomendado) {
-      result.plan_recomendado = rawItem.plan_recomendado;
-      result.planes_disponibles = rawItem.planes_disponibles || [rawItem.plan_recomendado];
+    if (rawItem.plan_recomendado || (rawItem.planes_disponibles && rawItem.planes_disponibles.length > 0)) {
+      result.plan_recomendado = rawItem.plan_recomendado || rawItem.planes_disponibles[0];
+      result.planes_disponibles = rawItem.planes_disponibles || [result.plan_recomendado];
       result.amparos = rawItem.amparos || [];
     } else {
       result.status = "error";
@@ -1107,12 +1173,26 @@ export default function CotizarPage() {
                                 </Button>
                               </div>
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-                                {exitosas.map((result, index) => (
+                                {exitosas.flatMap((result, index) => {
+                                  if (result.planes_disponibles && result.planes_disponibles.length > 0) {
+                                    return result.planes_disponibles.map((plan: any, pIndex: number) => ({
+                                      ...result,
+                                      id: `${result.aseguradora}-${index}-${pIndex}`,
+                                      plan_recomendado: plan,
+                                      amparos: plan.amparos && plan.amparos.length > 0 ? plan.amparos : result.amparos,
+                                      planes_disponibles: null // Para no mostrar selector de planes dentro del modal
+                                    }));
+                                  }
+                                  return [{ ...result, id: `${result.aseguradora}-${index}` }];
+                                }).map((modifiedResult) => (
                                   <QuoteResultCard
-                                    key={`ok-${index}`}
-                                    quoteResult={result}
+                                    key={modifiedResult.id}
+                                    quoteResult={modifiedResult}
                                     onContinue={(name) => {
-                                      setSelectedQuote({ name } as any)
+                                      const fullName = modifiedResult.plan_recomendado?.nombre 
+                                        ? `${name} - ${modifiedResult.plan_recomendado.nombre}` 
+                                        : name;
+                                      setSelectedQuote({ name: fullName } as any)
                                       setAppState("sarlaft")
                                     }}
                                   />
@@ -1218,20 +1298,69 @@ export default function CotizarPage() {
               {/* Chat Interaction Area (Only visible when chatting) */}
               {appState === "chatting" && (
                 <div className="shrink-0 bg-white border-t border-slate-100 p-4 md:p-6 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.05)]">
-                  {suggestions.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                      {suggestions.map((suggestion, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => sendMessage(suggestion)}
-                          disabled={isTyping}
-                          className="px-4 py-2.5 text-xs font-bold rounded-full border border-slate-200 bg-white text-slate-600 hover:border-primary hover:text-primary hover:bg-primary/5 transition-all duration-300 shadow-sm whitespace-nowrap active:scale-95 disabled:opacity-50"
-                        >
-                          {suggestion}
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                  {(() => {
+                    const lastBotMessage = messages.filter(m => m.role === "bot").pop()?.content.toLowerCase() || "";
+                    const isAskingForColor = lastBotMessage.includes("color") && !lastBotMessage.includes("qué color");
+                    
+                    const colorOptions = [
+                      { label: "Blanco", hex: "#FFFFFF" },
+                      { label: "Negro", hex: "#1C1C1E" },
+                      { label: "Gris", hex: "#8E8E93" },
+                      { label: "Plata", hex: "#E5E5EA" },
+                      { label: "Rojo", hex: "#FF3B30" },
+                      { label: "Azul", hex: "#007AFF" }
+                    ];
+
+                    return (
+                      <>
+                        {isAskingForColor && (
+                          <div className="w-full max-w-4xl mx-auto flex flex-col gap-3 mb-5 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                            <div className="flex flex-wrap gap-4 justify-start">
+                              {colorOptions.map(c => (
+                                <button
+                                  key={c.label}
+                                  onClick={() => sendMessage(c.label)}
+                                  disabled={isTyping}
+                                  className="group flex flex-col items-center gap-1.5 transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
+                                >
+                                  <div 
+                                    className="w-12 h-12 rounded-full border border-slate-200 shadow-sm transition-all group-hover:border-primary group-hover:shadow-md flex items-center justify-center"
+                                    style={{ backgroundColor: c.hex }}
+                                  />
+                                  <span className="text-[11px] font-bold text-slate-600">{c.label}</span>
+                                </button>
+                              ))}
+                              <button
+                                onClick={() => sendMessage("Otro")}
+                                disabled={isTyping}
+                                className="group flex flex-col items-center gap-1.5 transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
+                              >
+                                <div className="w-12 h-12 rounded-full border border-slate-200 bg-[conic-gradient(at_top_right,_var(--tw-gradient-stops))] from-red-400 via-yellow-400 to-blue-400 shadow-sm flex items-center justify-center transition-all group-hover:border-primary group-hover:shadow-md">
+                                  <Icon icon="ph:plus-bold" className="text-white w-5 h-5 drop-shadow-md" />
+                                </div>
+                                <span className="text-[11px] font-bold text-slate-600">Otro</span>
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {suggestions.length > 0 && !isAskingForColor && (
+                          <div className="flex flex-wrap gap-2 mb-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                            {suggestions.map((suggestion, idx) => (
+                              <button
+                                key={idx}
+                                onClick={() => sendMessage(suggestion)}
+                                disabled={isTyping}
+                                className="px-4 py-2.5 text-xs font-bold rounded-full border border-slate-200 bg-white text-slate-600 hover:border-primary hover:text-primary hover:bg-primary/5 transition-all duration-300 shadow-sm whitespace-nowrap active:scale-95 disabled:opacity-50"
+                              >
+                                {suggestion}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
 
                   {(() => {
                     const lastBotMessage = messages.filter(m => m.role === "bot").pop()?.content.toLowerCase() || "";
