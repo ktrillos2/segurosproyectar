@@ -914,11 +914,16 @@ export default function CotizarPage() {
   return (
     <>
       <div className="flex-1 flex flex-col items-center py-4 md:py-12 px-4 w-full">
-        <div className={`w-full bg-white flex flex-col shadow-2xl rounded-2xl overflow-hidden border border-slate-200 h-[calc(100dvh-100px)] md:h-[750px] relative transition-all duration-500 ${appState === "completed_quote" ? "max-w-5xl" : "max-w-2xl"}`}>
+        <div className={`w-full flex flex-col relative transition-all duration-500 ${
+          appState === "completed_quote" 
+            ? "max-w-6xl"
+            : "bg-white shadow-2xl rounded-2xl overflow-hidden border border-slate-200 h-[calc(100dvh-100px)] md:h-[750px] max-w-2xl"
+        }`}>
           
           {/* Header del bot */}
-          <div className="bg-slate-900 border-b border-slate-800 p-4 shadow-sm z-10 flex items-center justify-between shrink-0">
-            <div className="flex items-center gap-4">
+          {appState !== "completed_quote" && (
+            <div className="bg-slate-900 border-b border-slate-800 p-4 shadow-sm z-10 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-4">
               <div className="relative">
                 <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-slate-800 bg-slate-800">
                   <img src={BOT_AVATAR} alt="Sofía Asesora" className="w-full h-full object-cover object-top" />
@@ -933,7 +938,7 @@ export default function CotizarPage() {
                 </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Conditional Content based on Agreement */}
           {!isAgreed ? (
@@ -985,7 +990,9 @@ export default function CotizarPage() {
               {/* Messages / Flow Area */}
               <div 
                 ref={messagesContainerRef}
-                className="flex-1 overflow-y-auto px-4 md:px-8 py-8 space-y-6 scrollbar-hide bg-slate-50/20 relative"
+                className={`flex-1 px-4 md:px-8 py-8 space-y-6 scrollbar-hide relative ${
+                  appState === "completed_quote" ? "" : "overflow-y-auto bg-slate-50/20"
+                }`}
               >
                 {/* Phase: Chatting */}
                 {appState !== "completed_quote" && (appState === "chatting" || messages.length > 0) && messages.map((message, index) => (
