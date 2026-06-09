@@ -5,32 +5,66 @@ import { getCellValue, renderCellValue } from '../../lib/pdf/formatters';
 
 interface ComparisonTableProps {
   insurers: InsurerOption[];
+  sections?: any[];
 }
 
-export function ComparisonTable({ insurers }: ComparisonTableProps) {
+function getLogoPath(insurerName: string): string | null {
+  const name = insurerName.toLowerCase();
+  if (name.includes('axa') || name.includes('colpatria')) return '/logos/axa-colpatria.png';
+  if (name.includes('equidad')) return '/logos/equidad.png';
+  if (name.includes('qualitas') || name.includes('quálitas')) return '/logos/qualitas.png';
+  if (name.includes('estado')) return '/logos/seguros-del-estado.png';
+  if (name.includes('mundial') || name.includes('mudial')) return '/logos/seguros-mudial.png';
+  if (name.includes('zurich') || name.includes('zúrich')) return '/logos/zurich.png';
+  return null;
+}
+
+export function ComparisonTable({ insurers, sections }: ComparisonTableProps) {
   // Config specifies that the first option is the cheapest
   
+  const displaySections = sections || comparisonSections;
+
   return (
     <table className="comparison-table">
       <thead>
         <tr>
           <th></th>
-          {insurers.map((option, index) => (
+          {insurers.map((option, index) => {
+            const logoPath = getLogoPath(option.insurer);
+            return (
             <th
               key={option.id}
               className={`insurer-header ${index === 0 ? "cheapest" : ""}`}
+              style={{ position: 'relative', verticalAlign: 'bottom', height: '105px', paddingTop: '15px' }}
             >
-              {option.insurer}
-              <span className="insurer-product">{option.product}</span>
+              <div style={{ marginBottom: '6px' }}>
+                {logoPath ? (
+                  <img 
+                    src={logoPath} 
+                    alt={option.insurer} 
+                    style={{ height: '48px', maxWidth: '110px', display: 'inline-block', objectFit: 'contain' }} 
+                  />
+                ) : (
+                  <div style={{ fontWeight: 'bold', fontSize: '11px' }}>{option.insurer}</div>
+                )}
+              </div>
+              
+              <div style={{ marginBottom: '26px' }}>
+                <span className="insurer-product">{option.product}</span>
+              </div>
+
               {index === 0 && (
-                <span className="cheapest-label">MÁS ECONÓMICA</span>
+                <span className="cheapest-label" style={{ position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', margin: 0, whiteSpace: 'nowrap' }}>
+                  MÁS ECONÓMICA
+                </span>
               )}
             </th>
-          ))}
+          );
+        })}
         </tr>
       </thead>
       <tbody>
-        {comparisonSections.map((section, sectionIndex) => (
+        {displaySections.map((section, sectionIndex) => (
           <React.Fragment key={section.title}>
             <tr className="section-row">
               <td colSpan={insurers.length + 1}>{section.title}</td>
