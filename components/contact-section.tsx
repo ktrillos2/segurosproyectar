@@ -37,8 +37,36 @@ export function ContactSection({ email, address, schedules }: ContactSectionProp
           <div className="flex flex-col">
             <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] p-8 md:p-10">
               <form 
-                action={`https://formsubmit.co/${contactEmail}`} 
-                method="POST" 
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  setIsSubmitting(true);
+                  const formData = new FormData(e.currentTarget);
+                  const data = {
+                    nombre: formData.get('nombre'),
+                    email: formData.get('email'),
+                    _subject: formData.get('_subject'),
+                    mensaje: formData.get('mensaje')
+                  };
+                  
+                  try {
+                    const res = await fetch('/api/contact', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify(data)
+                    });
+                    
+                    if (res.ok) {
+                      alert('¡Mensaje enviado correctamente! Te responderemos pronto.');
+                      (e.target as HTMLFormElement).reset();
+                    } else {
+                      alert('Ocurrió un error al enviar el mensaje. Intenta nuevamente.');
+                    }
+                  } catch (error) {
+                    alert('Error de conexión. Intenta nuevamente.');
+                  } finally {
+                    setIsSubmitting(false);
+                  }
+                }}
                 className="space-y-6"
               >
                 <div className="grid gap-6 sm:grid-cols-2">
@@ -49,7 +77,8 @@ export function ContactSection({ email, address, schedules }: ContactSectionProp
                       name="nombre"
                       placeholder="Juan Pérez"
                       required
-                      className="w-full h-12 px-4 rounded-md border border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none text-sm transition-all bg-slate-50 focus:bg-white"
+                      disabled={isSubmitting}
+                      className="w-full h-12 px-4 rounded-md border border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none text-sm transition-all bg-slate-50 focus:bg-white disabled:opacity-50"
                     />
                   </div>
                   <div className="space-y-2">
@@ -59,7 +88,8 @@ export function ContactSection({ email, address, schedules }: ContactSectionProp
                       name="email"
                       placeholder="juan@correo.com"
                       required
-                      className="w-full h-12 px-4 rounded-md border border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none text-sm transition-all bg-slate-50 focus:bg-white"
+                      disabled={isSubmitting}
+                      className="w-full h-12 px-4 rounded-md border border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none text-sm transition-all bg-slate-50 focus:bg-white disabled:opacity-50"
                     />
                   </div>
                 </div>
@@ -71,7 +101,8 @@ export function ContactSection({ email, address, schedules }: ContactSectionProp
                     name="_subject"
                     placeholder="Quiero saber más sobre coberturas"
                     required
-                    className="w-full h-12 px-4 rounded-md border border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none text-sm transition-all bg-slate-50 focus:bg-white"
+                    disabled={isSubmitting}
+                    className="w-full h-12 px-4 rounded-md border border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none text-sm transition-all bg-slate-50 focus:bg-white disabled:opacity-50"
                   />
                 </div>
 
@@ -81,12 +112,10 @@ export function ContactSection({ email, address, schedules }: ContactSectionProp
                     name="mensaje"
                     rows={4}
                     required
+                    disabled={isSubmitting}
                     placeholder="Escribe tu duda aquí..."
-                    className="w-full p-4 rounded-md border border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none text-sm transition-all bg-slate-50 focus:bg-white resize-none"
+                    className="w-full p-4 rounded-md border border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none text-sm transition-all bg-slate-50 focus:bg-white resize-none disabled:opacity-50"
                   />
-                  {/* Honeypot & next page configurations for FormSubmit */}
-                  <input type="hidden" name="_captcha" value="false" />
-                  <input type="hidden" name="_template" value="table" />
                 </div>
 
                 {isSubmitting ? (

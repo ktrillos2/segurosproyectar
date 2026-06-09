@@ -6,6 +6,7 @@ import { Icon } from "@iconify/react"
 import { useState, useRef, useEffect } from "react"
 import { toast } from "sonner"
 import { QuoteResultCard } from "@/components/quote-result-card"
+import { generateQuoteComparisonPDF } from "@/utils/generate-pdf"
 
 const BOT_AVATAR = "/images/sofia.jpeg"
 
@@ -908,14 +909,6 @@ export default function CotizarPage() {
                 >
                   Aceptar y Empezar
                 </Button>
-                <Button 
-                  onClick={handleTestMockQuote}
-                  variant="outline"
-                  className="w-full h-12 rounded-2xl font-bold text-xs border-dashed border-2 border-slate-300 hover:border-primary text-slate-500 hover:text-primary transition-all"
-                >
-                  <Icon icon="ph:eye-bold" className="w-4 h-4 mr-1.5" />
-                  Probar Diseño (Todas las Aseguradoras)
-                </Button>
               </div>
               <p className="mt-4 text-[9px] md:text-[10px] text-slate-400 uppercase tracking-widest font-bold px-4">
                 Al hacer clic, aceptas nuestra política de tratamiento de datos.
@@ -1092,7 +1085,27 @@ export default function CotizarPage() {
                           )}
                           {exitosas.length > 0 && (
                             <div className="space-y-6">
-                              <h3 className="text-xl font-bold text-slate-800 px-2 text-center md:text-left">Opciones Disponibles</h3>
+                              <div className="flex flex-col md:flex-row justify-between items-center gap-4 px-2">
+                                <h3 className="text-xl font-bold text-slate-800 text-center md:text-left">Opciones Disponibles</h3>
+                                <Button 
+                                  onClick={async () => {
+                                    try {
+                                      toast.loading("Generando PDF...");
+                                      await generateQuoteComparisonPDF(quoteResults, userInfo);
+                                      toast.dismiss();
+                                      toast.success("PDF generado exitosamente");
+                                    } catch (e) {
+                                      toast.dismiss();
+                                      toast.error("Error al generar PDF");
+                                      console.error(e);
+                                    }
+                                  }}
+                                  className="rounded-full font-bold shadow-md hover:scale-[1.02] active:scale-95 transition-all"
+                                >
+                                  <Icon icon="ph:file-pdf-fill" className="w-5 h-5 mr-2" />
+                                  Descargar Cuadro Comparativo
+                                </Button>
+                              </div>
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                                 {exitosas.map((result, index) => (
                                   <QuoteResultCard
