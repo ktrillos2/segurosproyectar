@@ -8,6 +8,7 @@ export type AutoQuoteData = {
   generatedAt: string;
   isDraft: boolean;
   showInternalPage?: boolean;
+  logosMap?: Record<string, string>;
 };
 
 export type Advisor = {

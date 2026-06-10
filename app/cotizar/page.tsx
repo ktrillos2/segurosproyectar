@@ -7,6 +7,7 @@ import { useState, useRef, useEffect } from "react"
 import { toast } from "sonner"
 import { QuoteResultCard } from "@/components/quote-result-card"
 import { generateQuoteComparisonPDF } from "@/utils/generate-pdf"
+import { client } from "@/sanity/lib/client"
 
 const BOT_AVATAR = "/images/sofia.jpeg"
 
@@ -43,6 +44,9 @@ type UserInfo = {
     oneroso?: boolean
     beneficiario?: boolean
   }
+  campo_actual?: string
+  completado?: boolean
+  sugerencias?: string[]
 }
 
 type InsuranceQuote = {
@@ -371,6 +375,7 @@ export default function CotizarPage() {
   const [selectedQuote, setSelectedQuote] = useState<InsuranceQuote | null>(null)
   const [sarlaftData, setSarlaftData] = useState({ ocupacion: "", fondos: "Salario" })
   const [quoteResults, setQuoteResults] = useState<PollingResult[]>([])
+  const [logosMap, setLogosMap] = useState<Record<string, string>>({})
   const [pollingTaskId, setPollingTaskId] = useState<string | null>(null)
   const [otpCode, setOtpCode] = useState("")
   const [isSendingSms, setIsSendingSms] = useState(false)
@@ -423,6 +428,22 @@ export default function CotizarPage() {
   useEffect(() => {
     scrollToBottom()
   }, [messages, isTyping, appState])
+
+  useEffect(() => {
+    const fetchLogos = async () => {
+      try {
+        const logos = await client.fetch(`*[_type == "insurerLogo"] { name, "url": logo.asset->url }`)
+        const map: Record<string, string> = {}
+        logos.forEach((l: any) => {
+          map[l.name.toLowerCase()] = l.url
+        })
+        setLogosMap(map)
+      } catch (e) {
+        console.error("Error fetching logos", e)
+      }
+    }
+    fetchLogos()
+  }, [])
 
   const processAIData = (content: string) => {
     const dataMatch = content.match(/###DATA###([\s\S]*?)###ENDDATA###/)
@@ -938,6 +959,7 @@ export default function CotizarPage() {
                 </div>
               </div>
             </div>
+          </div>
           )}
 
           {/* Conditional Content based on Agreement */}
@@ -1164,7 +1186,7 @@ export default function CotizarPage() {
                                   onClick={async () => {
                                     try {
                                       toast.loading("Generando PDF...");
-                                      await generateQuoteComparisonPDF(quoteResults, userInfo);
+                                      await generateQuoteComparisonPDF(quoteResults, userInfo, logosMap);
                                       toast.dismiss();
                                       toast.success("PDF generado exitosamente");
                                     } catch (e) {
@@ -1195,6 +1217,7 @@ export default function CotizarPage() {
                                   <QuoteResultCard
                                     key={modifiedResult.id}
                                     quoteResult={modifiedResult}
+                                    logosMap={logosMap}
                                     onContinue={(name) => {
                                       const fullName = modifiedResult.plan_recomendado?.nombre 
                                         ? `${name} - ${modifiedResult.plan_recomendado.nombre}` 
@@ -1306,8 +1329,7 @@ export default function CotizarPage() {
               {appState === "chatting" && (
                 <div className="shrink-0 bg-white border-t border-slate-100 p-4 md:p-6 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.05)]">
                   {(() => {
-                    const lastBotMessage = messages.filter(m => m.role === "bot").pop()?.content.toLowerCase() || "";
-                    const isAskingForColor = lastBotMessage.includes("color") && !lastBotMessage.includes("qué color");
+                    const isAskingForColor = userInfo.campo_actual === "color";
                     
                     const colorOptions = [
                       { label: "Blanco", hex: "#FFFFFF" },
@@ -1315,7 +1337,14 @@ export default function CotizarPage() {
                       { label: "Gris", hex: "#8E8E93" },
                       { label: "Plata", hex: "#E5E5EA" },
                       { label: "Rojo", hex: "#FF3B30" },
-                      { label: "Azul", hex: "#007AFF" }
+                      { label: "Azul", hex: "#007AFF" },
+                      { label: "Verde", hex: "#34C759" },
+                      { label: "Beige", hex: "#F5F5DC" },
+                      { label: "Café", hex: "#6F4E37" },
+                      { label: "Dorado", hex: "#FFD700" },
+                      { label: "Vinotinto", hex: "#800020" },
+                      { label: "Naranja", hex: "#FF9500" },
+                      { label: "Amarillo", hex: "#FFCC00" }
                     ];
 
                     return (

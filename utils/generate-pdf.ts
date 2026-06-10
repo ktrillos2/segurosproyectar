@@ -1,7 +1,7 @@
 import { generateQuotePdf } from '../lib/pdf/generatePdf';
 import { AutoQuoteData, InsurerOption } from '../types/autoQuote';
 
-export const generateQuoteComparisonPDF = async (quoteResults: any[], userInfo: any) => {
+export const generateQuoteComparisonPDF = async (quoteResults: any[], userInfo: any, logosMap?: Record<string, string>) => {
   const cliente = userInfo?.cliente || {};
   const vehiculoData = quoteResults.find(q => q.vehiculo)?.vehiculo || {};
   
@@ -106,7 +106,8 @@ export const generateQuoteComparisonPDF = async (quoteResults: any[], userInfo: 
     insurers,
     generatedAt: new Date().toLocaleDateString(),
     isDraft: true,
-    showInternalPage: true // Puedes cambiarlo a false en producción
+    showInternalPage: true, // Puedes cambiarlo a false en producción
+    logosMap
   };
 
   await generateQuotePdf(data);

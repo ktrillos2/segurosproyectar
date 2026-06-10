@@ -40,7 +40,7 @@ export function AutoQuoteTemplate({ data }: AutoQuoteTemplateProps) {
           
           <div className="intro-title">Estas son las mejores opciones para tu seguro de carro (Página 1/2):</div>
           
-          <ComparisonTable insurers={sortedInsurers} sections={page1Sections} />
+          <ComparisonTable insurers={sortedInsurers} sections={page1Sections} logosMap={data.logosMap} />
         </div>
         
         <PdfFooter generatedAt={data.generatedAt} />
@@ -53,7 +53,7 @@ export function AutoQuoteTemplate({ data }: AutoQuoteTemplateProps) {
         <div className="pdf-content">
           <div className="intro-title" style={{ marginTop: 0 }}>Continuación opciones de seguro (Página 2/2):</div>
           
-          <ComparisonTable insurers={sortedInsurers} sections={page2Sections} />
+          <ComparisonTable insurers={sortedInsurers} sections={page2Sections} logosMap={data.logosMap} />
           
           <div className="summary-box">
             <strong>Conclusión comercial:</strong><br />

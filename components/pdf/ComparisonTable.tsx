@@ -6,10 +6,20 @@ import { getCellValue, renderCellValue } from '../../lib/pdf/formatters';
 interface ComparisonTableProps {
   insurers: InsurerOption[];
   sections?: any[];
+  logosMap?: Record<string, string>;
 }
 
-function getLogoPath(insurerName: string): string | null {
+function getLogoPath(insurerName: string, logosMap?: Record<string, string>): string | null {
   const name = insurerName.toLowerCase();
+  if (logosMap) {
+    if (name.includes("equidad") && logosMap["equidad seguros"]) return logosMap["equidad seguros"];
+    if ((name.includes("axa") || name.includes("colpatria")) && logosMap["axa colpatria"]) return logosMap["axa colpatria"];
+    if (name.includes("estado") && logosMap["seguros del estado"]) return logosMap["seguros del estado"];
+    if (name.includes("mundial") && logosMap["seguros mundial"]) return logosMap["seguros mundial"];
+    if ((name.includes("qualitas") || name.includes("quálitas")) && logosMap["quálitas"]) return logosMap["quálitas"];
+    if (name.includes("zurich") && logosMap["zurich"]) return logosMap["zurich"];
+  }
+
   if (name.includes('axa') || name.includes('colpatria')) return '/logos/axa-colpatria.png';
   if (name.includes('equidad')) return '/logos/equidad.png';
   if (name.includes('qualitas') || name.includes('quálitas')) return '/logos/qualitas.png';
@@ -19,7 +29,7 @@ function getLogoPath(insurerName: string): string | null {
   return null;
 }
 
-export function ComparisonTable({ insurers, sections }: ComparisonTableProps) {
+export function ComparisonTable({ insurers, sections, logosMap }: ComparisonTableProps) {
   // Config specifies that the first option is the cheapest
   
   const displaySections = sections || comparisonSections;
@@ -30,7 +40,7 @@ export function ComparisonTable({ insurers, sections }: ComparisonTableProps) {
         <tr>
           <th></th>
           {insurers.map((option, index) => {
-            const logoPath = getLogoPath(option.insurer);
+            const logoPath = getLogoPath(option.insurer, logosMap);
             return (
             <th
               key={option.id}

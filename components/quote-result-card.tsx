@@ -32,6 +32,7 @@ type PollingResult = {
 interface QuoteResultCardProps {
   quoteResult: PollingResult
   onContinue: (insurerName: string) => void
+  logosMap?: Record<string, string>
 }
 
 const formatMoney = (val: any) => {
@@ -43,8 +44,17 @@ const formatMoney = (val: any) => {
   return "$0";
 }
 
-const getInsurerLogo = (name: string) => {
+const getInsurerLogo = (name: string, logosMap?: Record<string, string>) => {
   const n = name.toLowerCase()
+  if (logosMap) {
+    if (n.includes("equidad") && logosMap["equidad seguros"]) return logosMap["equidad seguros"];
+    if ((n.includes("axa") || n.includes("colpatria")) && logosMap["axa colpatria"]) return logosMap["axa colpatria"];
+    if (n.includes("estado") && logosMap["seguros del estado"]) return logosMap["seguros del estado"];
+    if (n.includes("mundial") && logosMap["seguros mundial"]) return logosMap["seguros mundial"];
+    if ((n.includes("qualitas") || n.includes("quálitas")) && logosMap["quálitas"]) return logosMap["quálitas"];
+    if (n.includes("zurich") && logosMap["zurich"]) return logosMap["zurich"];
+  }
+  
   if (n.includes("equidad")) return "/logos/equidad.png"
   if (n.includes("axa") || n.includes("colpatria")) return "/logos/axa-colpatria.png"
   if (n.includes("estado")) return "/logos/seguros-del-estado.png"
@@ -54,7 +64,7 @@ const getInsurerLogo = (name: string) => {
   return "/logos/equidad.png"
 }
 
-export function QuoteResultCard({ quoteResult, onContinue }: QuoteResultCardProps) {
+export function QuoteResultCard({ quoteResult, onContinue, logosMap }: QuoteResultCardProps) {
   const [showModal, setShowModal] = useState(false)
   const [showAdvisorMessage, setShowAdvisorMessage] = useState(false)
   
@@ -118,7 +128,7 @@ export function QuoteResultCard({ quoteResult, onContinue }: QuoteResultCardProp
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center shrink-0 border border-slate-100 shadow-sm">
-                  <img src={getInsurerLogo(aseguradora)} alt={aseguradora} className="w-full h-full object-contain" />
+                  <img src={getInsurerLogo(aseguradora, logosMap)} alt={aseguradora} className="w-full h-full object-contain" />
                 </div>
                 <div>
                   <h2 className="text-2xl font-black text-slate-900 leading-tight">
@@ -275,7 +285,7 @@ export function QuoteResultCard({ quoteResult, onContinue }: QuoteResultCardProp
             <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 shrink-0">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center border border-slate-100 p-1">
-                  <img src={getInsurerLogo(aseguradora)} alt={aseguradora} className="w-full h-full object-contain" />
+                  <img src={getInsurerLogo(aseguradora, logosMap)} alt={aseguradora} className="w-full h-full object-contain" />
                 </div>
                 <div>
                   <h3 className="font-black text-slate-900 text-lg leading-tight">
