@@ -185,7 +185,10 @@ const normalizeQuoteData = (rawItem: any) => {
   const parseAmount = (val: any) => {
     if (!val) return 0;
     if (typeof val === 'number') return val;
-    const clean = String(val).replace(/[^0-9]/g, "");
+    let strVal = String(val).trim();
+    // Eliminar centavos (ej: ,22 o .50 al final de la cadena)
+    strVal = strVal.replace(/[,\.]\d{1,2}$/, "");
+    const clean = strVal.replace(/[^0-9]/g, "");
     return parseInt(clean) || 0;
   }
 
@@ -1265,19 +1268,30 @@ export default function CotizarPage() {
                                   }
                                   return [{ ...result, id: `${result.aseguradora}-${index}` }];
                                 }).map((modifiedResult) => (
-                                  <QuoteResultCard
-                                    key={modifiedResult.id}
-                                    quoteResult={modifiedResult}
-                                    logosMap={logosMap}
-                                    onContinue={(name) => {
-                                      const fullName = modifiedResult.plan_recomendado?.nombre 
-                                        ? `${name} - ${modifiedResult.plan_recomendado.nombre}` 
-                                        : name;
-                                      setSelectedQuote({ name: fullName } as any)
-                                      setAppState("sarlaft")
-                                    }}
-                                  />
+                                    <QuoteResultCard
+                                      key={modifiedResult.id}
+                                      quoteResult={modifiedResult}
+                                      logosMap={logosMap}
+                                      userInfo={userInfo}
+                                      onContinue={(name) => {
+                                        const fullName = modifiedResult.plan_recomendado?.nombre 
+                                          ? `${name} - ${modifiedResult.plan_recomendado.nombre}` 
+                                          : name;
+                                        setSelectedQuote({ name: fullName } as any)
+                                        setAppState("sarlaft")
+                                      }}
+                                    />
                                 ))}
+                              </div>
+                              <div className="flex justify-center mt-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                                <Button 
+                                  onClick={() => window.location.reload()}
+                                  variant="outline"
+                                  className="rounded-full px-8 h-14 font-bold border-2 border-slate-200 text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-all shadow-sm"
+                                >
+                                  <Icon icon="ph:arrow-counter-clockwise-bold" className="w-5 h-5 mr-2" />
+                                  Realizar otra cotización
+                                </Button>
                               </div>
                             </div>
                           )}

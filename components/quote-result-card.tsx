@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Icon } from "@iconify/react"
 import { Button } from "@/components/ui/button"
+import { toast } from "sonner"
 
 type PollingResult = {
   aseguradora: string
@@ -33,6 +34,7 @@ interface QuoteResultCardProps {
   quoteResult: PollingResult
   onContinue: (insurerName: string) => void
   logosMap?: Record<string, string>
+  userInfo?: any
 }
 
 const formatMoney = (val: any) => {
@@ -64,9 +66,30 @@ const getInsurerLogo = (name: string, logosMap?: Record<string, string>) => {
   return "/logos/equidad.png"
 }
 
-export function QuoteResultCard({ quoteResult, onContinue, logosMap }: QuoteResultCardProps) {
+export function QuoteResultCard({ quoteResult, onContinue, logosMap, userInfo }: QuoteResultCardProps) {
   const [showModal, setShowModal] = useState(false)
   const [showAdvisorMessage, setShowAdvisorMessage] = useState(false)
+  const [isRequestingAdvisor, setIsRequestingAdvisor] = useState(false)
+
+  const handleAdvisorRequest = async () => {
+    setIsRequestingAdvisor(true);
+    try {
+      const res = await fetch('/api/advisor-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userInfo, quoteResult })
+      });
+      if (res.ok) {
+        setShowAdvisorMessage(true);
+      } else {
+        toast.error("Error al enviar la solicitud");
+      }
+    } catch (e) {
+      toast.error("Error al enviar la solicitud");
+    } finally {
+      setIsRequestingAdvisor(false);
+    }
+  }
   
   if (!quoteResult) return null
 
@@ -230,11 +253,12 @@ export function QuoteResultCard({ quoteResult, onContinue, logosMap }: QuoteResu
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={() => setShowModal(true)}
-                  className="flex-1 h-12 rounded-2xl border-2 border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50 transition-all duration-200 flex items-center justify-center gap-2 active:scale-95"
+                  className="w-full h-12 rounded-2xl border-2 border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50 transition-all duration-200 flex items-center justify-center gap-2 active:scale-95"
                 >
                   <Icon icon="ph:magnifying-glass-plus-bold" className="w-4 h-4" />
                   Ver más detalles
                 </button>
+                {/* 
                 <Button
                   onClick={() => onContinue(aseguradora)}
                   className="flex-1 h-12 rounded-2xl font-bold text-sm shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
@@ -242,15 +266,17 @@ export function QuoteResultCard({ quoteResult, onContinue, logosMap }: QuoteResu
                   <Icon icon="ph:check-circle-fill" className="w-4 h-4 mr-1.5" />
                   Continuar y Emitir
                 </Button>
+                */}
               </div>
 
               {!showAdvisorMessage ? (
                 <button
-                  onClick={() => setShowAdvisorMessage(true)}
-                  className="w-full h-12 rounded-2xl bg-slate-900 text-white font-bold text-sm hover:bg-slate-800 transition-all flex items-center justify-center gap-2 shadow-lg shadow-slate-200 active:scale-95"
+                  onClick={handleAdvisorRequest}
+                  disabled={isRequestingAdvisor}
+                  className="w-full h-12 rounded-2xl bg-slate-900 text-white font-bold text-sm hover:bg-slate-800 transition-all flex items-center justify-center gap-2 shadow-lg shadow-slate-200 active:scale-95 disabled:opacity-50"
                 >
                   <Icon icon="ph:headset-bold" className="w-5 h-5 text-emerald-400" />
-                  Hablar con un asesor experto
+                  {isRequestingAdvisor ? "Enviando solicitud..." : "Hablar con un asesor experto"}
                 </button>
               ) : (
                 <div className="w-full bg-emerald-50 border border-emerald-100 rounded-2xl p-4 flex items-center gap-3 animate-in zoom-in-95">
