@@ -1032,7 +1032,7 @@ export default function CotizarPage() {
                 <div className="bg-white p-4 md:p-5 rounded-2xl border border-slate-200 text-[11px] md:text-xs text-left space-y-2.5 shadow-sm">
                   <div className="flex gap-2.5 items-start">
                     <Icon icon="ph:check-circle-fill" className="text-primary shrink-0 w-4 h-4 mt-0.5" />
-                    <span>Tus datos se usarán solo para fines de cotización.</span>
+                    <span>Tus datos se usarán para la gestión de tu seguro.</span>
                   </div>
                   <div className="flex gap-2.5 items-start">
                     <Icon icon="ph:check-circle-fill" className="text-primary shrink-0 w-4 h-4 mt-0.5" />

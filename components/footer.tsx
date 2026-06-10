@@ -91,7 +91,7 @@ export async function Footer({ data: dataProp }: { data?: any }) {
         <div className="flex flex-col lg:flex-row items-center justify-between gap-6 pb-4">
           
           <div className="text-sm font-medium text-slate-500 text-center lg:text-left">
-            © {currentYear} {data.companyName} · NIT {data.nit}
+            © {currentYear} {data.companyName || "Proyectar Administradores de Seguros LTDA"}
           </div>
           
           <div className="flex flex-col sm:flex-row items-center gap-6 text-sm font-medium text-slate-400">
