@@ -13,8 +13,11 @@ import {
 } from "@/components/ui/carousel"
 import Autoplay from "embla-carousel-autoplay"
 
-export function Hero({ data }: { data?: any }) {
+export function Hero({ data, insurers }: { data?: any; insurers?: any[] }) {
   if (!data) return null;
+
+  // Use the global insurers if available, otherwise fallback to hero insurers
+  const displayInsurers = insurers && insurers.length > 0 ? insurers : data.insurers;
 
   // Render title with highlight
   const renderTitle = () => {
@@ -106,8 +109,8 @@ export function Hero({ data }: { data?: any }) {
             className="w-full"
           >
             <CarouselContent className="items-center">
-              {data.insurers?.map((insurer: any) => (
-                <CarouselItem key={insurer._key} className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5">
+              {displayInsurers?.map((insurer: any) => (
+                <CarouselItem key={insurer._id || insurer._key} className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5 xl:basis-1/6">
                   <div className="flex items-center justify-center p-2 h-full">
                     <img 
                       src={urlFor(insurer.logo).url()} 

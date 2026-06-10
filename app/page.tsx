@@ -19,11 +19,12 @@ export default async function HomePage() {
   const howItWorksData = await client.fetch(`*[_type == "howItWorks"][0]`)
   const differentiatorsData = await client.fetch(`*[_type == "differentiators"][0]`)
   const globalConfigData = await client.fetch(`*[_type == "globalConfig"][0]`)
+  const insurersData = await client.fetch(`*[_type == "insurerLogo"]`)
 
   return (
     <main className="min-h-screen flex flex-col pt-0">
       <Header />
-      <Hero data={heroData} />
+      <Hero data={heroData} insurers={insurersData} />
       <HowItWorks data={howItWorksData} />
       <Differentiators data={differentiatorsData} />
       <Footer data={globalConfigData} />
