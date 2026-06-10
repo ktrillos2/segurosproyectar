@@ -4,6 +4,14 @@ import { Button } from "@/components/ui/button"
 import { Icon } from "@iconify/react"
 import Link from "next/link"
 import { urlFor } from "@/sanity/lib/image"
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
+import Autoplay from "embla-carousel-autoplay"
 
 export function Hero({ data }: { data?: any }) {
   if (!data) return null;
@@ -81,20 +89,38 @@ export function Hero({ data }: { data?: any }) {
 
       {/* Insurers Bar */}
       <section className="bg-slate-50 border-y border-slate-200 py-12 lg:py-16">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-12 sm:px-16 lg:px-20 relative">
           <p className="text-center text-sm font-bold text-slate-500 uppercase tracking-widest mb-10">
             {data.insurersTitle}
           </p>
-          <div className="flex overflow-x-auto pb-6 lg:pb-0 justify-start lg:justify-center items-center gap-12 md:gap-16 lg:gap-20 snap-x snap-mandatory px-4 lg:px-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-            {data.insurers?.map((insurer: any) => (
-              <img 
-                key={insurer._key}
-                src={urlFor(insurer.logo).url()} 
-                alt={`Logo ${insurer.name}`} 
-                className="h-20 md:h-24 lg:h-28 w-auto object-contain flex-shrink-0 snap-center transition-all duration-300 transform hover:scale-110"
-              />
-            ))}
-          </div>
+          <Carousel
+            opts={{
+              align: "start",
+              loop: true,
+            }}
+            plugins={[
+              Autoplay({
+                delay: 3000,
+              }),
+            ]}
+            className="w-full"
+          >
+            <CarouselContent className="items-center">
+              {data.insurers?.map((insurer: any) => (
+                <CarouselItem key={insurer._key} className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5">
+                  <div className="flex items-center justify-center p-2 h-full">
+                    <img 
+                      src={urlFor(insurer.logo).url()} 
+                      alt={`Logo ${insurer.name}`} 
+                      className="h-20 md:h-24 lg:h-28 w-auto object-contain transition-all duration-300 transform hover:scale-110"
+                    />
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="hidden sm:flex" />
+            <CarouselNext className="hidden sm:flex" />
+          </Carousel>
         </div>
       </section>
     </>
