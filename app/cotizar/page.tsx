@@ -431,6 +431,7 @@ export default function CotizarPage() {
   const [quoteResults, setQuoteResults] = useState<PollingResult[]>([])
   const [logosMap, setLogosMap] = useState<Record<string, string>>({})
   const [pollingTaskId, setPollingTaskId] = useState<string | null>(null)
+  const [currentTaskId, setCurrentTaskId] = useState<string | null>(null)
   const [otpCode, setOtpCode] = useState("")
   const [isSendingSms, setIsSendingSms] = useState(false)
   const [smsError, setSmsError] = useState("")
@@ -648,6 +649,7 @@ export default function CotizarPage() {
 
       if (data.task_id) {
         setPollingTaskId(data.task_id)
+        setCurrentTaskId(data.task_id)
       } else {
         throw new Error("El bot no retornó un task_id")
       }
@@ -671,7 +673,10 @@ export default function CotizarPage() {
       const data = await res.json()
 
       if (!res.ok) throw new Error(data.error || "Error al iniciar cotización")
-      if (data.task_id) setPollingTaskId(data.task_id)
+      if (data.task_id) {
+        setPollingTaskId(data.task_id)
+        setCurrentTaskId(data.task_id)
+      }
       else throw new Error("El bot no retornó un task_id")
     } catch (error: any) {
       console.error("handleDirectQuote error:", error)
@@ -891,25 +896,30 @@ export default function CotizarPage() {
 
   useEffect(() => {
     let intervalId: NodeJS.Timeout
-    if (appState === "quoting" && pollingTaskId) {
+    if ((appState === "quoting" || appState === "completed_quote") && pollingTaskId) {
       intervalId = setInterval(async () => {
         try {
           const res = await fetch(`/api/v1/cotizar/status/${pollingTaskId}`)
           const data = await res.json()
           
-          if (data.status === "completado" || data.status === "completado_con_errores" || data.status === "error") {
+          const resArray = data.data || data.cotizaciones || []
+          if (resArray.length > 0) {
+            // Filtrar los que tienen error para no mostrarlos
+            const sinErrores = resArray.filter((r: any) => r.status !== "error" && r.estado !== "error" && !r.error)
+            setQuoteResults(sinErrores.map(normalizeQuoteData))
+            if (appState === "quoting") {
+              setAppState("completed_quote")
+            }
+          }
+
+          const isFinished = data.finalizada === true || data.status === "completado" || data.status === "completado_con_errores" || data.status === "error" || data.pendientes === 0;
+
+          if (isFinished) {
             clearInterval(intervalId)
-            if (data.status === "completado" || data.status === "completado_con_errores") {
-              const resArray = data.cotizaciones || data.data || []
-              if (resArray.length > 0) {
-                setQuoteResults(resArray.map(normalizeQuoteData))
-                setAppState("completed_quote")
-              } else {
-                toast.error("Cotización sin resultados")
-                setAppState("chatting")
-              }
-            } else {
-              toast.error("Error en la cotización")
+            setPollingTaskId(null)
+            const sinErroresFinal = resArray.filter((r: any) => r.status !== "error" && r.estado !== "error" && !r.error)
+            if (sinErroresFinal.length === 0) {
+              toast.error("Cotización finalizada sin resultados válidos")
               setAppState("chatting")
             }
           }
@@ -1210,40 +1220,18 @@ export default function CotizarPage() {
                   </div>
                 )}
 
-                {/* Phase: Quoting Simulation */}
-                {appState === "quoting" && (
-                  <div className="flex flex-col items-center justify-center py-12 space-y-6 animate-in fade-in zoom-in duration-500">
-                    <div className="relative w-24 h-24">
-                      <div className="absolute inset-0 border-4 border-primary/20 rounded-full"></div>
-                      <div className="absolute inset-0 border-4 border-primary rounded-full border-t-transparent animate-spin"></div>
-                      <Icon icon="ph:calculator-fill" className="absolute inset-0 m-auto w-10 h-10 text-primary animate-pulse" />
-                    </div>
-                    <div className="text-center">
-                      <h3 className="text-xl font-bold text-slate-800">Cotizando con aseguradoras...</h3>
-                      <p className="text-slate-500 text-sm mt-2">Por favor espera, conectando con los servicios oficiales...</p>
-                      {pollingTaskId && (
-                        <p className="text-[11px] text-slate-400 font-medium mt-4">
-                          ID de Solicitud: {pollingTaskId}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Phase: Dashboard Result (Completed Quote) */}
-                {appState === "completed_quote" && quoteResults.length > 0 && (
-                  <div className="w-full pb-6 space-y-8">
+                {/* Phase: Dashboard Result (Completed or Progressively Showing Quotes) */}
+                {(appState === "quoting" || appState === "completed_quote") && quoteResults.length > 0 && (
+                  <div className="w-full pb-6 space-y-8 animate-in fade-in duration-500">
                     {(() => {
                       const exitosas = quoteResults.filter(c => c.status === "ok");
-                      const errores = quoteResults.filter(c => c.status === "error");
-                      const sinCotizacion = quoteResults.filter(c => c.status === "sin_cotizacion");
                       
                       return (
                         <>
-                          {pollingTaskId && (
+                          {!pollingTaskId && (
                             <div className="w-full text-center mb-6">
                               <p className="text-[11px] text-slate-400 font-medium">
-                                ID de Solicitud: {pollingTaskId}
+                                Proceso finalizado | ID de Solicitud: {currentTaskId}
                               </p>
                             </div>
                           )}
@@ -1298,21 +1286,46 @@ export default function CotizarPage() {
                                     />
                                 ))}
                               </div>
-                              <div className="flex justify-center mt-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                                <Button 
-                                  onClick={() => window.location.reload()}
-                                  variant="outline"
-                                  className="rounded-full px-8 h-14 font-bold border-2 border-slate-200 text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-all shadow-sm"
-                                >
-                                  <Icon icon="ph:arrow-counter-clockwise-bold" className="w-5 h-5 mr-2" />
-                                  Realizar otra cotización
-                                </Button>
-                              </div>
+                              
+                              {!pollingTaskId && (
+                                <div className="flex justify-center mt-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                                  <Button 
+                                    onClick={() => window.location.reload()}
+                                    variant="outline"
+                                    className="rounded-full px-8 h-14 font-bold border-2 border-slate-200 text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-all shadow-sm"
+                                  >
+                                    <Icon icon="ph:arrow-counter-clockwise-bold" className="w-5 h-5 mr-2" />
+                                    Realizar otra cotización
+                                  </Button>
+                                </div>
+                              )}
                             </div>
                           )}
                         </>
                       );
                     })()}
+                  </div>
+                )}
+
+                {/* Phase: Quoting Simulation - Spinner */}
+                {pollingTaskId && (
+                  <div className="flex flex-col items-center justify-center py-8 space-y-6 animate-in fade-in zoom-in duration-500">
+                    <div className="relative w-20 h-20">
+                      <div className="absolute inset-0 border-4 border-primary/20 rounded-full"></div>
+                      <div className="absolute inset-0 border-4 border-primary rounded-full border-t-transparent animate-spin"></div>
+                      <Icon icon="ph:calculator-fill" className="absolute inset-0 m-auto w-8 h-8 text-primary animate-pulse" />
+                    </div>
+                    <div className="text-center">
+                      <h3 className="text-xl font-bold text-slate-800">
+                        {quoteResults.length > 0 ? "Buscando más cotizaciones..." : "Cotizando con aseguradoras..."}
+                      </h3>
+                      <p className="text-slate-500 text-sm mt-2">Por favor espera, conectando con los servicios oficiales...</p>
+                      {currentTaskId && (
+                        <p className="text-[11px] text-slate-400 font-medium mt-4">
+                          ID de Solicitud: {currentTaskId}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 )}
 
