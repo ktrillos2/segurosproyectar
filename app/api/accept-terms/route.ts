@@ -3,8 +3,16 @@ import { client } from '@/sanity/lib/client';
 
 export async function POST(request: Request) {
   try {
-    // Get client IP address
-    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'IP desconocida';
+    const body = await request.json().catch(() => ({}));
+    
+    // Use IP from client if provided, otherwise fallback to headers
+    let ip = body.ip || request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'IP desconocida';
+    
+    // Format IPv6 localhost
+    if (ip === '::1') {
+      ip = '127.0.0.1 (Localhost)';
+    }
+
     const userAgent = request.headers.get('user-agent') || 'Desconocido';
     const date = new Date().toISOString();
 

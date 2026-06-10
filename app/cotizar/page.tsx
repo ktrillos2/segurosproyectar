@@ -1047,8 +1047,20 @@ export default function CotizarPage() {
               <div className="mt-6 md:mt-10 w-full max-w-sm flex flex-col gap-3">
                 <Button 
                   onClick={() => {
-                    // Registrar aceptación en segundo plano
-                    fetch("/api/accept-terms", { method: "POST" }).catch(err => console.error("Error al registrar aceptación:", err));
+                    // Registrar aceptación en segundo plano intentando obtener IP pública real
+                    fetch("https://api.ipify.org?format=json")
+                      .then(res => res.json())
+                      .then(data => {
+                        fetch("/api/accept-terms", { 
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ ip: data.ip })
+                        }).catch(err => console.error("Error al registrar aceptación:", err));
+                      })
+                      .catch(() => {
+                        // Fallback si ipify falla o está bloqueado
+                        fetch("/api/accept-terms", { method: "POST" }).catch(err => console.error("Error al registrar aceptación:", err));
+                      });
                     
                     setIsAgreed(true)
                     if (process.env.NEXT_PUBLIC_SKIP_VERIFICATION === "true") {
