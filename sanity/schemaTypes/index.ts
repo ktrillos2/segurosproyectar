@@ -11,6 +11,7 @@ import { testimonialsPage } from './testimonialsPage'
 import { pqrsPage } from './pqrsPage'
 import { legalPage } from './legalPage'
 import insurerLogo from './insurerLogo'
+import termAcceptance from './termAcceptance'
 
 export const schema: { types: SchemaTypeDefinition[] } = {
   types: [
@@ -25,6 +26,7 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     testimonialsPage,
     pqrsPage,
     legalPage,
-    insurerLogo
+    insurerLogo,
+    termAcceptance
   ],
 }

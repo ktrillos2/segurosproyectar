@@ -1047,6 +1047,9 @@ export default function CotizarPage() {
               <div className="mt-6 md:mt-10 w-full max-w-sm flex flex-col gap-3">
                 <Button 
                   onClick={() => {
+                    // Registrar aceptación en segundo plano
+                    fetch("/api/accept-terms", { method: "POST" }).catch(err => console.error("Error al registrar aceptación:", err));
+                    
                     setIsAgreed(true)
                     if (process.env.NEXT_PUBLIC_SKIP_VERIFICATION === "true") {
                       handleDirectQuote()
@@ -1058,7 +1061,7 @@ export default function CotizarPage() {
                 </Button>
               </div>
               <p className="mt-4 text-[9px] md:text-[10px] text-slate-400 uppercase tracking-widest font-bold px-4">
-                Al hacer clic, aceptas nuestra política de tratamiento de datos.
+                Al hacer clic, aceptas nuestra <a href="/politica-de-tratamiento-de-datos" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary transition-colors">Política de Tratamiento de Datos</a> y <a href="/terminos-y-condiciones" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary transition-colors">Términos y Condiciones</a>.
               </p>
             </div>
           ) : (
