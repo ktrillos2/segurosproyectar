@@ -1,7 +1,7 @@
 .pdf-container {
   /* Using A4 Landscape equivalent dimensions for scaling if needed, but we rely on a container that represents a page */
   width: 1123px; /* A4 width at 96 DPI */
-  min-height: 794px; /* A4 height */
+  min-height: 890px; /* Increased height to avoid footer overlap */
   background: white;
   color: #263238;
   font-family: Arial, Helvetica, sans-serif;
@@ -12,7 +12,7 @@
 .pdf-page {
   position: relative;
   width: 100%;
-  height: 794px; /* Fixed A4 Landscape height to act as exactly 1 page */
+  height: 890px; /* Fixed height to act as exactly 1 page */
   background: #ffffff;
   padding: 18px;
   box-sizing: border-box;

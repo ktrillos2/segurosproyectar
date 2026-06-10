@@ -25,15 +25,13 @@ export function AutoQuoteTemplate({ data }: AutoQuoteTemplateProps) {
     "Importante: esta cotización es de carácter informativo y no implica aceptación del riesgo por parte de las aseguradoras. El valor del vehículo proviene de la guía Fasecolda vigente. Las coberturas, valores y deducibles definitivos son los de la póliza emitida y el clausulado de cada compañía, sujetos a inspección y a las políticas de suscripción. Las primas incluyen IVA. La vigencia de cada oferta depende de cada aseguradora.";
 
   // Dividir las secciones en dos páginas para no desbordar
-  const page1Sections = comparisonSections.slice(0, 3);
-  const page2Sections = comparisonSections.slice(3);
+  const page1Sections = comparisonSections.slice(0, 2);
+  const page2Sections = comparisonSections.slice(2);
 
   return (
     <div className="pdf-container" id="pdf-container-element">
       {/* PÁGINA 1 */}
       <div className="pdf-page">
-        {data.isDraft && <Watermark />}
-        
         <div className="pdf-content">
           <PdfHeader advisor={data.advisor} />
           <InfoBar insured={data.insured} vehicle={data.vehicle} />
@@ -42,14 +40,10 @@ export function AutoQuoteTemplate({ data }: AutoQuoteTemplateProps) {
           
           <ComparisonTable insurers={sortedInsurers} sections={page1Sections} logosMap={data.logosMap} />
         </div>
-        
-        <PdfFooter generatedAt={data.generatedAt} />
       </div>
 
       {/* PÁGINA 2 */}
       <div className="pdf-page">
-        {data.isDraft && <Watermark />}
-        
         <div className="pdf-content">
           <div className="intro-title" style={{ marginTop: 0 }}>Continuación opciones de seguro (Página 2/2):</div>
           

@@ -13,10 +13,10 @@ function getLogoPath(insurerName: string): string | null {
   const nameL = insurerName.toLowerCase();
   
   // Para el PDF usamos estrictamente los PNG locales para evitar errores de renderizado SVG con html2canvas
-  if (nameL.includes("axa")) return "/logos/axa.png";
+  if (nameL.includes("axa")) return "/logos/axa-colpatria.png";
   if (nameL.includes("equidad")) return "/logos/equidad.png";
-  if (nameL.includes("estado")) return "/logos/estado.png";
-  if (nameL.includes("mundial")) return "/logos/mundial.png";
+  if (nameL.includes("estado")) return "/logos/seguros-del-estado.png";
+  if (nameL.includes("mundial")) return "/logos/seguros-mudial.png";
   if (nameL.includes("quálitas") || nameL.includes("qualitas")) return "/logos/qualitas.png";
   if (nameL.includes("zurich")) return "/logos/zurich.png";
   

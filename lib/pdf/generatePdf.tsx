@@ -33,7 +33,7 @@ export async function generateQuotePdf(data: AutoQuoteData): Promise<void> {
     const pdf = new jsPDF({
       orientation: 'landscape',
       unit: 'px',
-      format: [1123, 794] // A4 Landscape
+      format: [1123, 890] // Increased height
     });
 
     const pages = container.querySelectorAll('.pdf-page');
@@ -54,7 +54,7 @@ export async function generateQuotePdf(data: AutoQuoteData): Promise<void> {
         pdf.addPage();
       }
       
-      pdf.addImage(imgData, 'PNG', 0, 0, 1123, 794);
+      pdf.addImage(imgData, 'PNG', 0, 0, 1123, 890);
     }
 
     pdf.save('Cotizacion_Autos_Proyectar.pdf');
