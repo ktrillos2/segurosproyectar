@@ -9,23 +9,17 @@ interface ComparisonTableProps {
   logosMap?: Record<string, string>;
 }
 
-function getLogoPath(insurerName: string, logosMap?: Record<string, string>): string | null {
-  const name = insurerName.toLowerCase();
-  if (logosMap) {
-    if (name.includes("equidad") && logosMap["equidad seguros"]) return logosMap["equidad seguros"];
-    if ((name.includes("axa") || name.includes("colpatria")) && logosMap["axa colpatria"]) return logosMap["axa colpatria"];
-    if (name.includes("estado") && logosMap["seguros del estado"]) return logosMap["seguros del estado"];
-    if (name.includes("mundial") && logosMap["seguros mundial"]) return logosMap["seguros mundial"];
-    if ((name.includes("qualitas") || name.includes("quálitas")) && logosMap["quálitas"]) return logosMap["quálitas"];
-    if (name.includes("zurich") && logosMap["zurich"]) return logosMap["zurich"];
-  }
-
-  if (name.includes('axa') || name.includes('colpatria')) return '/logos/axa-colpatria.png';
-  if (name.includes('equidad')) return '/logos/equidad.png';
-  if (name.includes('qualitas') || name.includes('quálitas')) return '/logos/qualitas.png';
-  if (name.includes('estado')) return '/logos/seguros-del-estado.png';
-  if (name.includes('mundial') || name.includes('mudial')) return '/logos/seguros-mudial.png';
-  if (name.includes('zurich') || name.includes('zúrich')) return '/logos/zurich.png';
+function getLogoPath(insurerName: string): string | null {
+  const nameL = insurerName.toLowerCase();
+  
+  // Para el PDF usamos estrictamente los PNG locales para evitar errores de renderizado SVG con html2canvas
+  if (nameL.includes("axa")) return "/logos/axa.png";
+  if (nameL.includes("equidad")) return "/logos/equidad.png";
+  if (nameL.includes("estado")) return "/logos/estado.png";
+  if (nameL.includes("mundial")) return "/logos/mundial.png";
+  if (nameL.includes("quálitas") || nameL.includes("qualitas")) return "/logos/qualitas.png";
+  if (nameL.includes("zurich")) return "/logos/zurich.png";
+  
   return null;
 }
 
@@ -40,7 +34,7 @@ export function ComparisonTable({ insurers, sections, logosMap }: ComparisonTabl
         <tr>
           <th></th>
           {insurers.map((option, index) => {
-            const logoPath = getLogoPath(option.insurer, logosMap);
+            const logoPath = getLogoPath(option.insurer);
             return (
             <th
               key={option.id}
@@ -64,8 +58,8 @@ export function ComparisonTable({ insurers, sections, logosMap }: ComparisonTabl
               </div>
 
               {index === 0 && (
-                <span className="cheapest-label" style={{ position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', margin: 0, whiteSpace: 'nowrap' }}>
-                  MÁS ECONÓMICA
+                <span className="cheapest-label" style={{ position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', margin: 0, whiteSpace: 'nowrap', backgroundColor: '#e2e8f0', color: '#1e293b' }}>
+                  MÁS EXCLUSIVA
                 </span>
               )}
             </th>

@@ -26,6 +26,8 @@
   height: 100%;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
+  padding-bottom: 55px; /* Safe space for the footer */
 }
 
 .header {
@@ -92,12 +94,12 @@
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
-  font-size: 8.5px;
+  font-size: 8px; /* Slightly smaller to fit better */
 }
 
 .comparison-table th,
 .comparison-table td {
-  padding: 6px 8px;
+  padding: 4px 6px; /* Reduced from 6px 8px to prevent overlap with footer */
   text-align: center;
   vertical-align: middle;
 }

@@ -339,7 +339,7 @@ export function QuoteResultCard({ quoteResult, onContinue, logosMap }: QuoteResu
                     <span className="text-sm font-semibold text-slate-600">IVA</span>
                     <span className="text-sm font-bold text-slate-800">{formatMoney(plan_recomendado?.iva)}</span>
                   </div>
-                  {plan_recomendado?.gastos_expedicion && (
+                  {Boolean(plan_recomendado?.gastos_expedicion) && (
                     <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100">
                       <span className="text-sm font-semibold text-slate-600">Gastos Expedición</span>
                       <span className="text-sm font-bold text-slate-800">{formatMoney(plan_recomendado?.gastos_expedicion)}</span>

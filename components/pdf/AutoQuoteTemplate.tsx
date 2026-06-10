@@ -11,15 +11,15 @@ interface AutoQuoteTemplateProps {
 }
 
 export function AutoQuoteTemplate({ data }: AutoQuoteTemplateProps) {
-  // Sort insurers by annual premium (lowest first)
-  const sortedInsurers = [...data.insurers].sort(
-    (a, b) => a.annualPremium - b.annualPremium
-  );
+  // Sort insurers by annual premium (highest first) and take the top 3 most expensive
+  const sortedInsurers = [...data.insurers]
+    .sort((a, b) => b.annualPremium - a.annualPremium)
+    .slice(0, 3);
 
   const cheapestInsurer = sortedInsurers[0];
   
   const summaryText = data.summaryText || 
-    `En resumen: la opción de ${cheapestInsurer?.insurer} — ${cheapestInsurer?.product} es la de menor prima y ofrece una excelente cobertura sobre el valor asegurado.`;
+    `En resumen: la opción de ${cheapestInsurer?.insurer} — ${cheapestInsurer?.product} es la opción premium con la cobertura más completa y exclusiva para tu vehículo.`;
 
   const legalText = data.legalText || 
     "Importante: esta cotización es de carácter informativo y no implica aceptación del riesgo por parte de las aseguradoras. El valor del vehículo proviene de la guía Fasecolda vigente. Las coberturas, valores y deducibles definitivos son los de la póliza emitida y el clausulado de cada compañía, sujetos a inspección y a las políticas de suscripción. Las primas incluyen IVA. La vigencia de cada oferta depende de cada aseguradora.";

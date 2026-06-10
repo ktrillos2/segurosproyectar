@@ -32,9 +32,12 @@ export const generateQuoteComparisonPDF = async (quoteResults: any[], userInfo: 
   const insurers: InsurerOption[] = [];
   
   quoteResults.filter(q => q.status === "ok").forEach((quote, index) => {
-    const planes = quote.planes_disponibles && quote.planes_disponibles.length > 0 
-      ? quote.planes_disponibles 
-      : (quote.plan_recomendado ? [quote.plan_recomendado] : []);
+    let selectedPlan = quote.plan_recomendado;
+    if (quote.planes_disponibles && quote.planes_disponibles.length > 0) {
+      selectedPlan = quote.planes_disponibles.reduce((max: any, p: any) => 
+        (p.total > max.total ? p : max), quote.planes_disponibles[0]);
+    }
+    const planes = selectedPlan ? [selectedPlan] : [];
 
     planes.forEach((p: any, pIndex: number) => {
       if (!p) return;
@@ -105,7 +108,7 @@ export const generateQuoteComparisonPDF = async (quoteResults: any[], userInfo: 
     vehicle,
     insurers,
     generatedAt: new Date().toLocaleDateString(),
-    isDraft: true,
+    isDraft: false,
     showInternalPage: true, // Puedes cambiarlo a false en producción
     logosMap
   };

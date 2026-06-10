@@ -165,7 +165,7 @@ const SAMPLE_DATA = {
 type AppState = "chatting" | "verifying_sms" | "quoting" | "selecting" | "sarlaft" | "issuing" | "finished" | "completed_quote"
 
 const normalizeQuoteData = (rawItem: any) => {
-  const isError = rawItem.status === "error" || !rawItem.aseguradora;
+  const isError = rawItem.status === "error" || !rawItem.aseguradora || rawItem.cotizable === false || String(rawItem.estado).toLowerCase() === "error";
   if (isError) {
     return {
       aseguradora: rawItem.aseguradora || "Desconocida",
@@ -347,6 +347,41 @@ const normalizeQuoteData = (rawItem: any) => {
       result.status = "error";
     }
   }
+  // Estado Mapping
+  else if (nameL.includes("estado")) {
+    if (rawItem.cotizaciones && rawItem.cotizaciones.length > 0) {
+      result.planes_disponibles = rawItem.cotizaciones.map((p: any) => {
+        return {
+          nombre: p.nombre || "Plan",
+          prima_neta: parseAmount(p.prima),
+          iva: parseAmount(p.impuesto),
+          gastos_expedicion: 0,
+          total: parseAmount(p.prima_total || p.total)
+        };
+      });
+      
+      if (rawItem.cotizacion_seleccionada) {
+        result.plan_recomendado = {
+          nombre: rawItem.cotizacion_seleccionada.nombre || "Plan",
+          prima_neta: parseAmount(rawItem.cotizacion_seleccionada.prima),
+          iva: parseAmount(rawItem.cotizacion_seleccionada.impuesto),
+          gastos_expedicion: 0,
+          total: parseAmount(rawItem.cotizacion_seleccionada.prima_total || rawItem.cotizacion_seleccionada.total)
+        };
+      } else {
+        result.plan_recomendado = result.planes_disponibles[0];
+      }
+      
+      const sourceAmparos = rawItem.cotizacion_seleccionada?.coberturas_completas || rawItem.cotizaciones[0]?.coberturas_completas || [];
+      result.amparos = sourceAmparos.map((amp: any) => ({
+        nombre: amp.nombre,
+        valor: amp.valor_asegurado,
+        deducible: amp.deducible
+      }));
+    } else {
+      result.status = "error";
+    }
+  }
   // Generic Fallback
   else {
     if (rawItem.plan_recomendado || (rawItem.planes_disponibles && rawItem.planes_disponibles.length > 0)) {
@@ -355,6 +390,22 @@ const normalizeQuoteData = (rawItem: any) => {
       result.amparos = rawItem.amparos || [];
     } else {
       result.status = "error";
+    }
+  }
+
+  if (result.status === "ok") {
+    // Filtrar opciones que vengan en 0
+    if (result.planes_disponibles && result.planes_disponibles.length > 0) {
+      result.planes_disponibles = result.planes_disponibles.filter((p: any) => p.total > 0);
+    }
+    
+    const hasValidRecomendado = result.plan_recomendado && result.plan_recomendado.total > 0;
+    const hasValidDisponibles = result.planes_disponibles && result.planes_disponibles.length > 0;
+    
+    if (!hasValidRecomendado && !hasValidDisponibles) {
+      result.status = "error";
+    } else if (!hasValidRecomendado && hasValidDisponibles) {
+      result.plan_recomendado = result.planes_disponibles[0];
     }
   }
 
@@ -936,13 +987,13 @@ export default function CotizarPage() {
     <>
       <div className="flex-1 flex flex-col items-center py-4 md:py-12 px-4 w-full">
         <div className={`w-full flex flex-col relative transition-all duration-500 ${
-          appState === "completed_quote" 
+          ["completed_quote", "sarlaft", "issuing", "finished"].includes(appState) 
             ? "max-w-6xl"
             : "bg-white shadow-2xl rounded-2xl overflow-hidden border border-slate-200 h-[calc(100dvh-100px)] md:h-[750px] max-w-2xl"
         }`}>
           
           {/* Header del bot */}
-          {appState !== "completed_quote" && (
+          {!["completed_quote", "sarlaft", "issuing", "finished"].includes(appState) && (
             <div className="bg-slate-900 border-b border-slate-800 p-4 shadow-sm z-10 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-4">
               <div className="relative">
@@ -1013,11 +1064,11 @@ export default function CotizarPage() {
               <div 
                 ref={messagesContainerRef}
                 className={`flex-1 px-4 md:px-8 py-8 space-y-6 scrollbar-hide relative ${
-                  appState === "completed_quote" ? "" : "overflow-y-auto bg-slate-50/20"
+                  ["completed_quote", "sarlaft", "issuing", "finished"].includes(appState) ? "" : "overflow-y-auto bg-slate-50/20"
                 }`}
               >
                 {/* Phase: Chatting */}
-                {appState !== "completed_quote" && (appState === "chatting" || messages.length > 0) && messages.map((message, index) => (
+                {!["completed_quote", "sarlaft", "issuing", "finished"].includes(appState) && (appState === "chatting" || messages.length > 0) && messages.map((message, index) => (
                   <div key={index} className={`flex flex-col ${message.role === "user" ? "items-end" : "items-start"}`}>
                     <div className={`flex gap-3 lg:gap-4 max-w-[90%] md:max-w-[85%] ${message.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
                       {message.role === "bot" && (
@@ -1052,7 +1103,7 @@ export default function CotizarPage() {
 
                 {/* Phase: Verifying SMS */}
                 {appState === "verifying_sms" && (
-                  <div className="flex flex-col items-center justify-center py-10 space-y-6 animate-in fade-in zoom-in duration-500 max-w-sm mx-auto">
+                  <div className="flex flex-col items-center justify-center py-10 space-y-6 animate-in fade-in zoom-in duration-500 max-w-sm mx-auto bg-white p-8 rounded-3xl shadow-xl border border-slate-100">
                     <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center">
                       <Icon icon="ph:device-mobile-speaker-fill" className="w-10 h-10 text-primary" />
                     </div>
@@ -1198,7 +1249,7 @@ export default function CotizarPage() {
                                   className="rounded-full font-bold shadow-md hover:scale-[1.02] active:scale-95 transition-all"
                                 >
                                   <Icon icon="ph:file-pdf-fill" className="w-5 h-5 mr-2" />
-                                  Descargar Cuadro Comparativo
+                                  PDF COMPARATIVO DE LAS MEJORES OPCIONES
                                 </Button>
                               </div>
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
@@ -1238,7 +1289,7 @@ export default function CotizarPage() {
 
                 {/* Phase: SARLAFT Form */}
                 {appState === "sarlaft" && (
-                  <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-md mx-auto">
+                  <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-md mx-auto bg-white p-8 rounded-3xl shadow-xl border border-slate-100">
                     <div className="text-center">
                       <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                         <Icon icon="ph:identification-card-fill" className="w-8 h-8 text-primary" />
@@ -1277,16 +1328,26 @@ export default function CotizarPage() {
                           <option>Otros</option>
                         </select>
                       </div>
-                      <Button type="submit" className="w-full h-14 rounded-xl font-bold text-lg mt-4 shadow-xl shadow-primary/20">
-                        Emitir Seguro Ahora
-                      </Button>
+                      <div className="flex gap-3 mt-4">
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          onClick={() => setAppState("completed_quote")}
+                          className="w-1/3 h-14 rounded-xl font-bold text-slate-500 border-slate-200"
+                        >
+                          Volver
+                        </Button>
+                        <Button type="submit" className="w-2/3 h-14 rounded-xl font-bold text-lg shadow-xl shadow-primary/20">
+                          Emitir Seguro Ahora
+                        </Button>
+                      </div>
                     </form>
                   </div>
                 )}
 
                 {/* Phase: Issuing Simulation */}
                 {appState === "issuing" && (
-                  <div className="flex flex-col items-center justify-center py-20 space-y-8 animate-in fade-in duration-500">
+                  <div className="flex flex-col items-center justify-center py-20 space-y-8 animate-in fade-in duration-500 max-w-md mx-auto bg-white p-12 rounded-3xl shadow-xl border border-slate-100">
                     <div className="relative">
                       <Icon icon="ph:seal-check-fill" className="w-24 h-24 text-primary animate-pulse" />
                       <div className="absolute -inset-4 border-4 border-primary/30 border-dashed rounded-full animate-[spin_10s_linear_infinite]"></div>
@@ -1300,7 +1361,7 @@ export default function CotizarPage() {
 
                 {/* Phase: Finished Success */}
                 {appState === "finished" && (
-                  <div className="flex flex-col items-center justify-center py-12 text-center animate-in zoom-in fade-in duration-1000">
+                  <div className="flex flex-col items-center justify-center py-12 text-center animate-in zoom-in fade-in duration-1000 max-w-lg mx-auto bg-white p-10 rounded-3xl shadow-xl border border-slate-100">
                     <div className="w-24 h-24 bg-emerald-500 rounded-full flex items-center justify-center mb-6 shadow-2xl shadow-emerald-500/30">
                       <Icon icon="ph:check-bold" className="w-12 h-12 text-white" />
                     </div>
@@ -1314,13 +1375,21 @@ export default function CotizarPage() {
                         Por favor sigue las instrucciones en tu bandeja para activar tu cobertura hoy mismo.
                       </p>
                     </div>
-                    <Button 
-                      onClick={() => window.location.reload()}
-                      variant="outline" 
-                      className="mt-8 rounded-full px-8 h-12 font-bold border-slate-200 text-slate-500"
-                    >
-                      Nueva Cotización
-                    </Button>
+                    <div className="flex gap-4 mt-8">
+                      <Button 
+                        onClick={() => setAppState("completed_quote")}
+                        variant="outline" 
+                        className="rounded-full px-8 h-12 font-bold border-slate-200 text-slate-500"
+                      >
+                        Volver a Opciones
+                      </Button>
+                      <Button 
+                        onClick={() => window.location.reload()}
+                        className="rounded-full px-8 h-12 font-bold shadow-xl shadow-primary/20"
+                      >
+                        Nueva Cotización
+                      </Button>
+                    </div>
                   </div>
                 )}
               </div>
