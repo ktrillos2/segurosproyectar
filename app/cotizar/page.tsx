@@ -231,11 +231,42 @@ const normalizeQuoteData = (rawItem: any) => {
       }));
     }
     if (Array.isArray(rawItem.amparos)) {
-      result.amparos = rawItem.amparos.map((amp: any) => ({
-        nombre: typeof amp === 'string' ? amp : amp.nombre,
-        valor: "Amparada",
-        deducible: null
-      }));
+      const amparosFijosAxa = [
+        { nombre: 'Deducible RCE', valor: 'Sin deducible', deducible: '0' },
+        { nombre: 'Límite daños a bienes de terceros', valor: 'Límite único', deducible: '0' },
+        { nombre: 'Límite lesiones o muerte a una persona', valor: 'Límite único', deducible: '0' },
+        { nombre: 'Límite lesiones o muerte a dos o más personas', valor: 'Límite único', deducible: '0' },
+        { nombre: 'Pérdida total por daños', valor: 'Sin deducible', deducible: '0' },
+        { nombre: 'Pérdida parcial por daños', valor: 'Deducible 1 SMMLV', deducible: '1 SMMLV' },
+        { nombre: 'Pérdida total por hurto', valor: 'Sin deducible', deducible: '0' },
+        { nombre: 'Pérdida parcial por hurto', valor: 'Deducible 1 SMMLV', deducible: '1 SMMLV' },
+        { nombre: 'Terremoto/eventos naturaleza', valor: 'Incluye', deducible: null },
+        { nombre: 'Protección patrimonial', valor: 'Incluye', deducible: null },
+        { nombre: 'Asistencia jurídica proceso penal', valor: 'Incluye', deducible: null },
+        { nombre: 'Asistencia jurídica proceso civil', valor: 'Incluye', deducible: null },
+        { nombre: 'Gastos de transporte pérdida total', valor: '$20.000 diarios x hasta 60 días', deducible: null },
+        { nombre: 'Vehículo sustituto pérdida total', valor: 'Hasta 20 días', deducible: null },
+        { nombre: 'Vehículo sustituto pérdida parcial', valor: 'Hasta 15 días', deducible: null },
+        { nombre: 'Revisión antes de viaje', valor: 'Incluye', deducible: null },
+        { nombre: 'Carro taller', valor: 'Sin límite de eventos', deducible: null },
+        { nombre: 'Conductor elegido', valor: 'Sin límite de eventos', deducible: null },
+        { nombre: 'Conductor profesional', valor: 'Incluye', deducible: null },
+        { nombre: 'Grúa en accidente', valor: 'Hasta 70 SMLDV', deducible: null },
+        { nombre: 'Grúa en avería', valor: 'Hasta 50 SMLDV', deducible: null },
+        { nombre: 'Asistencia médica', valor: 'Incluye', deducible: null },
+        { nombre: 'Asistencia en viaje', valor: 'Plus', deducible: null },
+        { nombre: 'Muerte accidental', valor: '$50.000.000', deducible: null },
+        { nombre: 'Garantía en tiempo de reparación', valor: 'Incluye', deducible: null },
+        { nombre: 'Prolongación de vigencia', valor: 'Incluye', deducible: null },
+        { nombre: 'Llantas estalladas', valor: '1 SMMLV por vigencia', deducible: null },
+        { nombre: 'Rotura de vidrios', valor: 'Sin límite de eventos', deducible: null },
+        { nombre: 'Pérdida de llaves', valor: '1 SMMLV — 1 evento por vigencia', deducible: null },
+        { nombre: 'Asistencia exequial', valor: '120 SMDLV por ocupante', deducible: null }
+      ];
+      result.amparos = amparosFijosAxa;
+      if (result.planes_disponibles && result.planes_disponibles.length > 0) {
+        result.planes_disponibles.forEach((p: any) => p.amparos = amparosFijosAxa);
+      }
     }
   }
   // Equidad Mapping
@@ -243,23 +274,99 @@ const normalizeQuoteData = (rawItem: any) => {
     if (rawItem.datos?.planes && rawItem.datos.planes.length > 0) {
       result.planes_disponibles = rawItem.datos.planes.map((p: any) => {
         const valTotal = parseAmount(p.prima_anual || p.prima_anual_con_iva || p.prima_neta || p.total);
+        const pn = (p.nombre_plan || '').toUpperCase();
+        let eqAmparos: any[] = [];
+        if (pn.includes('RCE')) {
+          eqAmparos = [
+            { nombre: 'Deducible RCE', valor: 'Sin deducible', deducible: '0' },
+            { nombre: 'Amparo patrimonial', valor: 'Incluido', deducible: null },
+            { nombre: 'Asistencia jurídica', valor: 'Incluido', deducible: null },
+            { nombre: 'Carro taller', valor: '2 servicios', deducible: null },
+            { nombre: 'Grúa', valor: 'Incluido', deducible: null },
+            { nombre: 'Asistencia Equidad Vial', valor: 'Incluido', deducible: null },
+            { nombre: 'Club de Beneficios', valor: 'Incluido', deducible: null },
+          ];
+        } else if (pn.includes('BÁSICO') || pn.includes('BASICO')) {
+          eqAmparos = [
+            { nombre: 'Deducible RCE', valor: '4 SMMLV', deducible: '4 SMMLV' },
+            { nombre: 'Amparo patrimonial', valor: 'Incluido', deducible: null },
+            { nombre: 'Asistencia jurídica', valor: 'Incluido', deducible: null },
+            { nombre: 'Pérdida total por daños', valor: 'Valor según vehículo — 4 SMMLV', deducible: '4 SMMLV' },
+            { nombre: 'Pérdida parcial por daños', valor: 'Valor según vehículo — 4 SMMLV', deducible: '4 SMMLV' },
+            { nombre: 'Pérdida total por hurto', valor: 'Valor según vehículo — 4 SMMLV', deducible: '4 SMMLV' },
+            { nombre: 'Pérdida parcial por hurto', valor: 'Valor según vehículo — 4 SMMLV', deducible: '4 SMMLV' },
+            { nombre: 'Terremoto/eventos naturaleza', valor: 'Valor según vehículo — 4 SMMLV', deducible: '4 SMMLV' },
+            { nombre: 'Gastos de transporte pérdida total', valor: '$40.000 x 30 días', deducible: null },
+            { nombre: 'Carro taller', valor: '3 servicios', deducible: null },
+            { nombre: 'Conductor elegido', valor: '6 servicios', deducible: null },
+            { nombre: 'Grúa', valor: 'Incluido', deducible: null },
+            { nombre: 'Asistencia Equidad Básica', valor: 'Incluido', deducible: null },
+            { nombre: 'Club de Beneficios', valor: 'Incluido', deducible: null },
+          ];
+        } else if (pn.includes('LIGERO')) {
+          eqAmparos = [
+            { nombre: 'Deducible RCE', valor: 'Sin deducible', deducible: '0' },
+            { nombre: 'Amparo patrimonial', valor: 'Incluido', deducible: null },
+            { nombre: 'Asistencia jurídica', valor: 'Incluido', deducible: null },
+            { nombre: 'Accidentes personales', valor: '$60.000.000', deducible: null },
+            { nombre: 'Pérdida total por daños', valor: 'Valor según vehículo — Sin deducible', deducible: '0' },
+            { nombre: 'Pérdida parcial por daños', valor: 'Valor según vehículo — 1,5 SMMLV', deducible: '1,5 SMMLV' },
+            { nombre: 'Pérdida total por hurto', valor: 'Valor según vehículo — Sin deducible', deducible: '0' },
+            { nombre: 'Pérdida parcial por hurto', valor: 'Valor según vehículo — 1,5 SMMLV', deducible: '1,5 SMMLV' },
+            { nombre: 'Terremoto/eventos naturaleza', valor: 'Valor según vehículo — 1,5 SMMLV', deducible: '1,5 SMMLV' },
+            { nombre: 'Gastos de transporte pérdida total', valor: 'Incluido', deducible: null },
+            { nombre: 'Carro taller', valor: '3 servicios', deducible: null },
+            { nombre: 'Conductor elegido', valor: '6 servicios', deducible: null },
+            { nombre: 'Vehículo de reemplazo', valor: 'Hasta 25 días', deducible: null },
+            { nombre: 'Grúa', valor: 'Incluido', deducible: null },
+            { nombre: 'Asistencia Equidad Básica', valor: 'Incluido', deducible: null },
+            { nombre: 'Club de Beneficios', valor: 'Incluido', deducible: null },
+          ];
+        } else if (pn.includes('FULL')) {
+          eqAmparos = [
+            { nombre: 'Deducible RCE', valor: 'Sin deducible', deducible: '0' },
+            { nombre: 'Amparo patrimonial', valor: 'Incluido', deducible: null },
+            { nombre: 'Asistencia jurídica', valor: 'Incluido', deducible: null },
+            { nombre: 'Accidentes personales', valor: '$60.000.000', deducible: null },
+            { nombre: 'Pérdida total por daños', valor: 'Valor según vehículo — Sin deducible', deducible: '0' },
+            { nombre: 'Pérdida parcial por daños', valor: 'Valor según vehículo — 1 SMMLV', deducible: '1 SMMLV' },
+            { nombre: 'Pérdida total por hurto', valor: 'Valor según vehículo — Sin deducible', deducible: '0' },
+            { nombre: 'Pérdida parcial por hurto', valor: 'Valor según vehículo — 1 SMMLV', deducible: '1 SMMLV' },
+            { nombre: 'Terremoto/eventos naturaleza', valor: 'Valor según vehículo — 1 SMMLV', deducible: '1 SMMLV' },
+            { nombre: 'Gastos de transporte pérdida total', valor: '$40.000 x 30 días', deducible: null },
+            { nombre: 'Carro taller', valor: '5 servicios', deducible: null },
+            { nombre: 'Conductor elegido', valor: '12 servicios', deducible: null },
+            { nombre: 'Conductor élite', valor: '4 servicios', deducible: null },
+            { nombre: 'Vehículo de reemplazo', valor: 'Hasta 25 días', deducible: null },
+            { nombre: 'Grúa', valor: 'Incluido', deducible: null },
+            { nombre: 'Asistencia al hogar', valor: 'Incluido', deducible: null },
+            { nombre: 'Gastos de hospedaje o desplazamiento', valor: 'Incluido', deducible: null },
+            { nombre: 'Accesorios, llantas, vidrios', valor: 'Incluido', deducible: null },
+            { nombre: 'Plan viajero', valor: 'Incluido', deducible: null },
+            { nombre: 'Asistencia Equidad Integral', valor: 'Incluido', deducible: null },
+            { nombre: 'Club de Beneficios', valor: 'Incluido', deducible: null },
+          ];
+        } else {
+          eqAmparos = [
+            { nombre: "Responsabilidad Civil Extracontractual", valor: p.limite_rce, deducible: "0" },
+            { nombre: "Pérdida Total Daños", valor: "Amparada", deducible: p.deducible_perdidas_totales },
+            { nombre: "Pérdida Parcial Daños", valor: "Amparada", deducible: p.deducible_perdidas_parciales },
+            { nombre: "Pérdida Total Hurto", valor: "Amparada", deducible: p.deducible_perdidas_totales },
+            { nombre: "Pérdida Parcial Hurto", valor: "Amparada", deducible: p.deducible_perdidas_parciales },
+            { nombre: "Vehículo de reemplazo", valor: p.limite_vehiculo_sustituto, deducible: "0" }
+          ];
+        }
+
         return {
           nombre: p.nombre_plan || "Plan",
           prima_neta: valTotal * 0.8,
           iva: valTotal * 0.19,
           gastos_expedicion: 0,
           total: valTotal,
-        amparos: [
-          { nombre: "Responsabilidad Civil Extracontractual", valor: p.limite_rce, deducible: "0" },
-          { nombre: "Pérdida Total Daños", valor: "Amparada", deducible: p.deducible_perdidas_totales },
-          { nombre: "Pérdida Parcial Daños", valor: "Amparada", deducible: p.deducible_perdidas_parciales },
-          { nombre: "Pérdida Total Hurto", valor: "Amparada", deducible: p.deducible_perdidas_totales },
-          { nombre: "Pérdida Parcial Hurto", valor: "Amparada", deducible: p.deducible_perdidas_parciales },
-          { nombre: "Vehículo de reemplazo", valor: p.limite_vehiculo_sustituto, deducible: "0" }
-        ]
-      };
-    });
-    result.plan_recomendado = result.planes_disponibles[0];
+          amparos: eqAmparos
+        };
+      });
+      result.plan_recomendado = result.planes_disponibles[0];
       result.amparos = result.planes_disponibles[0].amparos;
     } else {
       result.status = "error";

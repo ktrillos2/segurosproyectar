@@ -68,10 +68,102 @@ function normalizarEstado(raw: any): NormalizedPlan[] {
   });
 }
 
+function getEquidadAmparos(planName: string) {
+  const n = (planName || '').toUpperCase();
+  if (n.includes('RCE')) {
+    return {
+      rce: '$1.500.000.000',
+      amparos: [
+        { nombre: 'Deducible RCE', valor: 'Sin deducible' },
+        { nombre: 'Amparo patrimonial', valor: 'Incluido' },
+        { nombre: 'Asistencia jurídica', valor: 'Incluido' },
+        { nombre: 'Carro taller', valor: '2 servicios' },
+        { nombre: 'Grúa', valor: 'Incluido' },
+        { nombre: 'Asistencia Equidad Vial', valor: 'Incluido' },
+        { nombre: 'Club de Beneficios', valor: 'Incluido' },
+      ]
+    };
+  }
+  if (n.includes('BÁSICO') || n.includes('BASICO')) {
+    return {
+      rce: '$5.000.000.000',
+      amparos: [
+        { nombre: 'Deducible RCE', valor: '4 SMMLV' },
+        { nombre: 'Amparo patrimonial', valor: 'Incluido' },
+        { nombre: 'Asistencia jurídica', valor: 'Incluido' },
+        { nombre: 'Pérdida total por daños', valor: 'Valor según vehículo — 4 SMMLV' },
+        { nombre: 'Pérdida parcial por daños', valor: 'Valor según vehículo — 4 SMMLV' },
+        { nombre: 'Pérdida total por hurto', valor: 'Valor según vehículo — 4 SMMLV' },
+        { nombre: 'Pérdida parcial por hurto', valor: 'Valor según vehículo — 4 SMMLV' },
+        { nombre: 'Terremoto/eventos naturaleza', valor: 'Valor según vehículo — 4 SMMLV' },
+        { nombre: 'Gastos de transporte pérdida total', valor: '$40.000 x 30 días' },
+        { nombre: 'Carro taller', valor: '3 servicios' },
+        { nombre: 'Conductor elegido', valor: '6 servicios' },
+        { nombre: 'Grúa', valor: 'Incluido' },
+        { nombre: 'Asistencia Equidad Básica', valor: 'Incluido' },
+        { nombre: 'Club de Beneficios', valor: 'Incluido' },
+      ]
+    };
+  }
+  if (n.includes('LIGERO')) {
+    return {
+      rce: '$4.000.000.000',
+      amparos: [
+        { nombre: 'Deducible RCE', valor: 'Sin deducible' },
+        { nombre: 'Amparo patrimonial', valor: 'Incluido' },
+        { nombre: 'Asistencia jurídica', valor: 'Incluido' },
+        { nombre: 'Accidentes personales', valor: '$60.000.000' },
+        { nombre: 'Pérdida total por daños', valor: 'Valor según vehículo — Sin deducible' },
+        { nombre: 'Pérdida parcial por daños', valor: 'Valor según vehículo — 1,5 SMMLV' },
+        { nombre: 'Pérdida total por hurto', valor: 'Valor según vehículo — Sin deducible' },
+        { nombre: 'Pérdida parcial por hurto', valor: 'Valor según vehículo — 1,5 SMMLV' },
+        { nombre: 'Terremoto/eventos naturaleza', valor: 'Valor según vehículo — 1,5 SMMLV' },
+        { nombre: 'Gastos de transporte pérdida total', valor: 'Incluido' },
+        { nombre: 'Carro taller', valor: '3 servicios' },
+        { nombre: 'Conductor elegido', valor: '6 servicios' },
+        { nombre: 'Vehículo de reemplazo', valor: 'Hasta 25 días' },
+        { nombre: 'Grúa', valor: 'Incluido' },
+        { nombre: 'Asistencia Equidad Básica', valor: 'Incluido' },
+        { nombre: 'Club de Beneficios', valor: 'Incluido' },
+      ]
+    };
+  }
+  if (n.includes('FULL')) {
+    return {
+      rce: '$5.000.000.000',
+      amparos: [
+        { nombre: 'Deducible RCE', valor: 'Sin deducible' },
+        { nombre: 'Amparo patrimonial', valor: 'Incluido' },
+        { nombre: 'Asistencia jurídica', valor: 'Incluido' },
+        { nombre: 'Accidentes personales', valor: '$60.000.000' },
+        { nombre: 'Pérdida total por daños', valor: 'Valor según vehículo — Sin deducible' },
+        { nombre: 'Pérdida parcial por daños', valor: 'Valor según vehículo — 1 SMMLV' },
+        { nombre: 'Pérdida total por hurto', valor: 'Valor según vehículo — Sin deducible' },
+        { nombre: 'Pérdida parcial por hurto', valor: 'Valor según vehículo — 1 SMMLV' },
+        { nombre: 'Terremoto/eventos naturaleza', valor: 'Valor según vehículo — 1 SMMLV' },
+        { nombre: 'Gastos de transporte pérdida total', valor: '$40.000 x 30 días' },
+        { nombre: 'Carro taller', valor: '5 servicios' },
+        { nombre: 'Conductor elegido', valor: '12 servicios' },
+        { nombre: 'Conductor élite', valor: '4 servicios' },
+        { nombre: 'Vehículo de reemplazo', valor: 'Hasta 25 días' },
+        { nombre: 'Grúa', valor: 'Incluido' },
+        { nombre: 'Asistencia al hogar', valor: 'Incluido' },
+        { nombre: 'Gastos de hospedaje o desplazamiento', valor: 'Incluido' },
+        { nombre: 'Accesorios, llantas, vidrios', valor: 'Incluido' },
+        { nombre: 'Plan viajero', valor: 'Incluido' },
+        { nombre: 'Asistencia Equidad Integral', valor: 'Incluido' },
+        { nombre: 'Club de Beneficios', valor: 'Incluido' },
+      ]
+    };
+  }
+  return { rce: '—', amparos: [] };
+}
+
 function normalizarEquidad(raw: any): NormalizedPlan[] {
   const planes = raw.datos?.planes || [];
   return planes.map((p: any) => {
     const total = parseNumber(p.prima_anual || 0);
+    const config = getEquidadAmparos(p.nombre_plan || '');
     return {
       aseguradora: 'Equidad',
       plan: p.nombre_plan || 'PLAN EQUIDAD',
@@ -83,14 +175,14 @@ function normalizarEquidad(raw: any): NormalizedPlan[] {
       valorAsegurado: '—',
       numeroCotizacion: '—',
       validez: '—',
-      amparos: [
+      amparos: config.amparos.length > 0 ? config.amparos : [
         { nombre: 'RCE', valor: p.limite_rce || '—' },
         { nombre: 'Vehículo sustituto', valor: p.limite_vehiculo_sustituto || '—' },
         { nombre: 'Ded. pérd. totales', valor: p.deducible_perdidas_totales || '—' },
         { nombre: 'Ded. pérd. parciales', valor: p.deducible_perdidas_parciales || '—' },
       ],
       adicional: [],
-      rce: p.limite_rce || '—',
+      rce: config.rce !== '—' ? config.rce : (p.limite_rce || '—'),
     };
   });
 }
@@ -98,7 +190,40 @@ function normalizarEquidad(raw: any): NormalizedPlan[] {
 function normalizarAxa(raw: any): NormalizedPlan[] {
   const planes = raw.cotizaciones_disponibles || [];
   const principal = raw.plan_seleccionado || raw.producto?.plan_seleccionado;
-  const amparos = (raw.amparos || []).map((a: string) => ({ nombre: a, valor: 'INCLUIDO' }));
+  const amparosFijos = [
+    { nombre: 'Deducible RCE', valor: 'Sin deducible' },
+    { nombre: 'Límite daños a bienes de terceros', valor: 'Límite único' },
+    { nombre: 'Límite lesiones o muerte a una persona', valor: 'Límite único' },
+    { nombre: 'Límite lesiones o muerte a dos o más personas', valor: 'Límite único' },
+    { nombre: 'Pérdida total por daños', valor: 'Sin deducible' },
+    { nombre: 'Pérdida parcial por daños', valor: 'Deducible 1 SMMLV' },
+    { nombre: 'Pérdida total por hurto', valor: 'Sin deducible' },
+    { nombre: 'Pérdida parcial por hurto', valor: 'Deducible 1 SMMLV' },
+    { nombre: 'Terremoto/eventos naturaleza', valor: 'Incluye' },
+    { nombre: 'Protección patrimonial', valor: 'Incluye' },
+    { nombre: 'Asistencia jurídica proceso penal', valor: 'Incluye' },
+    { nombre: 'Asistencia jurídica proceso civil', valor: 'Incluye' },
+    { nombre: 'Gastos de transporte pérdida total', valor: '$20.000 diarios x hasta 60 días' },
+    { nombre: 'Vehículo sustituto pérdida total', valor: 'Hasta 20 días' },
+    { nombre: 'Vehículo sustituto pérdida parcial', valor: 'Hasta 15 días' },
+    { nombre: 'Revisión antes de viaje', valor: 'Incluye' },
+    { nombre: 'Carro taller', valor: 'Sin límite de eventos' },
+    { nombre: 'Conductor elegido', valor: 'Sin límite de eventos' },
+    { nombre: 'Conductor profesional', valor: 'Incluye' },
+    { nombre: 'Grúa en accidente', valor: 'Hasta 70 SMLDV' },
+    { nombre: 'Grúa en avería', valor: 'Hasta 50 SMLDV' },
+    { nombre: 'Asistencia médica', valor: 'Incluye' },
+    { nombre: 'Asistencia en viaje', valor: 'Plus' },
+    { nombre: 'Muerte accidental', valor: '$50.000.000' },
+    { nombre: 'Garantía en tiempo de reparación', valor: 'Incluye' },
+    { nombre: 'Prolongación de vigencia', valor: 'Incluye' },
+    { nombre: 'Llantas estalladas', valor: '1 SMMLV por vigencia' },
+    { nombre: 'Rotura de vidrios', valor: 'Sin límite de eventos' },
+    { nombre: 'Pérdida de llaves', valor: '1 SMMLV — 1 evento por vigencia' },
+    { nombre: 'Asistencia exequial', valor: '120 SMDLV por ocupante' },
+  ];
+  
+  const rceFijo = '$4.000.000.000';
 
   if (planes.length > 0) {
     return planes.map((p: any) => {
@@ -114,9 +239,9 @@ function normalizarAxa(raw: any): NormalizedPlan[] {
         valorAsegurado: '—',
         numeroCotizacion: '—',
         validez: '—',
-        amparos,
+        amparos: amparosFijos,
         adicional: [],
-        rce: '—',
+        rce: rceFijo,
       };
     });
   }
@@ -134,9 +259,9 @@ function normalizarAxa(raw: any): NormalizedPlan[] {
       valorAsegurado: '—',
       numeroCotizacion: '—',
       validez: '—',
-      amparos,
+      amparos: amparosFijos,
       adicional: [],
-      rce: '—',
+      rce: rceFijo,
     }];
   }
 
