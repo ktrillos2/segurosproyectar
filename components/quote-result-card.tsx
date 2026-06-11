@@ -239,7 +239,8 @@ export function QuoteResultCard({ quoteResult, onContinue, logosMap, userInfo }:
                         </span>
                       </div>
                       <div className="flex flex-col items-end shrink-0 text-right gap-1.5 pt-0.5">
-                        <span className="inline-flex text-[9px] font-bold text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md uppercase tracking-wide">
+                        <span className="inline-flex items-center text-[9px] font-bold text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md uppercase tracking-wide">
+                          <span className="text-[7px] text-slate-400 lowercase mr-1">deducible:</span>
                           {amparo.valor}
                         </span>
                         {amparo.deducible && amparo.deducible !== "0" && amparo.deducible !== "0%" && (
@@ -410,6 +411,7 @@ export function QuoteResultCard({ quoteResult, onContinue, logosMap, userInfo }:
                       </div>
                       <div className="flex flex-col items-end shrink-0 text-right gap-1.5">
                         <div className="inline-flex items-center text-[10px] font-bold text-slate-600 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-md uppercase tracking-wide text-right">
+                          <span className="text-[8px] text-slate-400 lowercase mr-1">deducible:</span>
                           {amparo.valor}
                         </div>
                         {amparo.deducible && amparo.deducible !== "0" && amparo.deducible !== "0%" && (
