@@ -18,6 +18,10 @@ const parseNumber = (val: any): number => {
   return parseFloat(clean.replace(/\./g, '').replace(',', '.')) || 0;
 };
 
+// Cuota mensual estimada = prima anual / 12 (cuando no viene del cotizador)
+const cuotaMensualStr = (total: number): string =>
+  total > 0 ? `$ ${Math.round(total / 12).toLocaleString('es-CO')}` : '—';
+
 // ─── Data normalizers for each insurer ───────────────────────────────────────
 
 interface NormalizedPlan {
@@ -27,6 +31,10 @@ interface NormalizedPlan {
   totalStr: string;
   primaNeta: string;
   impuesto: string;
+  cuotaMensual: string;
+  valorAsegurado: string;
+  numeroCotizacion: string;
+  validez: string;
   amparos: { nombre: string; valor: string }[];
   adicional: { nombre: string; valor: string }[];
   rce: string;
@@ -37,82 +45,98 @@ function normalizarEstado(raw: any): NormalizedPlan[] {
   if (!cotizaciones.length && raw.cotizacion_seleccionada) {
     cotizaciones.push(raw.cotizacion_seleccionada);
   }
-  
-  return cotizaciones.map((c: any) => ({
-    aseguradora: 'Estado',
-    plan: c.nombre || 'SEGURO ESTADO',
-    total: parseNumber(c.prima_total || c.total || 0),
-    totalStr: c.prima_total || c.total || '—',
-    primaNeta: c.prima || '—',
-    impuesto: c.impuesto || '—',
-    amparos: (c.amparos || []).map((a: any) => ({ nombre: a.nombre, valor: a.valor })),
-    adicional: (c.adicional || []).map((a: any) => ({ nombre: a.nombre, valor: a.valor })),
-    rce: (c.responsabilidad_civil_extracontractual?.[0]?.valor) || 
-         (c.secciones?.['Responsabilidad Civil Extracontractual']?.[0]?.valor) || '—',
-  }));
+  const numeroCot = raw.metadata?.resultquoteid || '—';
+
+  return cotizaciones.map((c: any) => {
+    const total = parseNumber(c.prima_total || c.total || 0);
+    return {
+      aseguradora: 'Estado',
+      plan: c.nombre || 'SEGURO ESTADO',
+      total,
+      totalStr: c.prima_total || c.total || '—',
+      primaNeta: c.prima || '—',
+      impuesto: c.impuesto || '—',
+      cuotaMensual: cuotaMensualStr(total),
+      valorAsegurado: '—',
+      numeroCotizacion: numeroCot,
+      validez: '—',
+      amparos: (c.amparos || []).map((a: any) => ({ nombre: a.nombre, valor: a.valor })),
+      adicional: (c.adicional || []).map((a: any) => ({ nombre: a.nombre, valor: a.valor })),
+      rce: (c.responsabilidad_civil_extracontractual?.[0]?.valor) ||
+           (c.secciones?.['Responsabilidad Civil Extracontractual']?.[0]?.valor) || '—',
+    };
+  });
 }
 
 function normalizarEquidad(raw: any): NormalizedPlan[] {
   const planes = raw.datos?.planes || [];
-  return planes.map((p: any) => ({
-    aseguradora: 'Equidad',
-    plan: p.nombre_plan || 'PLAN EQUIDAD',
-    total: parseNumber(p.prima_anual || 0),
-    totalStr: `$ ${p.prima_anual}`,
-    primaNeta: `$ ${p.prima_anual}`,
-    impuesto: '—',
-    amparos: [
-      { nombre: 'RCE', valor: p.limite_rce || '—' },
-      { nombre: 'Vehículo sustituto', valor: p.limite_vehiculo_sustituto || '—' },
-      { nombre: 'Ded. pérd. totales', valor: p.deducible_perdidas_totales || '—' },
-      { nombre: 'Ded. pérd. parciales', valor: p.deducible_perdidas_parciales || '—' },
-    ],
-    adicional: [],
-    rce: p.limite_rce || '—',
-  }));
+  return planes.map((p: any) => {
+    const total = parseNumber(p.prima_anual || 0);
+    return {
+      aseguradora: 'Equidad',
+      plan: p.nombre_plan || 'PLAN EQUIDAD',
+      total,
+      totalStr: fmtCOP(p.prima_anual),
+      primaNeta: '—',
+      impuesto: '—',
+      cuotaMensual: p.prima_mensual ? fmtCOP(p.prima_mensual) : cuotaMensualStr(total),
+      valorAsegurado: '—',
+      numeroCotizacion: '—',
+      validez: '—',
+      amparos: [
+        { nombre: 'RCE', valor: p.limite_rce || '—' },
+        { nombre: 'Vehículo sustituto', valor: p.limite_vehiculo_sustituto || '—' },
+        { nombre: 'Ded. pérd. totales', valor: p.deducible_perdidas_totales || '—' },
+        { nombre: 'Ded. pérd. parciales', valor: p.deducible_perdidas_parciales || '—' },
+      ],
+      adicional: [],
+      rce: p.limite_rce || '—',
+    };
+  });
 }
 
 function normalizarAxa(raw: any): NormalizedPlan[] {
   const planes = raw.cotizaciones_disponibles || [];
   const principal = raw.plan_seleccionado || raw.producto?.plan_seleccionado;
-  
-  let rce = '—';
-  const amparosParsed: {nombre: string, valor: string}[] = [];
-  
-  (raw.amparos || []).forEach((a: string) => {
-    if (a.toLowerCase().includes('rce') || a.toLowerCase().includes('responsabilidad civil')) {
-      // Extract just the value if possible, or keep the whole string
-      rce = a.replace(/RCE/i, '').trim();
-    } else {
-      amparosParsed.push({ nombre: a, valor: 'INCLUIDO' });
-    }
-  });
+  const amparos = (raw.amparos || []).map((a: string) => ({ nombre: a, valor: 'INCLUIDO' }));
 
   if (planes.length > 0) {
-    return planes.map((p: any) => ({
-      aseguradora: 'AXA',
-      plan: p.producto || p.nombre || 'PLAN AXA',
-      total: parseNumber(p.total || 0),
-      totalStr: fmtCOP(p.total),
-      primaNeta: fmtCOP(p.prima_neta),
-      impuesto: fmtCOP(p.iva),
-      amparos: amparosParsed,
-      adicional: [],
-      rce,
-    }));
+    return planes.map((p: any) => {
+      const total = parseNumber(p.total || 0);
+      return {
+        aseguradora: 'AXA',
+        plan: p.producto || p.nombre || 'PLAN AXA',
+        total,
+        totalStr: fmtCOP(p.total),
+        primaNeta: fmtCOP(p.prima_neta),
+        impuesto: fmtCOP(p.iva),
+        cuotaMensual: cuotaMensualStr(total),
+        valorAsegurado: '—',
+        numeroCotizacion: '—',
+        validez: '—',
+        amparos,
+        adicional: [],
+        rce: '—',
+      };
+    });
   }
 
   if (principal) {
+    const total = parseNumber(principal.total || 0);
     return [{
       aseguradora: 'AXA',
       plan: raw.producto?.nombre || principal.producto || 'PLUS',
-      total: parseNumber(principal.total || 0),
+      total,
       totalStr: fmtCOP(principal.total),
       primaNeta: fmtCOP(principal.prima_neta),
       impuesto: fmtCOP(principal.iva),
-      amparos: amparosParsed,
+      cuotaMensual: cuotaMensualStr(total),
+      valorAsegurado: '—',
+      numeroCotizacion: '—',
+      validez: '—',
+      amparos,
       adicional: [],
-      rce,
+      rce: '—',
     }];
   }
 
@@ -121,19 +145,78 @@ function normalizarAxa(raw: any): NormalizedPlan[] {
 
 function normalizarQualitas(raw: any): NormalizedPlan[] {
   const planes = raw.datos?.planes || [];
-  const amparosBase = (raw.datos?.amparos_base || []).map((a: any) => ({ nombre: a.cobertura, valor: a.valor_asegurado || 'INCLUIDO' }));
+  const amparosBase = (raw.datos?.amparos_base || []).map((a: any) => ({ nombre: a.cobertura || a.nombre || 'Cobertura', valor: a.valor_asegurado || 'INCLUIDO' }));
+  const numeroCot = raw.numero_cotizacion || raw.datos?.numero_cotizacion || '—';
+  const valorAseg = (raw.datos?.amparos_base || []).find((a: any) => String(a.cobertura || '').toLowerCase().includes('valor'))?.valor_asegurado || '—';
 
-  return planes.map((p: any) => ({
-    aseguradora: 'Quálitas',
-    plan: p.nombre || 'PLAN QUÁLITAS',
-    total: parseNumber(p.prima_anual_con_iva || 0),
-    totalStr: p.prima_anual_con_iva || '—',
-    primaNeta: '—',
-    impuesto: '—',
-    amparos: amparosBase,
-    adicional: [],
-    rce: (raw.datos?.amparos_base || []).find((a: any) => a.cobertura.includes('Civil'))?.valor_asegurado || '—',
-  }));
+  return planes.map((p: any) => {
+    const total = parseNumber(p.prima_anual_con_iva || 0);
+    return {
+      aseguradora: 'Quálitas',
+      plan: p.nombre || 'PLAN QUÁLITAS',
+      total,
+      totalStr: p.prima_anual_con_iva || '—',
+      primaNeta: '—',
+      impuesto: '—',
+      cuotaMensual: cuotaMensualStr(total),
+      valorAsegurado: valorAseg,
+      numeroCotizacion: numeroCot,
+      validez: '—',
+      amparos: amparosBase,
+      adicional: [],
+      rce: (raw.datos?.amparos_base || []).find((a: any) => String(a.cobertura || '').includes('Civil'))?.valor_asegurado || '—',
+    };
+  });
+}
+
+function normalizarZurich(raw: any): NormalizedPlan[] {
+  const planes = raw.planes || raw.datos?.planes || [];
+  return planes.map((p: any) => {
+    const total = parseNumber(p.prima_anual_con_iva || p.prima_anual || 0);
+    return {
+      aseguradora: 'Zurich',
+      plan: p.nombre || 'PLAN ZURICH',
+      total,
+      totalStr: p.prima_anual_con_iva || fmtCOP(total),
+      primaNeta: '—',
+      impuesto: '—',
+      cuotaMensual: cuotaMensualStr(total),
+      valorAsegurado: '—',
+      numeroCotizacion: '—',
+      validez: '—',
+      amparos: (p.amparos || []).map((a: any) => ({
+        nombre: a.cobertura || a.nombre,
+        valor: a.limite || a.valor || 'INCLUIDO',
+      })),
+      adicional: [],
+      rce: (p.amparos || []).find((a: any) => String(a.cobertura || a.nombre || '').toLowerCase().includes('rce') || String(a.cobertura || a.nombre || '').toLowerCase().includes('civil'))?.limite || '—',
+    };
+  });
+}
+
+function normalizarMundial(raw: any): NormalizedPlan[] {
+  const planes = raw.planes || raw.datos?.planes || raw.cotizaciones || [];
+  return planes.map((p: any) => {
+    const total = parseNumber(p.prima_anual_con_iva || p.prima_anual || p.total || p.prima_total || 0);
+    return {
+      aseguradora: 'Mundial',
+      plan: p.nombre || p.nombre_plan || p.producto || 'PLAN MUNDIAL',
+      total,
+      totalStr: fmtCOP(p.prima_anual_con_iva || p.prima_anual || p.total || total),
+      primaNeta: fmtCOP(p.prima_neta),
+      impuesto: fmtCOP(p.iva),
+      cuotaMensual: p.prima_mensual ? fmtCOP(p.prima_mensual) : cuotaMensualStr(total),
+      valorAsegurado: '—',
+      numeroCotizacion: p.numero_cotizacion || raw.numero_cotizacion || '—',
+      validez: '—',
+      amparos: (p.amparos || []).map((a: any) => ({
+        nombre: a.cobertura || a.nombre || 'Cobertura',
+        valor: a.limite || a.valor || a.valor_asegurado || 'INCLUIDO',
+      })),
+      adicional: [],
+      rce: '—',
+    };
+  });
 }
 
 function normalizarCotizacion(raw: any): NormalizedPlan[] {
@@ -142,6 +225,8 @@ function normalizarCotizacion(raw: any): NormalizedPlan[] {
     if (name.includes('estado')) return normalizarEstado(raw);
     if (name.includes('equidad')) return normalizarEquidad(raw);
     if (name.includes('axa')) return normalizarAxa(raw);
+    if (name.includes('zurich')) return normalizarZurich(raw);
+    if (name.includes('mundial')) return normalizarMundial(raw);
     if (name.includes('qu')) return normalizarQualitas(raw); // quálitas / qualitas
   } catch (e) {
     console.warn(`Error normalizando ${raw.aseguradora}:`, e);
@@ -152,7 +237,7 @@ function normalizarCotizacion(raw: any): NormalizedPlan[] {
 // ─── PDF Drawing Utilities ───────────────────────────────────────────────────
 
 const COLORS = {
-  primary: [0, 91, 137] as [number, number, number],
+  primary: [11, 90, 146] as [number, number, number], // #0B5A92 — azul oficial de Proyectar
   accent:  [53, 174, 226] as [number, number, number],
   white:   [255, 255, 255] as [number, number, number],
   light:   [238, 247, 252] as [number, number, number],
@@ -160,12 +245,17 @@ const COLORS = {
   dark:    [38, 50, 56] as [number, number, number],
   row1:    [244, 248, 252] as [number, number, number],
   green:   [49, 179, 107] as [number, number, number],
+  faint:   [176, 190, 197] as [number, number, number], // gris suave para datos no disponibles
+  red:     [211, 47, 47] as [number, number, number],    // rojo para la "x" (cobertura no incluida)
 };
 
-// Page dimensions (A4 landscape in mm)
-const PW = 297; // page width
-const PH = 210; // page height
-const M  = 12;  // margin
+// Marcador minimalista cuando una COBERTURA no está incluida (cambia aquí si quieres otro símbolo)
+const SIN_DATO = 'x';
+
+// Page dimensions (US Letter PORTRAIT in mm) — igual que el "PDF IDEAL"
+const PW = 215.9; // page width  (8.5 in)
+const PH = 279.4; // page height (11 in)
+const M  = 12;    // margin
 
 function setFont(doc: jsPDF, size: number, style: 'normal' | 'bold' = 'normal', color: [number, number, number] = COLORS.dark) {
   doc.setFontSize(size);
@@ -183,60 +273,55 @@ function drawRect(doc: jsPDF, x: number, y: number, w: number, h: number, color:
 }
 
 function drawHeader(doc: jsPDF, logoDataUrl: string | null) {
-  // White header background with subtle bottom border
   drawRect(doc, 0, 0, PW, 24, COLORS.white);
   doc.setDrawColor(...COLORS.accent);
   doc.setLineWidth(0.6);
   doc.line(0, 24, PW, 24);
 
-  // Logo on the left
   if (logoDataUrl) {
-    try { doc.addImage(logoDataUrl, 'PNG', M, 3, 46, 18); } catch(_) {}
+    try { doc.addImage(logoDataUrl, 'PNG', M, 4, 42, 16); } catch(_) {}
   }
 
-  // Right side title
-  setFont(doc, 13, 'bold', COLORS.primary);
+  setFont(doc, 11, 'bold', COLORS.primary);
   doc.text('COTIZACIÓN COMPARATIVA DE SEGUROS DE AUTO', PW - M, 10, { align: 'right' });
-  setFont(doc, 7.5, 'normal', COLORS.muted);
-  doc.text('Proyectar Administradores de Seguros Ltda. | autos@segurosproyectar.com | segurosproyectar.com', PW - M, 16, { align: 'right' });
-  setFont(doc, 7, 'normal', COLORS.muted);
-  doc.text(`Generado: ${new Date().toLocaleDateString('es-CO', { day: '2-digit', month: 'long', year: 'numeric' })}`, PW - M, 22, { align: 'right' });
+  setFont(doc, 6.5, 'normal', COLORS.muted);
+  doc.text('Proyectar Administradores de Seguros Ltda. | autos@seguros-proyectar.com | seguros-proyectar.com', PW - M, 15, { align: 'right' });
+  setFont(doc, 6.5, 'normal', COLORS.muted);
+  doc.text(`Generado: ${new Date().toLocaleDateString('es-CO', { day: '2-digit', month: 'long', year: 'numeric' })}`, PW - M, 20, { align: 'right' });
 }
 
 function drawInfoBar(doc: jsPDF, userInfo: any, vehicleInfo: any, y: number): number {
-  const h = 20;
+  const h = 26;
   drawRect(doc, M, y, PW - M * 2, h, COLORS.light, 4);
 
   const col1 = M + 4;
-  const col2 = PW / 2;
+  const col2 = PW / 2 + 2;
   const lineH = 5.5;
 
   const cliente = userInfo?.cliente || {};
   const nombre = cliente.nombre_completo || `${cliente.nombre || ''} ${cliente.apellidos || ''}`.trim() || 'N/A';
   const doc_id = cliente.numero_documento ? `${cliente.tipo_documento || 'C.C.'} ${cliente.numero_documento}` : 'N/A';
+  const nacimiento = cliente.fecha_nacimiento || 'N/A';
+  const genero = cliente.genero || 'N/A';
   const placa = vehicleInfo?.placa || 'N/A';
   const descripcion = vehicleInfo?.descripcion || `${vehicleInfo?.marca || ''} ${vehicleInfo?.linea || ''}`.trim() || 'N/A';
   const modelo = vehicleInfo?.modelo || 'N/A';
+  const uso = vehicleInfo?.servicio || 'Particular';
 
-  setFont(doc, 8, 'bold', COLORS.primary);
-  doc.text('ASEGURADO', col1, y + lineH);
-  setFont(doc, 7.5, 'normal', COLORS.dark);
-  doc.text(`${nombre}  |  ${doc_id}`, col1 + 24, y + lineH);
+  const field = (label: string, value: string, x: number, yy: number, labelW: number) => {
+    setFont(doc, 7.5, 'bold', COLORS.primary);
+    doc.text(label, x, yy);
+    setFont(doc, 7, 'normal', COLORS.dark);
+    doc.text(value, x + labelW, yy);
+  };
 
-  setFont(doc, 8, 'bold', COLORS.primary);
-  doc.text('VEHÍCULO', col2, y + lineH);
-  setFont(doc, 7.5, 'normal', COLORS.dark);
-  doc.text(`${descripcion}  |  Placa: ${placa}  |  Modelo: ${modelo}`, col2 + 22, y + lineH);
+  field('ASEGURADO', nombre, col1, y + lineH, 22);
+  field('DOCUMENTO', doc_id, col1, y + lineH * 2, 22);
+  field('NACIMIENTO', `${nacimiento}   ·   GÉNERO: ${genero}`, col1, y + lineH * 3, 22);
 
-  setFont(doc, 8, 'bold', COLORS.primary);
-  doc.text('CELULAR', col1, y + lineH * 2);
-  setFont(doc, 7.5, 'normal', COLORS.dark);
-  doc.text(cliente.celular || 'N/A', col1 + 18, y + lineH * 2);
-
-  setFont(doc, 8, 'bold', COLORS.primary);
-  doc.text('CORREO', col2, y + lineH * 2);
-  setFont(doc, 7.5, 'normal', COLORS.dark);
-  doc.text(cliente.correo || 'N/A', col2 + 18, y + lineH * 2);
+  field('VEHÍCULO', descripcion, col2, y + lineH, 20);
+  field('PLACA', `${placa}   ·   MODELO: ${modelo}   ·   USO: ${uso}`, col2, y + lineH * 2, 20);
+  field('CONTACTO', `${cliente.celular || 'N/A'}   ·   ${cliente.correo || 'N/A'}`, col2, y + lineH * 3, 20);
 
   return y + h + 4;
 }
@@ -290,41 +375,39 @@ async function loadImageFit(
 }
 
 function drawPlanHeader(doc: jsPDF, plans: NormalizedPlan[], logoCache: Record<string, { dataUrl: string; w: number; h: number }>, colW: number, colX: number[], y: number): number {
-  const h = 34;
-  const MAX_LOGO_W = 42;
-  const MAX_LOGO_H = 13;
+  const h = 32;
+  const priceFont = colW < 30 ? 8.5 : 10;
 
   plans.forEach((plan, i) => {
-    // Background for first col (cheapest)
     drawRect(doc, colX[i], y, colW, h, i === 0 ? COLORS.light : COLORS.white);
-    // Top accent bar for all cols
     drawRect(doc, colX[i], y, colW, 2, i === 0 ? COLORS.accent : [210, 225, 235] as [number,number,number]);
 
-    // Logo — centered, aspect-ratio preserved
+    // Logo — centered, aspect-ratio preserved y limitado al ancho de la columna
     const logoPath = getInsurerLogoPath(plan.aseguradora);
     const logoFit = logoPath ? logoCache[logoPath] : null;
     if (logoFit) {
       try {
+        let lw = logoFit.w, lh = logoFit.h;
+        const maxw = colW - 5;
+        if (lw > maxw) { const r = maxw / lw; lw = maxw; lh = lh * r; }
         const cx = colX[i] + colW / 2;
-        const logoX = cx - logoFit.w / 2;
-        const logoY = y + 3;
-        doc.addImage(logoFit.dataUrl, 'PNG', logoX, logoY, logoFit.w, logoFit.h);
+        doc.addImage(logoFit.dataUrl, 'PNG', cx - lw / 2, y + 4, lw, lh);
       } catch (_) {
         setFont(doc, 8, 'bold', COLORS.primary);
-        doc.text(plan.aseguradora.toUpperCase(), colX[i] + colW / 2, y + 10, { align: 'center' });
+        doc.text(plan.aseguradora.toUpperCase(), colX[i] + colW / 2, y + 11, { align: 'center' });
       }
     } else {
       setFont(doc, 8, 'bold', COLORS.primary);
-      doc.text(plan.aseguradora.toUpperCase(), colX[i] + colW / 2, y + 10, { align: 'center' });
+      doc.text(plan.aseguradora.toUpperCase(), colX[i] + colW / 2, y + 11, { align: 'center' });
     }
 
     setFont(doc, 6, 'normal', COLORS.muted);
-    const planNameTrunc = plan.plan.length > 30 ? plan.plan.substring(0, 28) + '…' : plan.plan;
-    doc.text(planNameTrunc, colX[i] + colW / 2, y + 22, { align: 'center' });
+    const planNameTrunc = plan.plan.length > 24 ? plan.plan.substring(0, 22) + '…' : plan.plan;
+    doc.text(planNameTrunc, colX[i] + colW / 2, y + 21, { align: 'center', maxWidth: colW - 2 });
 
-    // Total price — big
-    setFont(doc, 9, 'bold', COLORS.primary);
-    doc.text(plan.totalStr, colX[i] + colW / 2, y + 30, { align: 'center' });
+    const priceStr = (plan.totalStr && plan.totalStr !== '—') ? plan.totalStr : 'Consultar';
+    setFont(doc, priceFont, 'bold', COLORS.primary);
+    doc.text(priceStr, colX[i] + colW / 2, y + 29, { align: 'center', maxWidth: colW - 1 });
   });
 
   return y + h;
@@ -338,46 +421,49 @@ function drawSectionRow(doc: jsPDF, label: string, tableX: number, tableW: numbe
 }
 
 function drawDataRow(
-  doc: jsPDF, 
-  rowLabel: string, 
-  values: string[], 
-  colX: number[], 
-  colW: number, 
-  labelW: number, 
-  tableX: number, 
-  y: number, 
-  even: boolean
+  doc: jsPDF,
+  rowLabel: string,
+  values: string[],
+  colX: number[],
+  colW: number,
+  labelW: number,
+  tableX: number,
+  y: number,
+  even: boolean,
+  emphasize = false,
+  emptyText = SIN_DATO,
+  emptyColor: [number, number, number] = COLORS.red
 ): number {
-  const h = 5;
+  const h = 5.2;
   const totalW = labelW + values.length * colW;
 
   drawRect(doc, tableX, y, totalW, h, even ? COLORS.row1 : COLORS.white);
 
-  setFont(doc, 6.5, 'normal', COLORS.dark);
+  setFont(doc, 6.5, 'bold', COLORS.muted);
   doc.text(rowLabel, tableX + 3, y + 3.7);
 
   values.forEach((val, i) => {
-    const isPositive = val === 'SI AMPARA' || val === 'ILIMITADA' || val === 'INCLUIDO';
-    const isNeg = val === '-' || val === 'No aplica' || !val;
-    const color = isPositive ? COLORS.green : isNeg ? COLORS.muted : COLORS.dark;
-    setFont(doc, 6.5, isPositive ? 'bold' : 'normal', color);
-    doc.text(isNeg ? '—' : val, colX[i] + colW / 2, y + 3.7, { align: 'center', maxWidth: colW - 2 });
+    const v = (val ?? '').toString().trim();
+    const isPositive = v === 'SI AMPARA' || v === 'ILIMITADA' || v === 'INCLUIDO';
+    const isEmpty = !v || v === '-' || v === '—' || v.toUpperCase() === 'N/A' || v.toLowerCase() === 'no aplica';
+    const isRedMark = isEmpty && emptyColor === COLORS.red;
+    const color = isEmpty ? emptyColor : (emphasize ? COLORS.primary : (isPositive ? COLORS.green : COLORS.dark));
+    const bold = isRedMark || (!isEmpty && (emphasize || isPositive));
+    setFont(doc, (emphasize && !isEmpty) ? 8 : 6.5, bold ? 'bold' : 'normal', color);
+    doc.text(isEmpty ? emptyText : v, colX[i] + colW / 2, y + 3.7, { align: 'center', maxWidth: colW - 2 });
   });
 
   return y + h;
 }
 
-function drawFooter(doc: jsPDF, pageNum: number, totalPages: number) {
+function drawFooter(doc: jsPDF) {
   doc.setDrawColor(...COLORS.accent);
   doc.setLineWidth(0.3);
-  doc.line(M, PH - 8, PW - M, PH - 8);
+  doc.line(M, PH - 9, PW - M, PH - 9);
 
-  setFont(doc, 6.5, 'normal', COLORS.muted);
-  doc.text(
-    'Proyectar Administradores de Seguros Ltda. · Bogotá D.C., Colombia · Esta cotización es informativa y no implica aceptación del riesgo por parte de las aseguradoras.',
-    M, PH - 5
-  );
-  doc.text(`Página ${pageNum} de ${totalPages}`, PW - M, PH - 5, { align: 'right' });
+  setFont(doc, 6, 'normal', COLORS.muted);
+  doc.text('Proyectar Administradores de Seguros Ltda. · NIT 830139875-7 · Bogotá D.C., Colombia', M, PH - 5);
+  doc.text('Intermediario de seguros vigilado por la Superintendencia Financiera de Colombia', PW - M, PH - 5, { align: 'right' });
 }
 
 // ─── Main export function ────────────────────────────────────────────────────
@@ -385,9 +471,9 @@ function drawFooter(doc: jsPDF, pageNum: number, totalPages: number) {
 export const generateQuoteComparisonPDF = async (
   rawResults: any[],
   userInfo: any,
-  logosMap?: Record<string, string>
+  _logosMap?: Record<string, string>
 ) => {
-  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
 
   // Load Proyectar logo
   let logoDataUrl: string | null = null;
@@ -407,7 +493,7 @@ export const generateQuoteComparisonPDF = async (
     '/logos/SBS.jpg',
   ];
   const logoCache: Record<string, { dataUrl: string; w: number; h: number }> = {};
-  const MAX_LOGO_W = 42;
+  const MAX_LOGO_W = 40;
   const MAX_LOGO_H = 13;
   await Promise.all(allInsurerLogoSrcs.map(async src => {
     const dataUrl = await loadImageAsDataUrl(src);
@@ -416,7 +502,6 @@ export const generateQuoteComparisonPDF = async (
       if (fit) logoCache[src] = fit;
     }
   }));
-
 
   // Normalize all quotes
   const allPlans: NormalizedPlan[] = [];
@@ -431,122 +516,107 @@ export const generateQuoteComparisonPDF = async (
     return;
   }
 
-  // Sort by price ascending and group into chunks of up to 4 per page
-  allPlans.sort((a, b) => a.total - b.total);
-
-  const CHUNK = 4;
-  const chunks: NormalizedPlan[][] = [];
-  for (let i = 0; i < allPlans.length; i += CHUNK) {
-    chunks.push(allPlans.slice(i, i + CHUNK));
+  // ── Una sola póliza por aseguradora: la MÁS CARA (mejor cobertura = mejor opción) ──
+  //    Así sale una columna por aseguradora y cabe todo en UNA página.
+  const bestPerInsurer = new Map<string, NormalizedPlan>();
+  for (const p of allPlans) {
+    const key = p.aseguradora.toLowerCase();
+    const prev = bestPerInsurer.get(key);
+    if (!prev || p.total > prev.total) bestPerInsurer.set(key, p);
   }
+  // Ordenadas por precio ascendente (la más económica de las recomendadas queda primero).
+  const plans = Array.from(bestPerInsurer.values())
+    .sort((a, b) => (a.total > 0 ? a.total : Infinity) - (b.total > 0 ? b.total : Infinity));
 
-  // ── Get vehicle info ──
+  // ── Vehicle info ──
   const vehicleRaw = rawResults.find(r => r.vehiculo)?.vehiculo || userInfo?.vehiculo || {};
 
-  const totalPages = chunks.length + 1; // +1 for amparos detail page(s)
+  // ── Layout (una sola página) ──
+  const labelW = 46;
+  const colW = (PW - M * 2 - labelW) / plans.length;
+  const tableX = M;
+  const colX = plans.map((_, i) => M + labelW + i * colW);
+  const tableW = labelW + plans.length * colW;
+  const RESERVA_INFERIOR = 30; // mm reservados abajo para recomendación + nota legal + footer
 
-  // ── Render one comparison page per chunk ──
-  chunks.forEach((plans, chunkIdx) => {
-    if (chunkIdx > 0) doc.addPage();
+  drawHeader(doc, logoDataUrl);
+  let y = 24;
+  y = drawInfoBar(doc, userInfo, vehicleRaw, y);
 
-    const labelW = 65;
-    const colW = (PW - M * 2 - labelW) / plans.length;
-    const tableX = M;
-    const colX = plans.map((_, i) => M + labelW + i * colW);
+  setFont(doc, 10, 'bold', COLORS.primary);
+  doc.text('Estas son las ofertas recomendadas para tu seguro:', M, y + 4);
+  y += 8;
 
-    let y = 0;
-    drawHeader(doc, logoDataUrl);
-    y = 24;
-    y = drawInfoBar(doc, userInfo, vehicleRaw, y);
+  y = drawPlanHeader(doc, plans, logoCache, colW, colX, y);
 
-    // Section title
-    setFont(doc, 9, 'bold', COLORS.primary);
-    doc.text(`Opciones disponibles (${chunkIdx + 1}/${chunks.length})`, M, y + 4);
-    y += 8;
+  // ── Datos principales (filas de DATO: si falta → "n/d" gris, no "x" roja) ──
+  y = drawSectionRow(doc, 'DATOS PRINCIPALES', tableX, tableW, y);
+  y = drawDataRow(doc, 'Prima anual (IVA incl.)', plans.map(p => p.totalStr), colX, colW, labelW, tableX, y, false, true, 'n/d', COLORS.faint);
+  y = drawDataRow(doc, 'Cuota mensual estimada', plans.map(p => p.cuotaMensual), colX, colW, labelW, tableX, y, true, false, 'n/d', COLORS.faint);
+  y = drawDataRow(doc, 'Valor asegurado', plans.map(p => p.valorAsegurado), colX, colW, labelW, tableX, y, false, false, 'n/d', COLORS.faint);
+  y = drawDataRow(doc, 'N° de cotización', plans.map(p => p.numeroCotizacion), colX, colW, labelW, tableX, y, true, false, 'n/d', COLORS.faint);
 
-    y = drawPlanHeader(doc, plans, logoCache, colW, colX, y);
+  // ── Responsabilidad Civil (cobertura: si falta → "x" roja) ──
+  y = drawSectionRow(doc, 'RESPONSABILIDAD CIVIL EXTRACONTRACTUAL', tableX, tableW, y);
+  y = drawDataRow(doc, 'Límite RCE', plans.map(p => p.rce), colX, colW, labelW, tableX, y, false);
 
-    // ── Sección 1: Prima ──
-    y = drawSectionRow(doc, 'PRIMA ANUAL (IVA INCLUIDO)', tableX, labelW + plans.length * colW, y);
-    y = drawDataRow(doc, 'Prima anual', plans.map(p => p.totalStr), colX, colW, labelW, tableX, y, false);
-    y = drawDataRow(doc, 'Prima neta', plans.map(p => p.primaNeta), colX, colW, labelW, tableX, y, true);
-    y = drawDataRow(doc, 'Impuesto', plans.map(p => p.impuesto), colX, colW, labelW, tableX, y, false);
-
-    // ── Sección 2: Responsabilidad Civil ──
-    y = drawSectionRow(doc, 'RESPONSABILIDAD CIVIL EXTRACONTRACTUAL', tableX, labelW + plans.length * colW, y);
-    y = drawDataRow(doc, 'Límite RCE', plans.map(p => p.rce), colX, colW, labelW, tableX, y, false);
-
-    // ── Sección 3: Amparos principales ──
-    // Get union of amparo names
-    const allAmparoNames = new Set<string>();
-    plans.forEach(p => p.amparos.forEach(a => allAmparoNames.add(a.nombre)));
-
-    y = drawSectionRow(doc, 'AMPAROS INCLUIDOS', tableX, labelW + plans.length * colW, y);
+  // ── Amparos (los que quepan en la página, reservando el espacio inferior) ──
+  const allAmparoNames = new Set<string>();
+  plans.forEach(p => p.amparos.forEach(a => allAmparoNames.add(a.nombre)));
+  let amparosOcultos = 0;
+  if (allAmparoNames.size > 0) {
+    y = drawSectionRow(doc, 'AMPAROS INCLUIDOS', tableX, tableW, y);
     let rowEven = false;
-    Array.from(allAmparoNames).slice(0, 18).forEach(nombre => {
-      if (y > PH - 20) return; // avoid overflow
+    const nombres = Array.from(allAmparoNames);
+    nombres.forEach((nombre, idx) => {
+      if (y > PH - RESERVA_INFERIOR) { amparosOcultos++; return; }
       const values = plans.map(plan => {
         const found = plan.amparos.find(a => a.nombre === nombre);
         return found?.valor || '—';
       });
-      y = drawDataRow(doc, nombre.length > 38 ? nombre.slice(0, 36) + '…' : nombre, values, colX, colW, labelW, tableX, y, rowEven);
+      y = drawDataRow(doc, nombre.length > 32 ? nombre.slice(0, 30) + '…' : nombre, values, colX, colW, labelW, tableX, y, rowEven);
       rowEven = !rowEven;
     });
-
-    // ── Sección 4: Servicios adicionales ──
-    const allAdicionalNames = new Set<string>();
-    plans.forEach(p => p.adicional.forEach(a => allAdicionalNames.add(a.nombre)));
-
-    if (allAdicionalNames.size > 0 && y < PH - 30) {
-      y = drawSectionRow(doc, 'SERVICIOS ADICIONALES', tableX, labelW + plans.length * colW, y);
-      rowEven = false;
-      Array.from(allAdicionalNames).slice(0, 10).forEach(nombre => {
-        if (y > PH - 20) return;
-        const values = plans.map(plan => {
-          const found = plan.adicional.find(a => a.nombre === nombre);
-          return found?.valor || '—';
-        });
-        y = drawDataRow(doc, nombre.length > 38 ? nombre.slice(0, 36) + '…' : nombre, values, colX, colW, labelW, tableX, y, rowEven);
-        rowEven = !rowEven;
-      });
+    if (amparosOcultos > 0) {
+      setFont(doc, 5.5, 'normal', COLORS.muted);
+      doc.text(`(+${amparosOcultos} amparos adicionales — ver detalle de cada póliza)`, tableX + 3, y + 3);
+      y += 4;
     }
+  }
 
-    drawFooter(doc, chunkIdx + 1, totalPages);
-  });
+  // ── Servicios adicionales (solo si queda espacio) ──
+  const allAdicionalNames = new Set<string>();
+  plans.forEach(p => p.adicional.forEach(a => allAdicionalNames.add(a.nombre)));
+  if (allAdicionalNames.size > 0 && y < PH - RESERVA_INFERIOR - 6) {
+    y = drawSectionRow(doc, 'SERVICIOS ADICIONALES', tableX, tableW, y);
+    let rowEven = false;
+    Array.from(allAdicionalNames).forEach(nombre => {
+      if (y > PH - RESERVA_INFERIOR) return;
+      const values = plans.map(plan => {
+        const found = plan.adicional.find(a => a.nombre === nombre);
+        return found?.valor || '—';
+      });
+      y = drawDataRow(doc, nombre.length > 32 ? nombre.slice(0, 30) + '…' : nombre, values, colX, colW, labelW, tableX, y, rowEven);
+      rowEven = !rowEven;
+    });
+  }
 
-  // ── Legal / closing page ──
-  doc.addPage();
-  drawHeader(doc, logoDataUrl);
+  // ── Recomendación + nota legal compacta (parte inferior de la MISMA página) ──
+  const cheapest = plans[0];
+  const yReco = PH - 25;
+  if (cheapest) {
+    setFont(doc, 7.5, 'bold', COLORS.primary);
+    doc.text('Recomendación:', M, yReco);
+    setFont(doc, 7.5, 'normal', COLORS.dark);
+    const reco = `Entre estas opciones recomendadas, la de menor precio es ${cheapest.aseguradora} (${cheapest.plan}) por ${cheapest.totalStr}. Compara las coberturas para elegir la mejor para ti.`;
+    doc.text(doc.splitTextToSize(reco, PW - M * 2 - 26), M + 26, yReco);
+  }
 
-  let y = 30;
-  setFont(doc, 12, 'bold', COLORS.primary);
-  doc.text('Notas Importantes y Condiciones', M, y);
-  y += 8;
+  setFont(doc, 5.8, 'normal', COLORS.muted);
+  const legal = 'Cotización informativa; no implica aceptación del riesgo por parte de las aseguradoras. Coberturas, valores y deducibles definitivos según la póliza y el clausulado de cada compañía, sujetos a inspección y suscripción. Primas con IVA. La cuota mensual es referencial (prima anual ÷ 12). Proyectar actúa como intermediario de seguros, no como aseguradora.';
+  doc.text(doc.splitTextToSize(legal, PW - M * 2), M, PH - 18);
 
-  const legal = 
-    'Esta cotización es de carácter informativo y no implica aceptación del riesgo por parte de las aseguradoras. ' +
-    'El valor del vehículo proviene de la guía Fasecolda vigente. Las coberturas, valores y deducibles definitivos son ' +
-    'los de la póliza emitida y el clausulado de cada compañía, sujetos a inspección y a las políticas de suscripción. ' +
-    'Las primas incluyen IVA. La vigencia de cada oferta depende de cada aseguradora. ' +
-    'Proyectar Administradores de Seguros Ltda. actúa como intermediario de seguros y no como aseguradora.';
-
-  setFont(doc, 8, 'normal', COLORS.dark);
-  const legalLines = doc.splitTextToSize(legal, PW - M * 2);
-  doc.text(legalLines, M, y);
-  y += legalLines.length * 4 + 10;
-
-  // Summary box
-  drawRect(doc, M, y, PW - M * 2, 20, COLORS.light, 3);
-  setFont(doc, 8, 'bold', COLORS.primary);
-  doc.text('Conclusión Comercial', M + 4, y + 6);
-  setFont(doc, 8, 'normal', COLORS.dark);
-  const cheapest = allPlans[0];
-  const conclusion = `La opción más económica encontrada es ${cheapest?.aseguradora} — ${cheapest?.plan} con un valor de ${cheapest?.totalStr}. ` +
-    `Se recomienda comparar coberturas con las demás opciones para elegir la que mejor se adapte a sus necesidades.`;
-  const conclusionLines = doc.splitTextToSize(conclusion, PW - M * 2 - 8);
-  doc.text(conclusionLines, M + 4, y + 12);
-
-  drawFooter(doc, totalPages, totalPages);
+  drawFooter(doc);
 
   doc.save(`Cotizacion_Seguros_Proyectar_${new Date().toLocaleDateString('es-CO').replace(/\//g, '-')}.pdf`);
 };
