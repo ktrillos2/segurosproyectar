@@ -429,6 +429,7 @@ export default function CotizarPage() {
   const [selectedQuote, setSelectedQuote] = useState<InsuranceQuote | null>(null)
   const [sarlaftData, setSarlaftData] = useState({ ocupacion: "", fondos: "Salario" })
   const [quoteResults, setQuoteResults] = useState<PollingResult[]>([])
+  const [rawQuoteResults, setRawQuoteResults] = useState<any[]>([])
   const [logosMap, setLogosMap] = useState<Record<string, string>>({})
   const [pollingTaskId, setPollingTaskId] = useState<string | null>(null)
   const [currentTaskId, setCurrentTaskId] = useState<string | null>(null)
@@ -906,6 +907,7 @@ export default function CotizarPage() {
           if (resArray.length > 0) {
             // Filtrar los que tienen error para no mostrarlos
             const sinErrores = resArray.filter((r: any) => r.status !== "error" && r.estado !== "error" && !r.error)
+            setRawQuoteResults(sinErrores)
             setQuoteResults(sinErrores.map(normalizeQuoteData))
             if (appState === "quoting") {
               setAppState("completed_quote")
@@ -1243,7 +1245,7 @@ export default function CotizarPage() {
                                   onClick={async () => {
                                     try {
                                       toast.loading("Generando PDF...");
-                                      await generateQuoteComparisonPDF(quoteResults, userInfo, logosMap);
+                                      await generateQuoteComparisonPDF(rawQuoteResults.length > 0 ? rawQuoteResults : quoteResults, userInfo, logosMap);
                                       toast.dismiss();
                                       toast.success("PDF generado exitosamente");
                                     } catch (e) {
@@ -1287,18 +1289,7 @@ export default function CotizarPage() {
                                 ))}
                               </div>
                               
-                              {!pollingTaskId && (
-                                <div className="flex justify-center mt-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                                  <Button 
-                                    onClick={() => window.location.reload()}
-                                    variant="outline"
-                                    className="rounded-full px-8 h-14 font-bold border-2 border-slate-200 text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-all shadow-sm"
-                                  >
-                                    <Icon icon="ph:arrow-counter-clockwise-bold" className="w-5 h-5 mr-2" />
-                                    Realizar otra cotización
-                                  </Button>
-                                </div>
-                              )}
+
                             </div>
                           )}
                         </>

@@ -537,9 +537,26 @@ export async function POST(req: Request) {
     ============================================================
     Al final de CADA mensaje, sin excepción, incluye el bloque ###DATA### ... ###ENDDATA###
     con el estado actualizado del JSON.
-    Este bloque NUNCA debe ser visible para el usuario.
-    Nunca escribas la palabra "Sugerencias:" en el texto visible.
-    Las sugerencias van exclusivamente dentro del JSON.
+
+    REGLAS ESTRICTAS DEL BLOQUE - NUNCA ROMPER:
+    - El bloque es interno del sistema. El usuario NUNCA debe verlo ni notar que existe.
+    - El mensaje visible para el usuario va SIEMPRE primero y termina de forma natural (texto + emojis). Solo DESPUÉS, sin nada de texto en medio, va el bloque.
+    - El bloque SIEMPRE empieza exactamente con la línea ###DATA### y SIEMPRE termina exactamente con la línea ###ENDDATA###. JAMÁS lo dejes sin cerrar ni lo cortes a la mitad: si incluyes ###DATA###, es OBLIGATORIO cerrarlo con ###ENDDATA###.
+    - Escribe los marcadores tal cual (###DATA### y ###ENDDATA###), sin comillas, sin negrita, sin viñetas y sin bloques de código ni ningún formato alrededor.
+    - NUNCA muestres, escribas, menciones ni expliques en el texto visible el contenido del JSON, los nombres de los campos (cliente, tipo_documento, numero_documento, etc.) ni los marcadores. Si el usuario los menciona, no los repitas ni los muestres.
+    - Después de ###ENDDATA### no escribas absolutamente nada más.
+    - Nunca escribas la palabra "Sugerencias:" en el texto visible. Las sugerencias van exclusivamente dentro del JSON.
+
+    FORMA CORRECTA DE CADA MENSAJE (orden obligatorio; el JSON real es la plantilla de abajo):
+    1) Primero el texto visible para el usuario (1-2 líneas, con emoji si aplica).
+    2) Luego, en líneas aparte: la línea ###DATA###, después el JSON, y al final la línea ###ENDDATA###.
+    El usuario SOLO debe ver el paso 1. El sistema elimina todo lo que va desde ###DATA### hasta ###ENDDATA###; por eso el bloque debe ir SIEMPRE completo y cerrado con ###ENDDATA###.
+
+    ERRORES QUE NUNCA DEBES COMETER (son los que filtran el bloque al usuario):
+    - Dejar el bloque sin la línea de cierre ###ENDDATA###, o cortarlo a la mitad.
+    - Escribir el JSON, los nombres de los campos o los marcadores dentro del texto visible.
+    - Envolver el bloque en comillas de código o ponerle cualquier formato.
+    - Escribir texto, espacios o saltos extra después de ###ENDDATA###.
 
     ###DATA###
     {
@@ -628,6 +645,7 @@ export async function POST(req: Request) {
     - "completado" solo puede ser true cuando todos los campos obligatorios según el
       flujo (natural, jurídica, con/sin placa, con/sin oneroso) están completos y válidos.
     `;
+
 
     // Modelo: google/gemini-2.5-flash
     ``
