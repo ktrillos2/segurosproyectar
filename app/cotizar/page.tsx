@@ -233,6 +233,7 @@ const normalizeQuoteData = (rawItem: any) => {
     if (Array.isArray(rawItem.amparos)) {
       const amparosFijosAxa = [
         { nombre: 'Deducible RCE', valor: 'Sin deducible', deducible: '0' },
+        { nombre: 'RCE Límite global', valor: '$4.000.000.000', deducible: '0' },
         { nombre: 'Límite daños a bienes de terceros', valor: 'Límite único', deducible: '0' },
         { nombre: 'Límite lesiones o muerte a una persona', valor: 'Límite único', deducible: '0' },
         { nombre: 'Límite lesiones o muerte a dos o más personas', valor: 'Límite único', deducible: '0' },
@@ -257,7 +258,7 @@ const normalizeQuoteData = (rawItem: any) => {
         { nombre: 'Asistencia en viaje', valor: 'Plus', deducible: null },
         { nombre: 'Muerte accidental', valor: '$50.000.000', deducible: null },
         { nombre: 'Garantía en tiempo de reparación', valor: 'Incluye', deducible: null },
-        { nombre: 'Prolongación de vigencia', valor: 'Incluye', deducible: null },
+        { nombre: 'Prolongación de vigencia en taller autorizado', valor: 'Incluye', deducible: null },
         { nombre: 'Llantas estalladas', valor: '1 SMMLV por vigencia', deducible: null },
         { nombre: 'Rotura de vidrios', valor: 'Sin límite de eventos', deducible: null },
         { nombre: 'Pérdida de llaves', valor: '1 SMMLV — 1 evento por vigencia', deducible: null },
@@ -279,6 +280,7 @@ const normalizeQuoteData = (rawItem: any) => {
         if (pn.includes('RCE')) {
           eqAmparos = [
             { nombre: 'Deducible RCE', valor: 'Sin deducible', deducible: '0' },
+            { nombre: 'RCE Límite global', valor: '$1.500.000.000', deducible: '0' },
             { nombre: 'Amparo patrimonial', valor: 'Incluido', deducible: null },
             { nombre: 'Asistencia jurídica', valor: 'Incluido', deducible: null },
             { nombre: 'Carro taller', valor: '2 servicios', deducible: null },
@@ -289,6 +291,7 @@ const normalizeQuoteData = (rawItem: any) => {
         } else if (pn.includes('BÁSICO') || pn.includes('BASICO')) {
           eqAmparos = [
             { nombre: 'Deducible RCE', valor: '4 SMMLV', deducible: '4 SMMLV' },
+            { nombre: 'RCE Límite global', valor: '$5.000.000.000', deducible: '4 SMMLV' },
             { nombre: 'Amparo patrimonial', valor: 'Incluido', deducible: null },
             { nombre: 'Asistencia jurídica', valor: 'Incluido', deducible: null },
             { nombre: 'Pérdida total por daños', valor: 'Valor según vehículo — 4 SMMLV', deducible: '4 SMMLV' },
@@ -306,6 +309,7 @@ const normalizeQuoteData = (rawItem: any) => {
         } else if (pn.includes('LIGERO')) {
           eqAmparos = [
             { nombre: 'Deducible RCE', valor: 'Sin deducible', deducible: '0' },
+            { nombre: 'RCE Límite global', valor: '$4.000.000.000', deducible: '0' },
             { nombre: 'Amparo patrimonial', valor: 'Incluido', deducible: null },
             { nombre: 'Asistencia jurídica', valor: 'Incluido', deducible: null },
             { nombre: 'Accidentes personales', valor: '$60.000.000', deducible: null },
@@ -325,6 +329,7 @@ const normalizeQuoteData = (rawItem: any) => {
         } else if (pn.includes('FULL')) {
           eqAmparos = [
             { nombre: 'Deducible RCE', valor: 'Sin deducible', deducible: '0' },
+            { nombre: 'RCE Límite global', valor: '$5.000.000.000', deducible: '0' },
             { nombre: 'Amparo patrimonial', valor: 'Incluido', deducible: null },
             { nombre: 'Asistencia jurídica', valor: 'Incluido', deducible: null },
             { nombre: 'Accidentes personales', valor: '$60.000.000', deducible: null },
@@ -412,19 +417,81 @@ const normalizeQuoteData = (rawItem: any) => {
     const baseAmparos = Array.isArray(rawItem.datos?.amparos_base) ? rawItem.datos.amparos_base : [];
     const extraAmparos = Array.isArray(rawItem.datos?.amparos_accesorios) ? rawItem.datos.amparos_accesorios : [];
     
-    if (baseAmparos.length > 0 || extraAmparos.length > 0) {
-      result.amparos = [...baseAmparos, ...extraAmparos].map((amp: any) => {
-        let val = amp.valor_asegurado;
-        // Quálitas a veces retorna solo "7", "15" o "30" para gastos de transporte
-        if (amp.cobertura && amp.cobertura.toLowerCase().includes("transporte") && /^\d+$/.test(val)) {
-          val = `${val} Días`;
-        }
-        return {
-          nombre: amp.cobertura,
-          valor: val,
-          deducible: amp.deducible
-        };
-      });
+    let mappedAmparos = [...baseAmparos, ...extraAmparos].map((amp: any) => {
+      let val = amp.valor_asegurado;
+      // Quálitas a veces retorna solo "7", "15" o "30" para gastos de transporte
+      if (amp.cobertura && amp.cobertura.toLowerCase().includes("transporte") && /^\d+$/.test(val)) {
+        val = `${val} Días`;
+      }
+      return {
+        nombre: amp.cobertura,
+        valor: val,
+        deducible: amp.deducible
+      };
+    });
+
+    const isAmplia = result.plan_recomendado?.nombre?.toLowerCase().includes("amplia") || 
+                     (result.planes_disponibles && result.planes_disponibles.some((p: any) => p.nombre.toLowerCase().includes("amplia")));
+                     
+    const isPlus = result.plan_recomendado?.nombre?.toLowerCase().includes("plus") || 
+                   (result.planes_disponibles && result.planes_disponibles.some((p: any) => p.nombre.toLowerCase().includes("plus")));
+                     
+    const isBasica = result.plan_recomendado?.nombre?.toLowerCase().includes("básica") || 
+                     result.plan_recomendado?.nombre?.toLowerCase().includes("basica") ||
+                     (result.planes_disponibles && result.planes_disponibles.some((p: any) => p.nombre.toLowerCase().includes("básica") || p.nombre.toLowerCase().includes("basica")));
+                     
+    if (isAmplia) {
+      mappedAmparos.push(
+        { nombre: "Deducible RCE", valor: "Sin deducible", deducible: "0" },
+        { nombre: "Terremoto/eventos naturaleza", valor: "Incluye", deducible: "0" },
+        { nombre: "Amparo patrimonial", valor: "Incluye", deducible: "0" },
+        { nombre: "Vehículo de reemplazo pérdida total", valor: "Incluye", deducible: "0" },
+        { nombre: "Vehículo de reemplazo pérdida parcial", valor: "Hasta 15 días", deducible: "0" },
+        { nombre: "Carro taller", valor: "Ilimitada", deducible: "0" },
+        { nombre: "Conductor elegido", valor: "Ilimitada", deducible: "0" },
+        { nombre: "Grúa accidente", valor: "Ilimitada", deducible: "0" },
+        { nombre: "Grúa avería", valor: "5 eventos hasta $2M por evento", deducible: "0" },
+        { nombre: "Asesoría legal telefónica tránsito", valor: "Incluye", deducible: "0" },
+        { nombre: "Accidentes personales", valor: "$20.000.000", deducible: "0" },
+        { nombre: "Transporte o custodia del vehículo reparado", valor: "40 SMDLV", deducible: "0" },
+        { nombre: "Servicio de ambulancia", valor: "Hasta $30.000.000", deducible: "0" },
+        { nombre: "Pago PTD y PTH valor convenido en carátula", valor: "Incluye", deducible: "0" },
+        { nombre: "RCE Extendida con vehículos de características similares", valor: "Incluye", deducible: "0" }
+      );
+    } else if (isPlus) {
+      mappedAmparos.push(
+        { nombre: "Deducible RCE", valor: "Sin deducible", deducible: "0" },
+        { nombre: "Terremoto/eventos naturaleza", valor: "Incluye", deducible: "0" },
+        { nombre: "Amparo patrimonial", valor: "Incluye", deducible: "0" },
+        { nombre: "Asesoría legal telefónica tránsito", valor: "Incluye", deducible: "0" },
+        { nombre: "Accidentes personales", valor: "$20.000.000", deducible: "0" },
+        { nombre: "Carro taller", valor: "Ilimitada", deducible: "0" },
+        { nombre: "Conductor elegido", valor: "2 eventos por vigencia", deducible: "0" },
+        { nombre: "Grúa accidente", valor: "Ilimitada", deducible: "0" },
+        { nombre: "Grúa avería", valor: "2 eventos hasta $1M por evento", deducible: "0" },
+        { nombre: "Transporte o custodia del vehículo reparado", valor: "15 SMDLV", deducible: "0" },
+        { nombre: "Pago PTD y PTH valor convenido en carátula", valor: "Incluye", deducible: "0" },
+        { nombre: "RCE Extendida con vehículos de características similares", valor: "Incluye", deducible: "0" }
+      );
+    } else if (isBasica) {
+      mappedAmparos.push(
+        { nombre: "Deducible RCE", valor: "Sin deducible", deducible: "0" },
+        { nombre: "Amparo patrimonial", valor: "Incluye", deducible: "0" },
+        { nombre: "Asesoría legal telefónica tránsito", valor: "Incluye", deducible: "0" },
+        { nombre: "Accidentes personales", valor: "$20.000.000", deducible: "0" },
+        { nombre: "Carro taller", valor: "Ilimitada", deducible: "0" },
+        { nombre: "Conductor elegido", valor: "2 eventos por vigencia", deducible: "0" },
+        { nombre: "Grúa accidente", valor: "Ilimitada", deducible: "0" },
+        { nombre: "Grúa avería", valor: "2 eventos hasta $1M por evento", deducible: "0" },
+        { nombre: "Transporte o custodia del vehículo reparado", valor: "15 SMDLV", deducible: "0" },
+        { nombre: "Pago PTD y PTH valor convenido en carátula", valor: "Incluye", deducible: "0" },
+        { nombre: "RCE Extendida con vehículos de características similares", valor: "Incluye", deducible: "0" }
+      );
+    }
+    
+    result.amparos = mappedAmparos;
+    if (result.planes_disponibles && result.planes_disponibles.length > 0) {
+      result.planes_disponibles.forEach((p: any) => p.amparos = mappedAmparos);
     }
   }
   // Zurich Mapping
@@ -432,17 +499,38 @@ const normalizeQuoteData = (rawItem: any) => {
     if (rawItem.planes && rawItem.planes.length > 0) {
       result.planes_disponibles = rawItem.planes.map((p: any) => {
         const valTotal = parseAmount(p.prima_anual_con_iva || p.prima_anual || p.prima_neta || p.total);
+        let amparosMapped = Array.isArray(p.amparos) ? p.amparos.map((amp: any) => ({
+          nombre: amp.cobertura,
+          valor: amp.limite,
+          deducible: amp.deducible
+        })) : [];
+
+        const planName = (p.nombre || "").toLowerCase();
+        if (planName.includes("premium")) {
+          amparosMapped.push(
+            { nombre: "Asistencia jurídica proceso civil", valor: "Sin deducible", deducible: "0" },
+            { nombre: "Asistencia total", valor: "Sin deducible", deducible: "0" },
+            { nombre: "Extensión RCE a bicicleta y patineta", valor: "Sin deducible", deducible: "0" },
+            { nombre: "Extensión accidentes personales a bicicleta, patineta y transporte público", valor: "Sin deducible", deducible: "0" },
+            { nombre: "Obligaciones financieras", valor: "Hasta 10 SMMLV por 3 meses", deducible: "0" },
+            { nombre: "Beneficio Alfred", valor: "24 lavadas gratis al año", deducible: "0" }
+          );
+        } else if (planName.includes("plus")) {
+          amparosMapped.push(
+            { nombre: "Extensión RCE a bicicleta y patineta", valor: "Sin deducible", deducible: "0" },
+            { nombre: "Extensión accidentes personales a bicicleta, patineta y transporte público", valor: "Sin deducible", deducible: "0" },
+            { nombre: "Obligaciones financieras", valor: "Hasta 10 SMMLV por 3 meses", deducible: "0" },
+            { nombre: "Beneficio Alfred", valor: "24 lavadas gratis al año", deducible: "0" }
+          );
+        }
+
         return {
           nombre: p.nombre || "Plan",
           prima_neta: valTotal * 0.8,
           iva: valTotal * 0.19,
           gastos_expedicion: 0,
           total: valTotal,
-          amparos: Array.isArray(p.amparos) ? p.amparos.map((amp: any) => ({
-            nombre: amp.cobertura,
-            valor: amp.limite,
-            deducible: amp.deducible
-          })) : []
+          amparos: amparosMapped
         };
       });
       

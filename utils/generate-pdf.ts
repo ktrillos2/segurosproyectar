@@ -4,8 +4,19 @@ import jsPDF from 'jspdf';
 
 const parseNumber = (val: any): number => {
   if (typeof val === 'number') return val;
-  const clean = String(val || '').replace(/[^0-9.,]/g, '').replace(',', '.');
-  return parseFloat(clean.replace(/\./g, '').replace(',', '.')) || 0;
+  let s = String(val ?? '').replace(/[^0-9.,]/g, '');
+  if (!s) return 0;
+  // Detectar el separador DECIMAL: un '.' o ',' seguido de SOLO 1 o 2 digitos al
+  // final (los centavos). Lo demas (puntos/comas con 3 digitos) son miles.
+  // Asi "1.528.878,09" y "1528878.09" -> 1528878.09 (antes daban 152.887.809).
+  const dec = s.match(/[.,](\d{1,2})$/);
+  if (dec) {
+    const intPart = s.slice(0, s.length - dec[0].length).replace(/[.,]/g, '');
+    s = (intPart || '0') + '.' + dec[1];
+  } else {
+    s = s.replace(/[.,]/g, ''); // todos son separadores de miles
+  }
+  return parseFloat(s) || 0;
 };
 
 // Pesos colombianos sin centavos, formato $ 1.234.567
@@ -104,6 +115,102 @@ const AMPAROS_AXA: AmparoFijo[] = [
   { nombre: 'Rotura de vidrios',              valor: 'Sin límite',    deducible: '' },
 ];
 
+// Seguros del Estado — PLAN ELITE (Seguro Elite Para Carro): coberturas FIJAS.
+// Deducible '0 SMMLV' -> 'Sin deducible'.
+const AMPAROS_ESTADO: AmparoFijo[] = [
+  { nombre: 'Pérdida total por daños',        valor: 'Sí',            deducible: 'Sin deducible' },
+  { nombre: 'Pérdida parcial por daños',      valor: 'Sí',            deducible: '$ 1.000.000' },
+  { nombre: 'Pérdida total por hurto',        valor: 'Sí',            deducible: 'Sin deducible' },
+  { nombre: 'Pérdida parcial por hurto',      valor: 'Sí',            deducible: '$ 1.000.000' },
+  { nombre: 'Terremoto y eventos naturales',  valor: 'Sí',            deducible: '$ 1.000.000' },
+  { nombre: 'Protección patrimonial',         valor: 'Sí',            deducible: '' },
+  { nombre: 'Asistencia jurídica',            valor: 'Ilimitada',     deducible: '' },
+  { nombre: 'Muerte accidental',              valor: 'Hasta $ 50.000.000', deducible: '' },
+  { nombre: 'Gastos de transporte',           valor: '2 SMDLV · hasta 30 días', deducible: '' },
+  { nombre: 'Vehículo de reemplazo',          valor: 'Hasta 30 días', deducible: '' },
+  { nombre: 'Carro taller',                   valor: 'Sí',            deducible: '' },
+  { nombre: 'Conductor elegido',              valor: 'Sí',            deducible: '' },
+  { nombre: 'Grúa en accidente',              valor: 'Sí',            deducible: '' },
+  { nombre: 'Asistencia en viaje',            valor: 'Sí',            deducible: '' },
+  { nombre: 'Rotura de vidrios',              valor: 'Sí',            deducible: '' },
+];
+const ESTADO_RCE = '$ 4.400.000.000';
+
+// Quálitas — PLAN AMPLIA (Quálitas Amplia): coberturas FIJAS.
+const AMPAROS_QUALITAS: AmparoFijo[] = [
+  { nombre: 'Pérdida total por daños',        valor: 'Sí',            deducible: 'Sin deducible' },
+  { nombre: 'Pérdida parcial por daños',      valor: 'Sí',            deducible: '$ 1.400.000' },
+  { nombre: 'Pérdida total por hurto',        valor: 'Sí',            deducible: 'Sin deducible' },
+  { nombre: 'Pérdida parcial por hurto',      valor: 'Sí',            deducible: '$ 1.400.000' },
+  { nombre: 'Terremoto y eventos naturales',  valor: 'Sí',            deducible: '' },
+  { nombre: 'Protección patrimonial',         valor: 'Sí',            deducible: '' },
+  { nombre: 'Asistencia jurídica',            valor: 'Hasta $ 40.000.000', deducible: '' },
+  { nombre: 'Muerte accidental',              valor: 'Hasta $ 20.000.000', deducible: '' },
+  { nombre: 'Gastos de transporte',           valor: 'Hasta $ 1.500.000', deducible: '' },
+  { nombre: 'Vehículo de reemplazo',          valor: 'Sí',            deducible: '' },
+  { nombre: 'Carro taller',                   valor: 'Ilimitada',     deducible: '' },
+  { nombre: 'Conductor elegido',              valor: 'Ilimitada',     deducible: '' },
+  { nombre: 'Grúa en accidente',              valor: 'Ilimitada',     deducible: '' },
+  { nombre: 'Asistencia en viaje',            valor: 'Sí',            deducible: '' },
+  { nombre: 'Rotura de vidrios',              valor: 'Sí',            deducible: '' },
+];
+const QUALITAS_RCE = '$ 4.000.000.000';
+
+// Zurich — PLAN FULL (Zurich Full): coberturas FIJAS.
+const AMPAROS_ZURICH: AmparoFijo[] = [
+  { nombre: 'Pérdida total por daños',        valor: 'Sí',            deducible: 'Sin deducible' },
+  { nombre: 'Pérdida parcial por daños',      valor: 'Sí',            deducible: '1 SMMLV' },
+  { nombre: 'Pérdida total por hurto',        valor: 'Sí',            deducible: 'Sin deducible' },
+  { nombre: 'Pérdida parcial por hurto',      valor: 'Sí',            deducible: '1 SMMLV' },
+  { nombre: 'Terremoto y eventos naturales',  valor: 'Sí',            deducible: '1 SMMLV' },
+  { nombre: 'Protección patrimonial',         valor: 'Sí',            deducible: '' },
+  { nombre: 'Asistencia jurídica',            valor: 'Sí',            deducible: '' },
+  { nombre: 'Muerte accidental',              valor: 'Hasta $ 50.000.000', deducible: '' },
+  { nombre: 'Gastos de transporte',           valor: '$60.000 · hasta 30 días', deducible: '' },
+  { nombre: 'Vehículo de reemplazo',          valor: 'Hasta 20 días', deducible: '' },
+  { nombre: 'Asistencia en viaje',            valor: 'Sí',            deducible: '' },
+  { nombre: 'Rotura de vidrios',              valor: 'Hasta 1 SMMLV', deducible: '' },
+];
+const ZURICH_RCE = '$ 5.000.000.000';
+
+// ¿El valor que trae el bot es "generico" (solo presencia, sin cifra)?
+function _valorGenerico(v: string): boolean {
+  const s = String(v ?? '').trim();
+  return !s || /^(incluido|incluye|si|s[ií]|amparado|aplica|cubre|si cubre|ilimitad[ao])$/i.test(s);
+}
+
+// Cruza lo que trae el BOT (dinamico, PRIORIDAD) con lo FIJO (respaldo):
+//  - Si el bot trae un valor ESPECIFICO (una cifra/limite) -> manda el bot.
+//  - Si el bot trae algo generico ("INCLUIDO") o NO lo trae -> se usa el fijo
+//    (que tiene el deducible y el limite correctos, que el bot no extrae).
+//  - El DEDUCIBLE siempre se toma del fijo (el bot nunca lo trae).
+//  - Coberturas que el bot trae y NO estan en lo fijo -> se agregan como extra.
+function mezclarAmparos(
+  fijos: AmparoFijo[],
+  dinamicos: { nombre: string; valor: string }[]
+): { nombre: string; valor: string; deducible?: string }[] {
+  const fijoPorCanon = new Map<string, AmparoFijo>();
+  for (const f of fijos) fijoPorCanon.set(canonicalAmparo(f.nombre), f);
+  const out: { nombre: string; valor: string; deducible?: string }[] = [];
+  const vistos = new Set<string>();
+  for (const d of (dinamicos || [])) {
+    const c = canonicalAmparo(d.nombre);
+    if (!c || c === 'RCE' || c.toLowerCase().includes('responsabilidad civil') || vistos.has(c)) continue;
+    vistos.add(c);
+    const fijo = fijoPorCanon.get(c);
+    const vBot = String(d.valor ?? '').trim();
+    const valor = !_valorGenerico(vBot) ? vBot : (fijo ? fijo.valor : (vBot || 'Sí'));
+    out.push({ nombre: fijo ? fijo.nombre : d.nombre, valor, deducible: fijo ? fijo.deducible : '' });
+  }
+  for (const f of fijos) {
+    const c = canonicalAmparo(f.nombre);
+    if (vistos.has(c)) continue;
+    vistos.add(c);
+    out.push(f);
+  }
+  return out;
+}
+
 // ─── Data normalizers for each insurer ───────────────────────────────────────
 
 interface NormalizedPlan {
@@ -124,16 +231,18 @@ function normalizarEstado(raw: any): NormalizedPlan[] {
 
   return cotizaciones.map((c: any) => {
     const total = parseNumber(c.prima_total || c.total || 0);
+    // Amparos del bot (dinamicos) cruzados con los FIJOS del PLAN ELITE.
+    const dinamicos = (c.amparos || []).map((a: any) => ({ nombre: a.nombre, valor: a.valor }));
     return {
       aseguradora: 'Estado',
-      plan: c.nombre || 'SEGURO ESTADO',
+      plan: c.nombre || 'PLAN ELITE',
       total,
       totalStr: moneyStr(total),
       valorAsegurado: '—',
       numeroCotizacion: numeroCot,
-      amparos: (c.amparos || []).map((a: any) => ({ nombre: a.nombre, valor: a.valor })),
+      amparos: mezclarAmparos(AMPAROS_ESTADO, dinamicos),
       rce: (c.responsabilidad_civil_extracontractual?.[0]?.valor) ||
-           (c.secciones?.['Responsabilidad Civil Extracontractual']?.[0]?.valor) || '—',
+           (c.secciones?.['Responsabilidad Civil Extracontractual']?.[0]?.valor) || ESTADO_RCE,
     };
   });
 }
@@ -205,13 +314,13 @@ function normalizarQualitas(raw: any): NormalizedPlan[] {
     const total = parseNumber(p.prima_anual_con_iva || 0);
     return {
       aseguradora: 'Quálitas',
-      plan: p.nombre || 'PLAN QUÁLITAS',
+      plan: p.nombre || 'PLAN AMPLIA',
       total,
       totalStr: moneyStr(total),
       valorAsegurado: valorAseg,
       numeroCotizacion: numeroCot,
-      amparos: amparosBase,
-      rce: (raw.datos?.amparos_base || []).find((a: any) => String(a.cobertura || '').includes('Civil'))?.valor_asegurado || '—',
+      amparos: mezclarAmparos(AMPAROS_QUALITAS, amparosBase),
+      rce: (raw.datos?.amparos_base || []).find((a: any) => String(a.cobertura || '').includes('Civil'))?.valor_asegurado || QUALITAS_RCE,
     };
   });
 }
@@ -222,16 +331,16 @@ function normalizarZurich(raw: any): NormalizedPlan[] {
     const total = parseNumber(p.prima_anual_con_iva || p.prima_anual || 0);
     return {
       aseguradora: 'Zurich',
-      plan: p.nombre || 'PLAN ZURICH',
+      plan: p.nombre || 'PLAN FULL',
       total,
       totalStr: moneyStr(total),
       valorAsegurado: '—',
       numeroCotizacion: '—',
-      amparos: (p.amparos || []).map((a: any) => ({
+      amparos: mezclarAmparos(AMPAROS_ZURICH, (p.amparos || []).map((a: any) => ({
         nombre: a.cobertura || a.nombre,
         valor: a.limite || a.valor || 'INCLUIDO',
-      })),
-      rce: (p.amparos || []).find((a: any) => String(a.cobertura || a.nombre || '').toLowerCase().includes('rce') || String(a.cobertura || a.nombre || '').toLowerCase().includes('civil'))?.limite || '—',
+      }))),
+      rce: (p.amparos || []).find((a: any) => String(a.cobertura || a.nombre || '').toLowerCase().includes('rce') || String(a.cobertura || a.nombre || '').toLowerCase().includes('civil'))?.limite || ZURICH_RCE,
     };
   });
 }
