@@ -46,7 +46,7 @@ export default async function PoliticaDatosPage() {
           )}
 
           <div className="mt-16 pt-8 border-t border-slate-200 text-center sm:text-left text-sm font-medium text-slate-500">
-            <p>PROYECTAR SEGUROS S.A.S. — NIT 830.139.875-7</p>
+            <p>Proyectar Administradores de seguros LTDA — NIT 830.139.875-7</p>
             <p>Bogotá D.C., Colombia — {new Date().getFullYear()}</p>
             <p><a href="mailto:contactenos@seguros-proyectar.com" className="text-primary hover:underline font-bold">contactenos@seguros-proyectar.com</a></p>
           </div>
