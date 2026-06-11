@@ -75,7 +75,18 @@ function normalizarEquidad(raw: any): NormalizedPlan[] {
 function normalizarAxa(raw: any): NormalizedPlan[] {
   const planes = raw.cotizaciones_disponibles || [];
   const principal = raw.plan_seleccionado || raw.producto?.plan_seleccionado;
-  const amparos = (raw.amparos || []).map((a: string) => ({ nombre: a, valor: 'INCLUIDO' }));
+  
+  let rce = '—';
+  const amparosParsed: {nombre: string, valor: string}[] = [];
+  
+  (raw.amparos || []).forEach((a: string) => {
+    if (a.toLowerCase().includes('rce') || a.toLowerCase().includes('responsabilidad civil')) {
+      // Extract just the value if possible, or keep the whole string
+      rce = a.replace(/RCE/i, '').trim();
+    } else {
+      amparosParsed.push({ nombre: a, valor: 'INCLUIDO' });
+    }
+  });
 
   if (planes.length > 0) {
     return planes.map((p: any) => ({
@@ -85,9 +96,9 @@ function normalizarAxa(raw: any): NormalizedPlan[] {
       totalStr: fmtCOP(p.total),
       primaNeta: fmtCOP(p.prima_neta),
       impuesto: fmtCOP(p.iva),
-      amparos,
+      amparos: amparosParsed,
       adicional: [],
-      rce: '—',
+      rce,
     }));
   }
 
@@ -99,9 +110,9 @@ function normalizarAxa(raw: any): NormalizedPlan[] {
       totalStr: fmtCOP(principal.total),
       primaNeta: fmtCOP(principal.prima_neta),
       impuesto: fmtCOP(principal.iva),
-      amparos,
+      amparos: amparosParsed,
       adicional: [],
-      rce: '—',
+      rce,
     }];
   }
 
