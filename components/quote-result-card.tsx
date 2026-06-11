@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { createPortal } from "react-dom"
 import { Icon } from "@iconify/react"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
@@ -68,8 +69,13 @@ const getInsurerLogo = (name: string, logosMap?: Record<string, string>) => {
 
 export function QuoteResultCard({ quoteResult, onContinue, logosMap, userInfo }: QuoteResultCardProps) {
   const [showModal, setShowModal] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const [showAdvisorMessage, setShowAdvisorMessage] = useState(false)
   const [isRequestingAdvisor, setIsRequestingAdvisor] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const handleAdvisorRequest = async () => {
     setIsRequestingAdvisor(true);
@@ -232,12 +238,12 @@ export function QuoteResultCard({ quoteResult, onContinue, logosMap, userInfo }:
                           {amparo.nombre}
                         </span>
                       </div>
-                      <div className="flex flex-col items-end shrink-0 text-right">
-                        <span className="text-xs font-bold text-slate-500">
+                      <div className="flex flex-col items-end shrink-0 text-right gap-1.5 pt-0.5">
+                        <span className="inline-flex text-[9px] font-bold text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md uppercase tracking-wide">
                           {amparo.valor}
                         </span>
                         {amparo.deducible && amparo.deducible !== "0" && amparo.deducible !== "0%" && (
-                          <span className="text-[9px] font-extrabold text-primary bg-primary/10 px-1.5 py-0.5 rounded mt-0.5 uppercase tracking-wide">
+                          <span className="inline-flex text-[9px] font-extrabold text-primary bg-primary/10 px-2 py-0.5 rounded-md uppercase tracking-wide">
                             Ded: {amparo.deducible}
                           </span>
                         )}
@@ -299,9 +305,9 @@ export function QuoteResultCard({ quoteResult, onContinue, logosMap, userInfo }:
       {/* ──────────────────────────────────────────────
           FULL DETAIL MODAL
       ────────────────────────────────────────────── */}
-      {showModal && (
+      {mounted && showModal && createPortal(
         <div
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+          className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4"
           onClick={(e) => e.target === e.currentTarget && setShowModal(false)}
         >
           <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200" />
@@ -402,14 +408,14 @@ export function QuoteResultCard({ quoteResult, onContinue, logosMap, userInfo }:
                           {amparo.nombre}
                         </p>
                       </div>
-                      <div className="flex flex-col items-end shrink-0 text-right">
-                        <p className="text-sm font-black text-slate-700">
+                      <div className="flex flex-col items-end shrink-0 text-right gap-1.5">
+                        <div className="inline-flex items-center text-[10px] font-bold text-slate-600 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-md uppercase tracking-wide text-right">
                           {amparo.valor}
-                        </p>
+                        </div>
                         {amparo.deducible && amparo.deducible !== "0" && amparo.deducible !== "0%" && (
-                          <p className="text-[10px] font-extrabold text-primary bg-primary/10 px-2 py-0.5 rounded mt-1 uppercase tracking-wide">
+                          <div className="inline-flex items-center text-[10px] font-extrabold text-primary bg-primary/10 border border-primary/20 px-2.5 py-1 rounded-md uppercase tracking-wide text-right">
                             Ded: {amparo.deducible}
-                          </p>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -435,7 +441,8 @@ export function QuoteResultCard({ quoteResult, onContinue, logosMap, userInfo }:
               </Button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   )
