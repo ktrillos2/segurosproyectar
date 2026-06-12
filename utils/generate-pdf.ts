@@ -42,7 +42,10 @@ function canonicalAmparo(raw: string): string {
   const c = cleanAmparo(raw);
   const s = c.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   const has = (...w: string[]) => w.every(x => s.includes(x));
-  if (s.includes('responsabilidad civil') || s === 'rce') return 'RCE';
+  if (s.includes('responsabilidad civil') || s === 'rce' || s.includes('rce')) {
+    if (s.includes('bicicleta') || s.includes('patineta')) return 'Extensión RCE a bicicleta y patineta';
+    return 'RCE';
+  }
   if (has('perdida total', 'dano')) return 'Pérdida total por daños';
   if (has('perdida total', 'hurto')) return 'Pérdida total por hurto';
   if (s.includes('perdida total')) return 'Pérdida total por daños';
@@ -56,8 +59,14 @@ function canonicalAmparo(raw: string): string {
   if (s.includes('menor cuantia')) return 'Pérdida parcial por daños';
   if (s.includes('terremoto') || s.includes('temblor') || s.includes('volcan') || s.includes('naturaleza') || s.includes('natural')) return 'Terremoto y eventos naturales';
   if (s.includes('patrimonial')) return 'Protección patrimonial';
-  if (s.includes('juridic')) return 'Asistencia jurídica';
-  if (s.includes('transporte')) return 'Gastos de transporte';
+  
+  if (s.includes('juridic')) {
+    if (s.includes('penal')) return 'Asistencia jurídica penal';
+    if (s.includes('civil')) return 'Asistencia jurídica civil';
+    return 'Asistencia jurídica';
+  }
+  
+  if (s.includes('transporte') && !s.includes('bicicleta') && !s.includes('patineta')) return 'Gastos de transporte';
   if (s.includes('taller')) return 'Carro taller';
   if (s.includes('reemplazo') || s.includes('sustituto')) return 'Vehículo de reemplazo';
   if (s.includes('conductor')) return 'Conductor elegido';
@@ -65,8 +74,24 @@ function canonicalAmparo(raw: string): string {
   if (s.includes('vidrio') || s.includes('cristal')) return 'Rotura de vidrios';
   if (s.includes('viajero') || s.includes('viaje')) return 'Asistencia en viaje';
   if (s.includes('hogar')) return 'Asistencia al hogar';
-  if (s.includes('muerte') || s.includes('accidentes personales') || s.includes('accidente personal')) return 'Muerte accidental';
+  
+  if (s.includes('muerte') || s.includes('accidentes personales') || s.includes('accidente personal')) {
+    if (s.includes('bicicleta') || s.includes('patineta') || s.includes('transporte publico')) return 'Extensión accidentes personales a bicicleta, patineta y transporte público';
+    return 'Muerte accidental';
+  }
+  
   if (s.includes('medic')) return 'Asistencia médica';
+  
+  if (s.includes('asistencia esencial')) return 'Asistencia esencial';
+  if (s.includes('asistencia estandar')) return 'Asistencia estándar';
+  if (s.includes('asistencia total')) return 'Asistencia total';
+  if (s.includes('ruta segura')) return 'Asistencia ruta segura';
+  if (s.includes('obligaciones financieras')) return 'Obligaciones financieras';
+  if (s.includes('alfred')) return 'Beneficio Alfred';
+  if (s.includes('llantas estalladas') || s.includes('llanta')) return 'Llantas estalladas';
+  if (s.includes('pequenos accesorios') || s.includes('accesorios')) return 'Pequeños accesorios';
+  if (s.includes('llaves')) return 'Pérdida de llaves';
+  if (s.includes('beneficio especial')) return 'Beneficio especial';
   return c;
 }
 
@@ -156,20 +181,48 @@ const AMPAROS_QUALITAS: AmparoFijo[] = [
 ];
 const QUALITAS_RCE = '$ 4.000.000.000';
 
-// Zurich — PLAN FULL (Zurich Full): coberturas FIJAS.
-const AMPAROS_ZURICH: AmparoFijo[] = [
+// Zurich — PLANES
+const AMPAROS_ZURICH_BASE: AmparoFijo[] = [
   { nombre: 'Pérdida total por daños',        valor: 'Sí',            deducible: 'Sin deducible' },
   { nombre: 'Pérdida parcial por daños',      valor: 'Sí',            deducible: '1 SMMLV' },
   { nombre: 'Pérdida total por hurto',        valor: 'Sí',            deducible: 'Sin deducible' },
   { nombre: 'Pérdida parcial por hurto',      valor: 'Sí',            deducible: '1 SMMLV' },
   { nombre: 'Terremoto y eventos naturales',  valor: 'Sí',            deducible: '1 SMMLV' },
   { nombre: 'Protección patrimonial',         valor: 'Sí',            deducible: '' },
-  { nombre: 'Asistencia jurídica',            valor: 'Sí',            deducible: '' },
-  { nombre: 'Muerte accidental',              valor: 'Hasta $ 50.000.000', deducible: '' },
   { nombre: 'Gastos de transporte',           valor: '$60.000 · hasta 30 días', deducible: '' },
   { nombre: 'Vehículo de reemplazo',          valor: 'Hasta 20 días', deducible: '' },
   { nombre: 'Asistencia en viaje',            valor: 'Sí',            deducible: '' },
-  { nombre: 'Rotura de vidrios',              valor: 'Hasta 1 SMMLV', deducible: '' },
+  { nombre: 'Grúa en accidente',              valor: 'Sí',            deducible: '' },
+  { nombre: 'Carro taller',                   valor: 'Sí',            deducible: '' },
+  { nombre: 'Conductor elegido',              valor: 'Sí',            deducible: '' },
+  { nombre: 'Asistencia jurídica penal',      valor: 'Sí',            deducible: '' },
+  { nombre: 'Asistencia jurídica civil',      valor: 'Sí',            deducible: '' },
+  { nombre: 'Asistencia ruta segura',         valor: 'Sí',            deducible: '' },
+  { nombre: 'Extensión RCE a bicicleta y patineta', valor: 'Sí',      deducible: '' },
+  { nombre: 'Extensión accidentes personales a bicicleta, patineta y transporte público', valor: 'Sí', deducible: '' },
+  { nombre: 'Obligaciones financieras',       valor: 'Hasta 10 SMMLV por 3 meses', deducible: '' },
+  { nombre: 'Beneficio Alfred',               valor: '24 lavadas gratis al año', deducible: '' },
+];
+
+const AMPAROS_ZURICH_ESENCIAL: AmparoFijo[] = [
+  ...AMPAROS_ZURICH_BASE,
+  { nombre: 'Asistencia esencial',            valor: 'Sí',            deducible: '' },
+];
+
+const AMPAROS_ZURICH_PLUS: AmparoFijo[] = [
+  ...AMPAROS_ZURICH_BASE,
+  { nombre: 'Asistencia estándar',            valor: 'Sí',            deducible: '' },
+];
+
+const AMPAROS_ZURICH_FULL: AmparoFijo[] = [
+  ...AMPAROS_ZURICH_BASE,
+  { nombre: 'Asistencia total',               valor: 'Sí',            deducible: '' },
+  { nombre: 'Muerte accidental',              valor: 'Hasta $ 50.000.000', deducible: 'Sin deducible' },
+  { nombre: 'Llantas estalladas',             valor: 'Hasta 1 SMMLV · 1 vez/año', deducible: 'Sin deducible' },
+  { nombre: 'Pequeños accesorios',            valor: 'Hasta 1 SMMLV · 1 vez/año', deducible: 'Sin deducible' },
+  { nombre: 'Rotura de vidrios',              valor: 'Hasta 1 SMMLV · 1 vez/año', deducible: 'Sin deducible' },
+  { nombre: 'Pérdida de llaves',              valor: 'Hasta 1 SMMLV · 1 evento/año', deducible: 'Sin deducible' },
+  { nombre: 'Beneficio especial',             valor: 'Sí',            deducible: '' },
 ];
 const ZURICH_RCE = '$ 5.000.000.000';
 
@@ -329,14 +382,21 @@ function normalizarZurich(raw: any): NormalizedPlan[] {
   const planes = raw.planes || raw.datos?.planes || [];
   return planes.map((p: any) => {
     const total = parseNumber(p.prima_anual_con_iva || p.prima_anual || 0);
+    const planName = p.nombre || 'PLAN FULL';
+    const nLow = planName.toLowerCase();
+    
+    let fijos = AMPAROS_ZURICH_FULL;
+    if (nLow.includes('esencial')) fijos = AMPAROS_ZURICH_ESENCIAL;
+    else if (nLow.includes('plus')) fijos = AMPAROS_ZURICH_PLUS;
+
     return {
       aseguradora: 'Zurich',
-      plan: p.nombre || 'PLAN FULL',
+      plan: planName,
       total,
       totalStr: moneyStr(total),
       valorAsegurado: '—',
       numeroCotizacion: '—',
-      amparos: mezclarAmparos(AMPAROS_ZURICH, (p.amparos || []).map((a: any) => ({
+      amparos: mezclarAmparos(fijos, (p.amparos || []).map((a: any) => ({
         nombre: a.cobertura || a.nombre,
         valor: a.limite || a.valor || 'INCLUIDO',
       }))),

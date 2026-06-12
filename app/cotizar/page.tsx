@@ -506,23 +506,66 @@ const normalizeQuoteData = (rawItem: any) => {
         })) : [];
 
         const planName = (p.nombre || "").toLowerCase();
-        if (planName.includes("premium")) {
-          amparosMapped.push(
-            { nombre: "Asistencia jurídica proceso civil", valor: "Sin deducible", deducible: "0" },
-            { nombre: "Asistencia total", valor: "Sin deducible", deducible: "0" },
-            { nombre: "Extensión RCE a bicicleta y patineta", valor: "Sin deducible", deducible: "0" },
-            { nombre: "Extensión accidentes personales a bicicleta, patineta y transporte público", valor: "Sin deducible", deducible: "0" },
-            { nombre: "Obligaciones financieras", valor: "Hasta 10 SMMLV por 3 meses", deducible: "0" },
-            { nombre: "Beneficio Alfred", valor: "24 lavadas gratis al año", deducible: "0" }
+        
+        const amparosAAgregar: any[] = [];
+        
+        const comunes = [
+          { nombre: "Grúa", valor: "Incluye", deducible: "0" },
+          { nombre: "Carro taller", valor: "Incluye", deducible: "0" },
+          { nombre: "Conductor elegido", valor: "Incluye", deducible: "0" },
+          { nombre: "Asistencia jurídica proceso penal", valor: "Incluye", deducible: "0" },
+          { nombre: "Asistencia jurídica proceso civil", valor: "Incluye", deducible: "0" },
+          { nombre: "Asistencia ruta segura", valor: "Incluye", deducible: "0" },
+          { nombre: "Extensión RCE a bicicleta y patineta", valor: "Incluye", deducible: "0" },
+          { nombre: "Extensión accidentes personales a bicicleta, patineta y transporte público", valor: "Incluye", deducible: "0" },
+          { nombre: "Obligaciones financieras", valor: "Hasta 10 SMMLV por 3 meses", deducible: "0" },
+          { nombre: "Beneficio Alfred", valor: "24 lavadas gratis al año", deducible: "0" }
+        ];
+
+        amparosAAgregar.push(...comunes);
+
+        if (planName.includes("premium") || planName.includes("full")) {
+          amparosAAgregar.push(
+            { nombre: "Asistencia total", valor: "Incluye", deducible: "0" },
+            { nombre: "Accidentes personales", valor: "$50.000.000", deducible: "Sin deducible" },
+            { nombre: "Llantas estalladas", valor: "Hasta 1 SMMLV — 1 vez por vigencia", deducible: "Sin deducible" },
+            { nombre: "Pequeños accesorios", valor: "Hasta 1 SMMLV — 1 vez por vigencia", deducible: "Sin deducible" },
+            { nombre: "Rotura de vidrios", valor: "Hasta 1 SMMLV — 1 vez por vigencia", deducible: "Sin deducible" },
+            { nombre: "Pérdida de llaves", valor: "Hasta 1 SMMLV — 1 evento por vigencia", deducible: "Sin deducible" },
+            { nombre: "Beneficio especial", valor: "Incluye", deducible: "0" }
           );
         } else if (planName.includes("plus")) {
-          amparosMapped.push(
-            { nombre: "Extensión RCE a bicicleta y patineta", valor: "Sin deducible", deducible: "0" },
-            { nombre: "Extensión accidentes personales a bicicleta, patineta y transporte público", valor: "Sin deducible", deducible: "0" },
-            { nombre: "Obligaciones financieras", valor: "Hasta 10 SMMLV por 3 meses", deducible: "0" },
-            { nombre: "Beneficio Alfred", valor: "24 lavadas gratis al año", deducible: "0" }
+          amparosAAgregar.push(
+            { nombre: "Asistencia estándar", valor: "Incluye", deducible: "0" }
+          );
+        } else if (planName.includes("esencial")) {
+          amparosAAgregar.push(
+            { nombre: "Asistencia esencial", valor: "Incluye", deducible: "0" }
           );
         }
+
+        amparosAAgregar.forEach(nuevo => {
+          // Buscamos si ya existe algo parecido (ej: Grúa -> Grúa por accidente)
+          // Usamos una palabra clave principal para evitar duplicados
+          let kw = nuevo.nombre.toLowerCase().split(" ")[0];
+          if (nuevo.nombre.toLowerCase().includes("rce a bicicleta")) kw = "bicicleta";
+          if (nuevo.nombre.toLowerCase().includes("ruta segura")) kw = "ruta segura";
+          if (nuevo.nombre.toLowerCase().includes("conductor elegido")) kw = "conductor";
+          if (nuevo.nombre.toLowerCase().includes("proceso penal")) kw = "penal";
+          if (nuevo.nombre.toLowerCase().includes("proceso civil")) kw = "civil";
+          if (nuevo.nombre.toLowerCase().includes("obligaciones financieras")) kw = "obligaciones financieras";
+          if (nuevo.nombre.toLowerCase().includes("beneficio alfred")) kw = "alfred";
+          if (nuevo.nombre.toLowerCase().includes("llantas estalladas")) kw = "llanta";
+          if (nuevo.nombre.toLowerCase().includes("pequeños accesorios")) kw = "accesorios";
+          if (nuevo.nombre.toLowerCase().includes("pérdida de llaves")) kw = "llaves";
+          
+          const existe = amparosMapped.some((a: any) => 
+            a.nombre && a.nombre.toLowerCase().includes(kw)
+          );
+          if (!existe) {
+            amparosMapped.push(nuevo);
+          }
+        });
 
         return {
           nombre: p.nombre || "Plan",
